@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+
+{% block title %}产品搜索 - 小原焊钳选型数据库{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-4 fade-in-up">
+            <h1 class="display-5 fw-bold">
+                <i class="bi bi-search me-3"></i>
+                SERVO GUN 产品搜索
+            </h1>
+            <p class="lead text-muted">请选择分类并填写搜索条件</p>
+        </div>
+        
+        <div class="search-form fade-in-up">
+            <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm">
+                <!-- 前六个主要搜索字段 -->
+                <div class="row g-3 mb-4">
+                    <!-- 产品分类 -->
+                    <div class="col-md-6">
+                        <label for="category" class="form-label">
+                            <i class="bi bi-diagram-3 me-2"></i>
+                            产品分类 <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">请选择分类</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- 子分类类型 -->
+                    <div class="col-md-6">
+                        <label for="sub_category_type" class="form-label">
+                            <i class="bi bi-tags me-2"></i>
+                            子分类类型
+                        </label>
+                        <select class="form-select" id="sub_category_type" name="sub_category_type">
+                            <option value="">请选择</option>
+                            <!-- 动态加载选项 -->
+                        </select>
+                    </div>
+                    
+                    <!-- 喉深 -->
+                    <div class="col-md-6">
+                        <label for="throat_depth" class="form-label">
+                            <i class="bi bi-rulers me-2"></i>
+                            喉深
+                        </label>
+                        <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如: ~50, 100~120, 1020~">
+                    </div>
+                    
+                    <!-- 喉宽 -->
+                    <div class="col-md-6">
+                        <label for="throat_width" class="form-label">
+                            <i class="bi bi-arrows-expand me-2"></i>
+                            喉宽
+                        </label>
+                        <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如: ~50, 100~120, 1020~">
+                    </div>
+                    
+                    <!-- 变压器 -->
+                    <div class="col-md-6">
+                        <label for="transformer" class="form-label">
+                            <i class="bi bi-cpu me-2"></i>
+                            变压器
+                        </label>
+                        <select class="form-select" id="transformer" name="transformer">
+                            <option value="">请选择</option>
+                            <option value="ITS85">ITS85</option>
+                            <option value="DB6-100R1">DB6-100R1</option>
+                            <option value="RT552">RT552</option>
+                            <option value="RT752">RT752</option>
+                            <option value="BOSCH">BOSCH</option>
+                            <option value="商科">商科</option>
+                            <option value="RT906">RT906</option>
+                            <option value="RT706">RT706</option>
+                            <option value="NI110">NI110</option>
+                            <option value="RT452">RT452</option>
+                            <option value="DB6-90-510">DB6-90-510</option>
+                            <option value="DB6">DB6</option>
+                            <option value="DB6-90">DB6-90</option>
+                            <option value="SMF-100">SMF-100</option>
+                            <option value="MF-100">MF-100</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    
+                    <!-- MOTOR厂家 -->
+                    <div class="col-md-6">
+                        <label for="motor_manufacturer" class="form-label">
+                            <i class="bi bi-gear-wide-connected me-2"></i>
+                            MOTOR厂家
+                        </label>
+                        <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+                            <option value="">请选择</option>
+                            <option value="FANUC">FANUC</option>
+                            <option value="KUKA">KUKA</option>
+                            <option value="YASKAWA">YASKAWA</option>
+                            <option value="ABB">ABB</option>
+                            <option value="TOLOMATIC">TOLOMATIC</option>
+                            <option value="多摩川">多摩川</option>
+                            <option value="PANASONIC">PANASONIC</option>
+                            <option value="DIAKONT">DIAKONT</option>
+                            <option value="SEW">SEW</option>
+                            <option value="SANYO">SANYO</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 高级搜索字段 -->
+                <div class="mt-4">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
+                        <i class="bi bi-gear me-2"></i>
+                        高级搜索选项
+                    </button>
+                </div>
+                
+                <div class="collapse mt-3" id="advancedSearch">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <!-- 图号1(o) - 第一个 -->
+                                <div class="col-md-6">
+                                    <label for="drawing_no_1" class="form-label">
+                                        <i class="bi bi-file-earmark-text me-2"></i>
+                                        图号1(o)
+                                    </label>
+                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="图号">
+                                </div>
+                                
+                                <!-- 描述 -->
+                                <div class="col-md-6">
+                                    <label for="description" class="form-label">
+                                        <i class="bi bi-card-text me-2"></i>
+                                        描述
+                                    </label>
+                                    <input type="text" class="form-control" id="description" name="description" placeholder="产品描述">
+                                </div>
+                                
+                                <!-- 行程 -->
+                                <div class="col-md-4">
+                                    <label for="stroke" class="form-label">
+                                        <i class="bi bi-arrows-move me-2"></i>
+                                        行程
+                                    </label>
+                                    <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如: ~50, 100~120, 1020~">
+                                </div>
+                                
+                                <!-- 加压力 -->
+                                <div class="col-md-4">
+                                    <label for="clamping_force" class="form-label">
+                                        <i class="bi bi-lightning me-2"></i>
+                                        加压力
+                                    </label>
+                                    <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~50, 100~120, 1020~">
+                                </div>
+                                
+                                <!-- 重量 -->
+                                <div class="col-md-4">
+                                    <label for="weight" class="form-label">
+                                        <i class="bi bi-box me-2"></i>
+                                        重量
+                                    </label>
+                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="例如: ~50, 100~120, 1020~">
+                                </div>
+                                
+                                <!-- 电极臂端部 -->
+                                <div class="col-md-4">
+                                    <label for="electrode_arm_end" class="form-label">
+                                        <i class="bi bi-tools me-2"></i>
+                                        电极臂端部
+                                    </label>
+                                    <select class="form-select" id="electrode_arm_end" name="electrode_arm_end">
+                                        <option value="">请选择</option>
+                                        <option value="握杆（铝）">握杆（铝）</option>
+                                        <option value="TIP BASE（F 型）">TIP BASE（F 型）</option>
+                                        <option value="握杆（SBA）">握杆（SBA）</option>
+                                        <option value="TIP BASE（G 型）">TIP BASE（G 型）</option>
+                                        <option value="GUN HEAD（?36）">GUN HEAD（?36）</option>
+                                        <option value="GUN HEAD（?45）">GUN HEAD（?45）</option>
+                                        <option value="GUN HEAD（?40）">GUN HEAD（?40）</option>
+                                        <option value="GUN HEAD（?50）">GUN HEAD（?50）</option>
+                                        <option value="GUN HEAD（?60）">GUN HEAD（?60）</option>
+                                        <option value="握杆?45（铝）">握杆?45（铝）</option>
+                                        <option value="握杆?50（铝）">握杆?50（铝）</option>
+                                        <option value="特殊">特殊</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- 有无平衡 -->
+                                <div class="col-md-4">
+                                    <label for="has_balance" class="form-label">
+                                        <i class="bi bi-balance me-2"></i>
+                                        有无平衡
+                                    </label>
+                                    <select class="form-select" id="has_balance" name="has_balance">
+                                        <option value="">请选择</option>
+                                        <option value="有">有</option>
+                                        <option value="无">无</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- 变压器放置方向 -->
+                                <div class="col-md-4">
+                                    <label for="transformer_placement" class="form-label">
+                                        <i class="bi bi-compass me-2"></i>
+                                        变压器放置方向
+                                    </label>
+                                    <select class="form-select" id="transformer_placement" name="transformer_placement">
+                                        <option value="">请选择</option>
+                                        <option value="水平">水平</option>
+                                        <option value="竖直">竖直</option>
+                                        <option value="下置">下置</option>
+                                        <option value="上置">上置</option>
+                                        <option value="右置">右置</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- 法兰P.C.D -->
+                                <div class="col-md-4">
+                                    <label for="flange_pcd" class="form-label">
+                                        <i class="bi bi-circle me-2"></i>
+                                        法兰P.C.D
+                                    </label>
+                                    <select class="form-select" id="flange_pcd" name="flange_pcd">
+                                        <option value="">请选择</option>
+                                        <option value="125">125</option>
+                                        <option value="125-160">125-160</option>
+                                        <option value="160">160</option>
+                                        <option value="200">200</option>
+                                        <option value="92">92</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- 托架方向 -->
+                                <div class="col-md-4">
+                                    <label for="bracket_direction" class="form-label">
+                                        <i class="bi bi-arrow-up-right me-2"></i>
+                                        托架方向
+                                    </label>
+                                    <select class="form-select" id="bracket_direction" name="bracket_direction">
+                                        <option value="">请选择</option>
+                                        <option value="右">右</option>
+                                        <option value="上">上</option>
+                                        <option value="前">前</option>
+                                        <option value="下">下</option>
+                                        <option value="后">后</option>
+                                        <option value="三维">三维</option>
+                                        <option value="左">左</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- 水路 -->
+                                <div class="col-md-4">
+                                    <label for="water_circuit" class="form-label">
+                                        <i class="bi bi-droplet me-2"></i>
+                                        水路
+                                    </label>
+                                    <select class="form-select" id="water_circuit" name="water_circuit">
+                                        <option value="">请选择</option>
+                                        <option value="1进1出">1进1出</option>
+                                        <option value="2进2出">2进2出</option>
+                                        <option value="3进3出">3进3出</option>
+                                        <option value="1进2出">1进2出</option>
+                                        <option value="2进3出">2进3出</option>
+                                        <option value="1进3出">1进3出</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索按钮 -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-search me-2"></i>
+                        开始搜索
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        重置条件
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 搜索提示 -->
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">搜索提示</h5>
+                        <p class="card-text text-muted">
+                            所有搜索条件都是可选的，留空表示不限制该条件。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">精确匹配</h5>
+                        <p class="card-text text-muted">
+                            数字字段支持精确匹配，文本字段支持模糊搜索。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">文件下载</h5>
+                        <p class="card-text text-muted">
+                            搜索结果中可直接下载DWG、STEP和BMP文件。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 分类对应的子分类类型映射
+        const categorySubTypes = {
+            'X2C-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
+            'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
+            'X2C-V3-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
+            'X2C-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y'],
+            'X2C-V2-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y'],
+            'X2C-V3-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y']
+        };
+        
+        // 表单重置功能
+        document.querySelector('button[type="reset"]').addEventListener('click', function() {
+            document.getElementById('searchForm').reset();
+            // 重置所有select元素
+            document.querySelectorAll('select').forEach(select => {
+                select.selectedIndex = 0;
+            });
+            // 清空子分类类型
+            updateSubCategoryOptions('');
+        });
+        
+        // 分类选择变化时的处理
+        document.getElementById('category').addEventListener('change', function() {
+            const categorySelect = this;
+            const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
+            updateSubCategoryOptions(selectedText);
+        });
+        
+        // 更新子分类类型选项
+        function updateSubCategoryOptions(categoryName) {
+            const subCategorySelect = document.getElementById('sub_category_type');
+            
+            // 清空现有选项
+            subCategorySelect.innerHTML = '<option value="">请选择</option>';
+            
+            if (categoryName && categorySubTypes[categoryName]) {
+                categorySubTypes[categoryName].forEach(subType => {
+                    const option = document.createElement('option');
+                    option.value = subType;
+                    option.textContent = subType;
+                    subCategorySelect.appendChild(option);
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}
+

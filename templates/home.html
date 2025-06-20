@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block title %}首页 - 小原焊钳选型数据库{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- 欢迎横幅 -->
+        <div class="text-center mb-5 fade-in-up">
+            <div class="card border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="card-body py-5">
+                    <h1 class="display-4 fw-bold mb-3 pulse">
+                        <i class="fas fa-industry me-3"></i>
+                        小原焊钳选型数据库
+                    </h1>
+                    <p class="lead mb-4">
+                        以客户为中心 关怀员工 鼓励创新 纳新去旧
+                    </p>
+                    <p class="mb-4">
+                        <small>Be customer-oriented care employees encourage innovations take in the fresh</small>
+                    </p>
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'clamps:login' %}" class="btn btn-light btn-lg px-5 py-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            立即登录
+                        </a>
+                    {% else %}
+                        <a href="{% url 'clamps:search' %}" class="btn btn-light btn-lg px-5 py-3">
+                            <i class="bi bi-search me-2"></i>
+                            开始选型
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_authenticated %}
+            <!-- 功能卡片 -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100 fade-in-up">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-search text-primary" style="font-size: 3rem;"></i>
+                            </div>
+                            <h4 class="card-title">产品搜索</h4>
+                            <p class="card-text text-muted">
+                                通过多种参数快速查找符合要求的焊钳产品，支持精确匹配和模糊搜索。
+                            </p>
+                            <a href="{% url 'clamps:search' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-right me-2"></i>开始搜索
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if user.is_staff %}
+                    <div class="col-md-6">
+                        <div class="card h-100 fade-in-up">
+                            <div class="card-body text-center p-4">
+                                <div class="mb-3">
+                                    <i class="bi bi-gear text-success" style="font-size: 3rem;"></i>
+                                </div>
+                                <h4 class="card-title">管理后台</h4>
+                                <p class="card-text text-muted">
+                                    管理用户账户、查看操作日志、导出数据等管理员专用功能。
+                                </p>
+                                <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-success">
+                                    <i class="bi bi-arrow-right me-2"></i>进入管理
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-md-6">
+                        <div class="card h-100 fade-in-up">
+                            <div class="card-body text-center p-4">
+                                <div class="mb-3">
+                                    <i class="bi bi-download text-info" style="font-size: 3rem;"></i>
+                                </div>
+                                <h4 class="card-title">文件下载</h4>
+                                <p class="card-text text-muted">
+                                    下载产品的DWG图纸、STEP模型和BMP预览图等技术文档。
+                                </p>
+                                <a href="{% url 'clamps:search' %}" class="btn btn-info">
+                                    <i class="bi bi-arrow-right me-2"></i>查看产品
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- 产品分类介绍 -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <h2 class="text-center mb-4">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    产品分类
+                </h2>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 fade-in-up">
+                    <div class="card-header text-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-tools me-2"></i>
+                            C型焊钳
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                X2C-C
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                X2C-V2-C
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                X2C-V3-C
+                            </li>
+                        </ul>
+                        <p class="text-muted small">
+                            适用于标准焊接应用，具有良好的可达性和稳定性。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 fade-in-up">
+                    <div class="card-header text-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-tools me-2"></i>
+                            X型焊钳
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                X2C-X
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                X2C-V2-X
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                X2C-V3-X
+                            </li>
+                        </ul>
+                        <p class="text-muted small">
+                            适用于复杂几何形状的焊接，提供更大的灵活性。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 fade-in-up">
+                    <div class="card-header text-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>
+                            技术特点
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-lightning text-warning me-2"></i>
+                                高精度控制
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-shield-check text-primary me-2"></i>
+                                可靠性保证
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-speedometer2 text-info me-2"></i>
+                                高效生产
+                            </li>
+                        </ul>
+                        <p class="text-muted small">
+                            采用先进的控制技术，确保焊接质量和生产效率。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 联系信息 -->
+        <div class="card fade-in-up">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-telephone me-2"></i>
+                    联系我们
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>
+                            <i class="bi bi-building me-2"></i>
+                            小原（南京）机电有限公司
+                        </h5>
+                        <p class="mb-2">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            <strong>地址：</strong>
+                            <a href="https://j.map.baidu.com/73/Y8F" target="_blank" class="text-decoration-none">
+                                中国·南京市江宁经济技术开发区仁杰路28号
+                            </a>
+                        </p>
+                        <p class="mb-2">
+                            <i class="bi bi-telephone me-2"></i>
+                            <strong>营业直线：</strong>(025)52106195
+                        </p>
+                        <p class="mb-2">
+                            <i class="bi bi-envelope me-2"></i>
+                            <strong>IT部门邮箱：</strong>
+                            <a href="mailto:sunxxx@obara.com.cn" class="text-decoration-none">sunxxx@obara.com.cn</a>
+                        </p>
+                        <p class="mb-0">
+                            <i class="bi bi-globe me-2"></i>
+                            <strong>访问小原（中国）官网：</strong>
+                            <a href="https://www.obara.com.cn" target="_blank" class="text-decoration-none">
+                                www.obara.com.cn
+                            </a>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>
+                            <i class="bi bi-info-circle me-2"></i>
+                            如何获得用户名
+                        </h5>
+                        <p class="text-muted">
+                            小原焊钳选型数据库用户名及密码由小原（南京）机电有限公司技术开发部门统一分发，
+                            焊钳参数及图纸模型数据为我公司技术机密，除用作产品选型作用外禁作它用。
+                        </p>
+                        <p class="text-muted small">
+                            The Username and Password of OBARA Welding Gun Selection Database are uniformly 
+                            distributed by the Technical Development Department of OBARA (Nanjing) Mechanical 
+                            and Electrical Co., Ltd.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

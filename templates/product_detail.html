@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.drawing_no_1|default:"产品详情" }} - 小原焊钳选型数据库{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- 产品详情头部 -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
+            <div>
+                <h1 class="display-6 fw-bold">
+                    <i class="bi bi-gear me-2"></i>
+                    {{ product.drawing_no_1|default:"未知产品" }}
+                </h1>
+                <p class="lead text-muted">{{ product.description|default:"暂无描述" }}</p>
+            </div>
+            <div>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    返回
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- 产品图片 -->
+            <div class="col-lg-4">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-image me-2"></i>
+                            产品图片
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        {% if product.bmp_file_path %}
+                            <img src="/media/{{ product.bmp_file_path }}" 
+                                 class="img-fluid rounded shadow" 
+                                 onclick="previewImage('/media/{{ product.bmp_file_path }}', '{{ product.drawing_no_1 }}')"
+                                 style="cursor: pointer; max-height: 300px;"
+                                 alt="产品图片"
+                                 onerror="this.src='/static/images/no-image.png'">
+                            <p class="text-muted mt-2 small">点击图片放大查看</p>
+                        {% else %}
+                            <div class="py-5">
+                                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                                <p class="text-muted mt-3">暂无产品图片</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 文件下载 -->
+                <div class="card mt-4 fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-download me-2"></i>
+                            文件下载
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            {% if product.dwg_file_path %}
+                                <a href="{% url 'clamps:download_file' product.id 'dwg' %}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                                    下载 DWG 文件
+                                </a>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-file-earmark-x me-2"></i>
+                                    DWG 文件不可用
+                                </button>
+                            {% endif %}
+                            
+                            {% if product.step_file_path %}
+                                <a href="{% url 'clamps:download_file' product.id 'step' %}" 
+                                   class="btn btn-outline-success">
+                                    <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                                    下载 STEP 文件
+                                </a>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-file-earmark-x me-2"></i>
+                                    STEP 文件不可用
+                                </button>
+                            {% endif %}
+                            
+                            {% if product.bmp_file_path %}
+                                <a href="{% url 'clamps:download_file' product.id 'bmp' %}" 
+                                   class="btn btn-outline-info">
+                                    <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                                    下载 BMP 文件
+                                </a>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-file-earmark-x me-2"></i>
+                                    BMP 文件不可用
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 产品参数 -->
+            <div class="col-lg-8">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul me-2"></i>
+                            产品参数
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- 基本信息 -->
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    基本信息
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>分类：</strong>
+                                <span class="badge bg-primary">{{ product.category.name }}</span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>子分类类型：</strong>
+                                {{ product.sub_category_type|default:"--" }}
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <strong>描述：</strong>
+                                {{ product.description|default:"--" }}
+                            </div>
+                            
+                            <!-- 技术参数 -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-gear-wide-connected me-2"></i>
+                                    技术参数
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>行程：</strong>
+                                {% if product.stroke %}{{ product.stroke }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>加压力：</strong>
+                                {% if product.clamping_force %}{{ product.clamping_force }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>重量：</strong>
+                                {% if product.weight %}{{ product.weight }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong class="highlight-field">喉深：</strong>
+                                {% if product.throat_depth %}{{ product.throat_depth }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong class="highlight-field">喉宽：</strong>
+                                {% if product.throat_width %}{{ product.throat_width }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong class="highlight-field">变压器：</strong>
+                                {{ product.transformer|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>电极臂端部：</strong>
+                                {{ product.electrode_arm_end|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>电极臂类型：</strong>
+                                {{ product.electrode_arm_type|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>变压器放置方向：</strong>
+                                {{ product.transformer_placement|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>法兰P.C.D：</strong>
+                                {{ product.flange_pcd|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>有无平衡：</strong>
+                                {{ product.has_balance|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>水路：</strong>
+                                {{ product.water_circuit|default:"--" }}
+                            </div>
+                            
+                            <!-- 托架和齿轮箱参数 -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-tools me-2"></i>
+                                    托架和齿轮箱
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>托架方向：</strong>
+                                {{ product.bracket_direction|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>托架角度：</strong>
+                                {% if product.bracket_angle %}{{ product.bracket_angle }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>MOTOR厂家：</strong>
+                                {{ product.motor_manufacturer|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>托架个数：</strong>
+                                {% if product.bracket_count %}{{ product.bracket_count }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>齿轮箱型式：</strong>
+                                {{ product.gearbox_type|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>托架材料：</strong>
+                                {{ product.bracket_material|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>齿轮箱行程：</strong>
+                                {{ product.gearbox_stroke|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>换枪装置：</strong>
+                                {{ product.tool_changer|default:"--" }}
+                            </div>
+                            
+                            <!-- X型分类专用参数 -->
+                            {% if product.static_arm_eccentricity or product.moving_arm_eccentricity %}
+                                <div class="col-12 mt-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="bi bi-arrows-angle-expand me-2"></i>
+                                        X型分类专用参数
+                                    </h6>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>静臂偏心：</strong>
+                                    {% if product.static_arm_eccentricity %}{{ product.static_arm_eccentricity }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>动臂偏心：</strong>
+                                    {% if product.moving_arm_eccentricity %}{{ product.moving_arm_eccentricity }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>静电极臂端部：</strong>
+                                    {{ product.static_electrode_arm_end|default:"--" }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>动电极臂端部：</strong>
+                                    {{ product.moving_electrode_arm_end|default:"--" }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>支轴到驱动中心距离：</strong>
+                                    {% if product.pivot_to_drive_center_dist %}{{ product.pivot_to_drive_center_dist }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>静电极臂前部长：</strong>
+                                    {% if product.static_arm_front_length %}{{ product.static_arm_front_length }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>静电极臂前部高：</strong>
+                                    {% if product.static_arm_front_height %}{{ product.static_arm_front_height }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>动电极臂前部长：</strong>
+                                    {% if product.moving_arm_front_length %}{{ product.moving_arm_front_length }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>动电极臂前部高：</strong>
+                                    {% if product.moving_arm_front_height %}{{ product.moving_arm_front_height }}{% else %}--{% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 其他参数 -->
+                            {% if product.eccentricity or product.grip_extension_length %}
+                                <div class="col-12 mt-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="bi bi-plus-circle me-2"></i>
+                                        其他参数
+                                    </h6>
+                                </div>
+                                
+                                {% if product.eccentricity %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>偏心距离：</strong>
+                                        {{ product.eccentricity }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if product.eccentricity_direction %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>偏心方向：</strong>
+                                        {{ product.eccentricity_direction }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if product.eccentricity_to_center %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>偏心是否回到中心面：</strong>
+                                        {{ product.eccentricity_to_center }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if product.guidance_method %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>导向方式：</strong>
+                                        {{ product.guidance_method }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if product.grip_extension_length %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>握杆伸出长度：</strong>
+                                        {{ product.grip_extension_length }}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 创建和更新时间 -->
+                <div class="card mt-4 fade-in-up">
+                    <div class="card-body">
+                        <div class="row text-muted small">
+                            <div class="col-md-6">
+                                <i class="bi bi-calendar-plus me-2"></i>
+                                创建时间：{{ product.created_at|date:"Y-m-d H:i:s" }}
+                            </div>
+                            <div class="col-md-6">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                更新时间：{{ product.updated_at|date:"Y-m-d H:i:s" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 下载文件时显示提示
+    document.querySelectorAll('a[href*="download"]').forEach(link => {
+        link.addEventListener('click', function() {
+            const fileName = this.textContent.trim();
+            showToast(`正在 ${fileName}...`, 'info');
+        });
+    });
+    
+    function showToast(message, type = 'info') {
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toast = new bootstrap.Toast(toastContainer.lastElementChild);
+        toast.show();
+    }
+</script>
+{% endblock %}
+

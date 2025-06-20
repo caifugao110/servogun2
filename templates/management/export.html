@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}数据导出 - 小原焊钳选型数据库{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
+            <h1 class="display-6 fw-bold">
+                <i class="bi bi-download me-2"></i>
+                数据导出
+            </h1>
+            <div>
+                <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    返回仪表板
+                </a>
+            </div>
+        </div>
+        
+        <!-- 导出选项 -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>
+                            产品数据导出
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            导出所有产品的完整信息，包括技术参数、文件路径等数据。
+                        </p>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                包含所有产品字段
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                CSV格式，支持Excel打开
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                UTF-8编码，支持中文
+                            </li>
+                        </ul>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="data_type" value="products">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-download me-2"></i>
+                                导出产品数据
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100 fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2"></i>
+                            操作日志导出
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            导出系统操作日志，包括用户登录、搜索、下载等操作记录。
+                        </p>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                包含用户操作记录
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                支持时间范围筛选
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                便于审计和分析
+                            </li>
+                        </ul>
+                        <a href="{% url 'clamps:view_logs' %}" 
+                           class="btn btn-success">
+                            <i class="bi bi-funnel me-2"></i>
+                            筛选后导出
+                        </a>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="data_type" value="logs">
+                            <button type="submit" class="btn btn-outline-success ms-2">
+                                <i class="bi bi-download me-2"></i>
+                                导出全部日志
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 导出说明 -->
+        <div class="card mt-4 fade-in-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    导出说明
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>文件格式</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>
+                                <strong>CSV格式：</strong>逗号分隔值文件，可用Excel打开
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-translate text-info me-2"></i>
+                                <strong>UTF-8编码：</strong>支持中文字符正确显示
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-calendar text-warning me-2"></i>
+                                <strong>文件命名：</strong>包含导出时间戳，避免重复
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>使用建议</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-shield-check text-primary me-2"></i>
+                                <strong>数据安全：</strong>导出的数据包含敏感信息，请妥善保管
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-clock text-secondary me-2"></i>
+                                <strong>定期备份：</strong>建议定期导出数据作为备份
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-funnel text-info me-2"></i>
+                                <strong>筛选导出：</strong>日志可先筛选再导出，减少文件大小
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 最近导出记录 -->
+        <div class="card mt-4 fade-in-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>
+                    导出操作记录
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    <i class="bi bi-info-circle me-2"></i>
+                    导出操作会记录在系统日志中，可在日志管理页面查看详细记录。
+                </p>
+                <a href="{% url 'clamps:view_logs' %}?action_type=export_data" 
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-eye me-2"></i>
+                    查看导出日志
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 导出按钮点击事件
+    document.querySelectorAll('a[href*="export"]').forEach(link => {
+        link.addEventListener('click', function() {
+            const exportType = this.textContent.includes('产品') ? '产品数据' : '操作日志';
+            showToast(`正在导出${exportType}，请稍候...`, 'info');
+        });
+    });
+    
+    function showToast(message, type = 'info') {
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toast = new bootstrap.Toast(toastContainer.lastElementChild);
+        toast.show();
+    }
+</script>
+{% endblock %}
+
