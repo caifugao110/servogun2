@@ -12,7 +12,7 @@
                     <i class="bi bi-gear me-2"></i>
                     {{ product.drawing_no_1|default:"未知产品" }}
                 </h1>
-                <p class="lead text-muted">{{ product.description|default:"暂无描述" }}</p>
+                <p class="lead text-muted"><!-- {{ product.description|default:"暂无描述" }}-->暂无描述</p>
             </div>
             <div>
                 <a href="javascript:history.back()" class="btn btn-outline-secondary">
@@ -55,14 +55,14 @@
                     <div class="card-header">
                         <h5 class="mb-0">
                             <i class="bi bi-download me-2"></i>
-                            文件下载
+                            文件下载（若无预览图片请勿下载）
                         </h5>
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             {% if product.dwg_file_path %}
                                 <a href="{% url 'clamps:download_file' product.id 'dwg' %}" 
-                                   class="btn btn-outline-primary">
+                                   class="btn btn-outline-primary download-btn">
                                     <i class="bi bi-file-earmark-arrow-down me-2"></i>
                                     下载 DWG 文件
                                 </a>
@@ -75,7 +75,7 @@
                             
                             {% if product.step_file_path %}
                                 <a href="{% url 'clamps:download_file' product.id 'step' %}" 
-                                   class="btn btn-outline-success">
+                                   class="btn btn-outline-success download-btn">
                                     <i class="bi bi-file-earmark-arrow-down me-2"></i>
                                     下载 STEP 文件
                                 </a>
@@ -88,7 +88,7 @@
                             
                             {% if product.bmp_file_path %}
                                 <a href="{% url 'clamps:download_file' product.id 'bmp' %}" 
-                                   class="btn btn-outline-info">
+                                   class="btn btn-outline-info download-btn">
                                     <i class="bi bi-file-earmark-arrow-down me-2"></i>
                                     下载 BMP 文件
                                 </a>
@@ -109,7 +109,7 @@
                     <div class="card-header">
                         <h5 class="mb-0">
                             <i class="bi bi-list-ul me-2"></i>
-                            产品参数
+                            产品参数（由人工数据库手动导出，无法保证参数完全正确，仅供参考）
                         </h5>
                     </div>
                     <div class="card-body">
@@ -134,7 +134,8 @@
                             
                             <div class="col-12 mb-3">
                                 <strong>描述：</strong>
-                                {{ product.description|default:"--" }}
+								<!-- {{ product.description|default:"--" }} -->
+                                暂无描述
                             </div>
                             
                             <!-- 技术参数 -->
@@ -380,12 +381,87 @@
 {% block extra_js %}
 <script>
     // 下载文件时显示提示
-    document.querySelectorAll('a[href*="download"]').forEach(link => {
-        link.addEventListener('click', function() {
+    document.querySelectorAll('.download-btn').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
             const fileName = this.textContent.trim();
-            showToast(`正在 ${fileName}...`, 'info');
+            const downloadUrl = this.href;
+            
+            // 显示提示
+            showDownloadWarning(() => {
+                // 3秒后开始下载
+                setTimeout(() => {
+                    window.location.href = downloadUrl;
+                }, 3000);
+            });
         });
     });
+    
+    function showDownloadWarning(callback) {
+        const warningHtml = `
+            <div class="modal fade" id="downloadWarningModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">下载提示</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                图纸模型数据由于各种原因发生变更后不另行通知，选型数据库无法保证图纸模型数据完全正确，该数据不作为任何参考依据。
+                            </div>
+                            <div class="text-center">
+                                <div class="spinner-border text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span id="countdown">3</span> 秒后自动开始下载...<br>数据较多时服务器压缩需要时间，请耐心等待
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="directDownloadBtn">如窗口没有自动跳转点此直接下载</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 移除已存在的模态框
+        const existingModal = document.getElementById('downloadWarningModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', warningHtml);
+        const modal = new bootstrap.Modal(document.getElementById('downloadWarningModal'));
+        
+        let countdown = 3;
+        const countdownElement = document.getElementById('countdown');
+        const directDownloadBtn = document.getElementById('directDownloadBtn');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(timer);
+                modal.hide();
+                callback();
+            }
+        }, 1000);
+        
+        directDownloadBtn.addEventListener('click', () => {
+            clearInterval(timer);
+            modal.hide();
+            callback();
+        });
+        
+        modal.show();
+        
+        // 模态框关闭时清理定时器
+        document.getElementById('downloadWarningModal').addEventListener('hidden.bs.modal', () => {
+            clearInterval(timer);
+            document.getElementById('downloadWarningModal').remove();
+        });
+    }
     
     function showToast(message, type = 'info') {
         const toastHtml = `

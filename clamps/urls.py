@@ -14,8 +14,14 @@ urlpatterns = [
     path('search/results/', views.search_results, name='search_results'),
     re_path(r'^product/(?P<product_id>\d+)/$', views.product_detail, name='product_detail'),
     re_path(r'^download/(?P<product_id>\d+)/(?P<file_type>\w+)/$', views.download_file, name='download_file'),
-    re_path(r'^batch_download/(?P<file_type>\w+)/$', views.batch_download, name='batch_download'),
     
+    # 批量下载功能
+    path('batch_download/<str:file_type>/', views.batch_download_view, name='batch_download'),
+    
+    # 文件大小检查API端点
+    re_path(r'^check_file_size/(?P<product_id>\d+)/(?P<file_type>\w+)/$', views.check_file_size, name='check_file_size'),
+    path('check_batch_file_size/', views.check_batch_file_size, name='check_batch_file_size'),
+
     # 管理功能
     path('management/', views.management_dashboard, name='management_dashboard'),
     path('management/users/', views.manage_users, name='manage_users'),

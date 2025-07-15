@@ -27,7 +27,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form method="get" class="row g-3">
+                <form method="get" action="{% url 'clamps:view_logs' %}" class="row g-3">
                     <div class="col-md-3">
                         <label for="action_type" class="form-label">操作类型</label>
                         <select class="form-select" id="action_type" name="action_type">
@@ -36,6 +36,7 @@
                             <option value="search" {% if request.GET.action_type == 'search' %}selected{% endif %}>搜索</option>
                             <option value="download" {% if request.GET.action_type == 'download' %}selected{% endif %}>下载</option>
                             <option value="view" {% if request.GET.action_type == 'view' %}selected{% endif %}>查看</option>
+                            <option value="export_data" {% if request.GET.action_type == 'export_data' %}selected{% endif %}>导出数据</option>
                         </select>
                     </div>
                     
@@ -79,10 +80,27 @@
                     操作日志 (共 {{ total_count }} 条)
                 </h5>
                 <div>
-                    <a href="{% url 'clamps:export_data' %}?data_type=logs&{{ request.GET.urlencode }}" class="btn btn-outline-success btn-sm">
-                        <i class="bi bi-download me-2"></i>
-                        导出日志
-                    </a>
+                    <form method="post" action="{% url 'clamps:export_data' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="export_type" value="logs">
+                        <!-- 保持当前筛选条件 -->
+                        {% if request.GET.action_type %}
+                            <input type="hidden" name="action_type" value="{{ request.GET.action_type }}">
+                        {% endif %}
+                        {% if request.GET.username %}
+                            <input type="hidden" name="username" value="{{ request.GET.username }}">
+                        {% endif %}
+                        {% if request.GET.date_from %}
+                            <input type="hidden" name="date_from" value="{{ request.GET.date_from }}">
+                        {% endif %}
+                        {% if request.GET.date_to %}
+                            <input type="hidden" name="date_to" value="{{ request.GET.date_to }}">
+                        {% endif %}
+                        <button type="submit" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-download me-2"></i>
+                            导出日志
+                        </button>
+                    </form>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -133,6 +151,11 @@
                                                     <i class="bi bi-eye me-1"></i>
                                                     查看
                                                 </span>
+                                            {% elif log.action_type == 'export_data' %}
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-file-earmark-arrow-down me-1"></i>
+                                                    导出
+                                                </span>
                                             {% else %}
                                                 <span class="badge bg-secondary">{{ log.action_type }}</span>
                                             {% endif %}
@@ -141,7 +164,7 @@
                                             <small class="text-muted">
                                                 {{ log.details|truncatechars:80 }}
                                                 {% if log.details|length > 80 %}
-                                                    <a href="#" onclick="showFullDetails('{{ log.id }}')" class="text-primary">
+                                                    <a href="#" onclick="showFullDetails('{{ log.id }}', '{{ log.details|escapejs }}')" class="text-primary">
                                                         查看全部
                                                     </a>
                                                 {% endif %}
@@ -284,10 +307,8 @@
 
 {% block extra_js %}
 <script>
-    function showFullDetails(logId) {
-        // 这里可以通过AJAX获取完整的日志详情
-        // 暂时显示提示信息
-        document.getElementById('detailsContent').innerHTML = '<p>日志ID: ' + logId + '</p><p>完整详情功能待实现</p>';
+    function showFullDetails(logId, details) {
+        document.getElementById('detailsContent').innerHTML = '<p><strong>日志ID:</strong> ' + logId + '</p><p><strong>详细信息:</strong></p><pre>' + details + '</pre>';
         const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
         modal.show();
     }
@@ -307,6 +328,35 @@
             dateFromInput.value = weekAgo.toISOString().split('T')[0];
         }
     });
+    
+    // 导出按钮点击事件
+    document.querySelector('form[action*="export_data"] button[type="submit"]').addEventListener('click', function(e) {
+        showToast('正在导出日志数据，请稍候...', 'info');
+    });
+    
+    function showToast(message, type = 'info') {
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toast = new bootstrap.Toast(toastContainer.lastElementChild);
+        toast.show();
+    }
 </script>
 {% endblock %}
 

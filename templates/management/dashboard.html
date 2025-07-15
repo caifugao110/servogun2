@@ -16,6 +16,7 @@
         </div>
         
         <!-- 统计卡片 -->
+        {% if request.user.is_superuser %}
         <div class="row g-4 mb-5">
             <div class="col-md-3">
                 <div class="card text-center h-100 fade-in-up">
@@ -57,6 +58,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
         
         <!-- 管理功能 -->
         <div class="row g-4 mb-5">
@@ -78,6 +80,7 @@
                 </div>
             </div>
             
+            {% if request.user.is_superuser %}
             <div class="col-md-6">
                 <div class="card h-100 fade-in-up">
                     <div class="card-header">
@@ -120,6 +123,9 @@
                         <h5 class="mb-0">
                             <i class="bi bi-upload me-2"></i>
                             CSV数据导入
+                            <a href="/static/pdf/csv文件导入前数据标准化流程.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
+                                <i class="bi bi-question-circle"></i>
+                            </a>
                         </h5>
                     </div>
                     <div class="card-body">
@@ -138,17 +144,24 @@
                         <h5 class="mb-0">
                             <i class="bi bi-arrow-repeat me-2"></i>
                             文件同步
+                            <a href="/static/pdf/获取media文件标准化流程.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
+                                <i class="bi bi-question-circle"></i>
+                            </a>
                         </h5>
                     </div>
                     <div class="card-body">
                         <p class="card-text">同步media文件夹中的dwg、step和bmp文件到数据库。</p>
-                        <a href="{% url 'clamps:sync_files' %}" class="btn btn-warning">
-                            <i class="bi bi-arrow-right me-2"></i>
-                            同步文件
-                        </a>
+                        <form action="{% url 'clamps:sync_files' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-arrow-right me-2"></i>
+                                同步文件
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <div class="col-md-6">
                 <div class="card h-100 fade-in-up">
@@ -170,6 +183,7 @@
         </div>
         
         <!-- 最近操作日志 -->
+        {% if request.user.is_superuser %}
         <div class="card fade-in-up">
             <div class="card-header">
                 <h5 class="mb-0">
@@ -238,8 +252,13 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
+
+
+
+
 
 

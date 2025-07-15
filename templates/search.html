@@ -21,10 +21,13 @@
                     <div class="col-md-6">
                         <label for="category" class="form-label">
                             <i class="bi bi-diagram-3 me-2"></i>
-                            产品分类 <span class="text-danger">*</span>
+                            产品分类（不清楚分类可点击旁边的问号） <span class="text-danger">*</span>
+                            <a href="/static/pdf/产品搜索使用指南.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
+                                <i class="bi bi-question-circle"></i>
+                            </a>
                         </label>
                         <select class="form-select" id="category" name="category" required>
-                            <option value="">请选择分类</option>
+                            <option value="">下拉选择，推荐前两项X2C-C和X2C-X</option>
                             {% for category in categories %}
                                 <option value="{{ category.id }}">{{ category.name }}</option>
                             {% endfor %}
@@ -38,7 +41,7 @@
                             子分类类型
                         </label>
                         <select class="form-select" id="sub_category_type" name="sub_category_type">
-                            <option value="">请选择</option>
+                            <option value="">请选择，默认为空</option>
                             <!-- 动态加载选项 -->
                         </select>
                     </div>
@@ -49,7 +52,7 @@
                             <i class="bi bi-rulers me-2"></i>
                             喉深
                         </label>
-                        <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如: ~50, 100~120, 1020~">
+                        <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="与电极加压方向垂直的外轮廓值，例如: ~350, 350~600, 600~">
                     </div>
                     
                     <!-- 喉宽 -->
@@ -58,7 +61,7 @@
                             <i class="bi bi-arrows-expand me-2"></i>
                             喉宽
                         </label>
-                        <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如: ~50, 100~120, 1020~">
+                        <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="与电极加压方向平行的外轮廓值，例如: ~350, 350~600, 600~">
                     </div>
                     
                     <!-- 变压器 -->
@@ -68,20 +71,22 @@
                             变压器
                         </label>
                         <select class="form-select" id="transformer" name="transformer">
-                            <option value="">请选择</option>
-                            <option value="ITS85">ITS85</option>
-                            <option value="DB6-100R1">DB6-100R1</option>
+                            <option value="">请选择，默认为空</option>
+                            <option value="ITS85">ITS85（推荐）</option>
+                            <option value="DB6-100R1">DB6-100R1（推荐）</option>
                             <option value="RT552">RT552</option>
                             <option value="RT752">RT752</option>
-                            <option value="BOSCH">BOSCH</option>
-                            <option value="商科">商科</option>
                             <option value="RT906">RT906</option>
-                            <option value="RT706">RT706</option>
+                            <option value="DB6-90-510">DB6-90-510</option>
+                            <!--
+							<option value="BOSCH">BOSCH</option>
+                            <option value="商科">商科</option>
+							<option value="RT706">RT706</option>
                             <option value="NI110">NI110</option>
                             <option value="RT452">RT452</option>
-                            <option value="DB6-90-510">DB6-90-510</option>
-                            <option value="DB6">DB6</option>
+							<option value="DB6">DB6</option>
                             <option value="DB6-90">DB6-90</option>
+							-->
                             <option value="SMF-100">SMF-100</option>
                             <option value="MF-100">MF-100</option>
                             <option value="其他">其他</option>
@@ -95,7 +100,7 @@
                             MOTOR厂家
                         </label>
                         <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
-                            <option value="">请选择</option>
+                            <option value="">请选择，默认为空</option>
                             <option value="FANUC">FANUC</option>
                             <option value="KUKA">KUKA</option>
                             <option value="YASKAWA">YASKAWA</option>
@@ -129,7 +134,7 @@
                                         <i class="bi bi-file-earmark-text me-2"></i>
                                         图号1(o)
                                     </label>
-                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="图号">
+                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="焊钳图号，默认为空">
                                 </div>
                                 
                                 <!-- 描述 -->
@@ -138,7 +143,7 @@
                                         <i class="bi bi-card-text me-2"></i>
                                         描述
                                     </label>
-                                    <input type="text" class="form-control" id="description" name="description" placeholder="产品描述">
+                                    <input type="text" class="form-control" id="description" name="description" placeholder="客户描述，默认为空">
                                 </div>
                                 
                                 <!-- 行程 -->
@@ -147,7 +152,7 @@
                                         <i class="bi bi-arrows-move me-2"></i>
                                         行程
                                     </label>
-                                    <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如: ~50, 100~120, 1020~">
+                                    <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如: ~90, 100~190, 210~">
                                 </div>
                                 
                                 <!-- 加压力 -->
@@ -156,7 +161,7 @@
                                         <i class="bi bi-lightning me-2"></i>
                                         加压力
                                     </label>
-                                    <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~50, 100~120, 1020~">
+                                    <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~3500, 3500~5500, 5500~">
                                 </div>
                                 
                                 <!-- 重量 -->
@@ -165,7 +170,7 @@
                                         <i class="bi bi-box me-2"></i>
                                         重量
                                     </label>
-                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="例如: ~50, 100~120, 1020~">
+                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="例如: ~90, 90~120, 120~">
                                 </div>
                                 
                                 <!-- 电极臂端部 -->
@@ -175,7 +180,7 @@
                                         电极臂端部
                                     </label>
                                     <select class="form-select" id="electrode_arm_end" name="electrode_arm_end">
-                                        <option value="">请选择</option>
+                                        <option value="">请选择，默认为空</option>
                                         <option value="握杆（铝）">握杆（铝）</option>
                                         <option value="TIP BASE（F 型）">TIP BASE（F 型）</option>
                                         <option value="握杆（SBA）">握杆（SBA）</option>
@@ -195,11 +200,11 @@
                                 <!-- 有无平衡 -->
                                 <div class="col-md-4">
                                     <label for="has_balance" class="form-label">
-                                        <i class="bi bi-balance me-2"></i>
+                                        <i class="bi bi-water me-2"></i>
                                         有无平衡
                                     </label>
                                     <select class="form-select" id="has_balance" name="has_balance">
-                                        <option value="">请选择</option>
+                                        <option value="">请选择，默认为空</option>
                                         <option value="有">有</option>
                                         <option value="无">无</option>
                                     </select>
@@ -212,7 +217,7 @@
                                         变压器放置方向
                                     </label>
                                     <select class="form-select" id="transformer_placement" name="transformer_placement">
-                                        <option value="">请选择</option>
+                                        <option value="">请选择，默认为空</option>
                                         <option value="水平">水平</option>
                                         <option value="竖直">竖直</option>
                                         <option value="下置">下置</option>
@@ -229,7 +234,7 @@
                                         法兰P.C.D
                                     </label>
                                     <select class="form-select" id="flange_pcd" name="flange_pcd">
-                                        <option value="">请选择</option>
+                                        <option value="">请选择，默认为空</option>
                                         <option value="125">125</option>
                                         <option value="125-160">125-160</option>
                                         <option value="160">160</option>
@@ -246,7 +251,7 @@
                                         托架方向
                                     </label>
                                     <select class="form-select" id="bracket_direction" name="bracket_direction">
-                                        <option value="">请选择</option>
+                                        <option value="">请选择，默认为空</option>
                                         <option value="右">右</option>
                                         <option value="上">上</option>
                                         <option value="前">前</option>
@@ -264,7 +269,7 @@
                                         水路
                                     </label>
                                     <select class="form-select" id="water_circuit" name="water_circuit">
-                                        <option value="">请选择</option>
+                                        <option value="">请选择，默认为空</option>
                                         <option value="1进1出">1进1出</option>
                                         <option value="2进2出">2进2出</option>
                                         <option value="3进3出">3进3出</option>
@@ -369,7 +374,7 @@
             const subCategorySelect = document.getElementById('sub_category_type');
             
             // 清空现有选项
-            subCategorySelect.innerHTML = '<option value="">请选择</option>';
+            subCategorySelect.innerHTML = '<option value="">请选择，默认为空</option>';
             
             if (categoryName && categorySubTypes[categoryName]) {
                 categorySubTypes[categoryName].forEach(subType => {

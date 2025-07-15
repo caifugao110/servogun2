@@ -1,23 +1,31 @@
-from django.shortcuts import render, redirect
+import zipfile
+import io
+import os
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
+from datetime import datetime, timedelta
 from django.contrib import messages
+import secrets
+import string
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 import csv
 import chardet
-import io
-import os
-from django.conf import settings
+import tempfile
 
-from .models import Category, Product, Log
+from .models import Category, Product, Log, UserProfile
 
-def is_admin(user):
+def is_superuser(user):
     return user.is_superuser
+
+def is_staff_or_superuser(user):
+    return user.is_staff or user.is_superuser
 
 
 def home(request):
@@ -39,6 +47,11 @@ def user_login(request):
             return render(request, 'login.html', {'error': '无效的用户名或密码'})
     return render(request, 'login.html')
 
+
+def generate_random_password(length=12):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(secrets.choice(characters) for i in range(length))
+    return password
 
 @login_required
 def user_logout(request):
@@ -154,7 +167,7 @@ def search_results(request):
 
 @login_required
 def product_detail(request, product_id):
-    product = Product.objects.get(id=product_id)
+    product = get_object_or_404(Product, id=product_id)
     # 记录查看详情日志
     log_entry = Log(user=request.user, action_type='view_detail', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id}')
@@ -162,12 +175,71 @@ def product_detail(request, product_id):
     return render(request, 'product_detail.html', {'product': product})
 
 
+# 新增：检查文件大小的API端点
+@login_required
+def check_file_size(request, product_id, file_type):
+    """检查文件大小是否满足下载条件"""
+    try:
+        product = get_object_or_404(Product, id=product_id)
+        file_path = None
+        
+        if file_type == 'dwg':
+            file_path = product.dwg_file_path
+        elif file_type == 'step':
+            file_path = product.step_file_path
+        elif file_type == 'bmp':
+            file_path = product.bmp_file_path
+
+        if not file_path:
+            return JsonResponse({
+                'can_download': False,
+                'message': f'产品没有关联的 {file_type} 文件'
+            })
+
+        # 处理路径前缀，确保是相对于 MEDIA_ROOT 的路径
+        relative_path = str(file_path)
+        if relative_path.startswith('media/'):
+            relative_path = relative_path[len('media/'):]
+        elif relative_path.startswith('/media/'):
+            relative_path = relative_path[len('/media/'):]
+
+        full_file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+        
+        if not os.path.exists(full_file_path):
+            return JsonResponse({
+                'can_download': False,
+                'message': f'文件 {file_type} 不存在或已损坏'
+            })
+        
+        # 获取文件大小（MB）
+        file_size_bytes = os.path.getsize(full_file_path)
+        file_size_mb = file_size_bytes / (1024 * 1024)
+        
+        # 获取或创建用户配置
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        # 检查下载限制
+        can_download, message = user_profile.can_download_file(file_size_mb)
+        
+        return JsonResponse({
+            'can_download': can_download,
+            'message': message,
+            'file_size_mb': round(file_size_mb, 2)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'can_download': False,
+            'message': f'检查文件时发生错误: {str(e)}'
+        })
+
+
 @login_required
 def download_file(request, product_id, file_type):
-    product = Product.objects.get(id=product_id)
+    product = get_object_or_404(Product, id=product_id) # 使用 get_object_or_404 避免 Product.DoesNotExist 错误
     file_path = None
+    original_filename = None
     
-    # 修复：使用正确的文件路径字段
     if file_type == 'dwg':
         file_path = product.dwg_file_path
     elif file_type == 'step':
@@ -176,39 +248,322 @@ def download_file(request, product_id, file_type):
         file_path = product.bmp_file_path
 
     if file_path:
-        # 确保 file_path 是相对于 MEDIA_ROOT 的路径
-        if file_path.startswith('media/'):
-            file_path = file_path[len('media/'):]
-        elif file_path.startswith('/media/'):
-            file_path = file_path[len('/media/'):]
+        # 处理路径前缀，确保是相对于 MEDIA_ROOT 的路径
+        relative_path = str(file_path) # 确保是字符串
+        if relative_path.startswith('media/'):
+            relative_path = relative_path[len('media/'):]
+        elif relative_path.startswith('/media/'):
+            relative_path = relative_path[len('/media/'):]
 
-        full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+        full_file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
         
         if os.path.exists(full_file_path):
-            with open(full_file_path, 'rb') as fh:
-                response = HttpResponse(fh.read(), content_type="application/octet-stream")
-                response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
-                # 记录下载日志
-                log_entry = Log(user=request.user, action_type='download', ip_address=request.META.get('REMOTE_ADDR'),
-                                user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Downloaded {file_type} for Product ID: {product_id}')
-                log_entry.save()
-                return response
+            # 获取文件大小（MB）
+            file_size_bytes = os.path.getsize(full_file_path)
+            file_size_mb = file_size_bytes / (1024 * 1024)
+            
+            # 获取或创建用户配置
+            user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+            
+            # 检查下载限制
+            can_download, message = user_profile.can_download_file(file_size_mb)
+            if not can_download:
+                messages.error(request, f"下载失败：{message}")
+                # 修改：下载失败后返回来源页面，如果是从搜索结果页面来的则返回搜索结果页面
+                referer = request.META.get('HTTP_REFERER')
+                if referer and 'search_results' in referer:
+                    return redirect(referer)
+                else:
+                    return redirect('clamps:product_detail', product_id=product_id)
+            
+            # 获取原始文件名（不带路径）
+            original_filename = os.path.basename(file_path)
+            
+            # 对于bmp, dwg, step文件，进行压缩
+            if file_type in ['bmp', 'dwg', 'step']:
+                # 创建一个临时的内存文件来存储zip内容
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+                    # 获取不带后缀的文件名，并去除特定后缀
+                    base_name, ext = os.path.splitext(original_filename)
+                    if file_type == 'dwg' and base_name.endswith('_DWG'):
+                        base_name = base_name[:-4] # Remove _DWG
+                    elif file_type == 'step' and base_name.endswith('_STEP'):
+                        base_name = base_name[:-5] # Remove _STEP
+                    
+                    # 构建新的文件名
+                    new_filename_in_zip = f"{base_name}{ext}"
+
+                    # 将原始文件添加到zip中，使用新的文件名
+                    zf.write(full_file_path, new_filename_in_zip)
+                
+                # 设置zip文件的下载名称
+                zip_filename = f"{base_name}.zip" # 压缩包的名称也应该去除后缀
+                
+                response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+                response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+            else:
+                # 其他文件类型按原样下载
+                with open(full_file_path, 'rb') as fh:
+                    response = HttpResponse(fh.read(), content_type='application/octet-stream')
+                    response['Content-Disposition'] = f'attachment; filename="{original_filename}"'
+            
+            # 记录下载统计
+            user_profile.record_download(file_size_mb)
+            
+            # 记录下载日志
+            log_entry = Log(user=request.user, action_type='download', ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Downloaded {file_type} for Product ID: {product_id}, Size: {file_size_mb:.2f}MB')
+            log_entry.save()
+            return response
         else:
             messages.error(request, f"文件 {file_type} 不存在或已损坏。尝试从路径: {full_file_path}")
             messages.error(request, f"产品没有关联的 {file_type} 文件。")
+    else:
+        messages.error(request, f"产品没有关联的 {file_type} 文件。")
     
-    # 获取来源页面的查询参数，用于重定向回原搜索结果页面
-    referer = request.META.get('HTTP_REFERER', '')
-    if 'search/results/' in referer:
-        # 如果来自搜索结果页面，重定向回原页面
+    # 修改：下载失败后返回来源页面，如果是从搜索结果页面来的则返回搜索结果页面
+    referer = request.META.get('HTTP_REFERER')
+    if referer and 'search_results' in referer:
         return redirect(referer)
     else:
-        # 否则重定向到搜索结果页面
-        return redirect('clamps:search_results')
+        return redirect('clamps:product_detail', product_id=product_id)
+
+
+# 新增：检查批量下载文件大小的API端点
+@login_required
+def check_batch_file_size(request):
+    """检查批量下载文件大小是否满足下载条件"""
+    try:
+        file_type = request.GET.get('file_type', 'step')  # 默认step
+        product_ids_str = request.GET.get('ids', '')
+        
+        if not product_ids_str:
+            return JsonResponse({
+                'can_download': False,
+                'message': '未选择任何产品进行下载'
+            })
+
+        product_ids = []
+        for pid in product_ids_str.split(','):
+            try:
+                product_ids.append(int(pid))
+            except ValueError:
+                continue
+
+        if not product_ids:
+            return JsonResponse({
+                'can_download': False,
+                'message': '无效的产品ID列表'
+            })
+
+        # 获取或创建用户配置
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        total_download_size_mb = 0
+        file_count = 0
+
+        for product_id in product_ids:
+            try:
+                product = get_object_or_404(Product, id=product_id)
+                
+                # 根据 file_type 收集文件路径和大小
+                if file_type == 'dwg' or file_type == 'both':
+                    if product.dwg_file_path:
+                        relative_path = str(product.dwg_file_path)
+                        if relative_path.startswith('media/'):
+                            relative_path = relative_path[len('media/'):]
+                        elif relative_path.startswith('/media/'):
+                            relative_path = relative_path[len('/media/'):]
+                        full_file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+                        if os.path.exists(full_file_path):
+                            file_size_bytes = os.path.getsize(full_file_path)
+                            total_download_size_mb += (file_size_bytes / (1024 * 1024))
+                            file_count += 1
+
+                if file_type == 'step' or file_type == 'both':
+                    if product.step_file_path:
+                        relative_path = str(product.step_file_path)
+                        if relative_path.startswith('media/'):
+                            relative_path = relative_path[len('media/'):]
+                        elif relative_path.startswith('/media/'):
+                            relative_path = relative_path[len('/media/'):]
+                        full_file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+                        if os.path.exists(full_file_path):
+                            file_size_bytes = os.path.getsize(full_file_path)
+                            total_download_size_mb += (file_size_bytes / (1024 * 1024))
+                            file_count += 1
+
+            except Product.DoesNotExist:
+                continue
+            except Exception:
+                continue
+
+        if file_count == 0:
+            return JsonResponse({
+                'can_download': False,
+                'message': '没有找到任何可下载的文件'
+            })
+
+        # 检查批量下载限制
+        can_download, message = user_profile.can_download_file(total_download_size_mb, is_batch=True)
+        
+        return JsonResponse({
+            'can_download': can_download,
+            'message': message,
+            'total_size_mb': round(total_download_size_mb, 2),
+            'file_count': file_count
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'can_download': False,
+            'message': f'检查文件时发生错误: {str(e)}'
+        })
 
 
 @login_required
-@user_passes_test(is_admin)
+def batch_download_view(request, file_type):
+    """
+    处理批量下载请求的视图函数。
+    根据 file_type 和 ids 参数，打包并返回相应的文件。
+    """
+    product_ids_str = request.GET.get('ids')
+    if not product_ids_str:
+        messages.error(request, "未选择任何产品进行下载。")
+        # 修改：下载失败后返回来源页面，通常是搜索结果页面
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
+        else:
+            return redirect('clamps:search_results')
+
+    product_ids = []
+    for pid in product_ids_str.split(','):
+        try:
+            product_ids.append(int(pid))
+        except ValueError:
+            continue # 忽略无效的ID
+
+    if not product_ids:
+        messages.error(request, "无效的产品ID列表。")
+        # 修改：下载失败后返回来源页面，通常是搜索结果页面
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
+        else:
+            return redirect('clamps:search_results')
+
+    # 获取或创建用户配置
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    total_download_size_mb = 0
+    files_to_zip = []
+
+    for product_id in product_ids:
+        try:
+            product = get_object_or_404(Product, id=product_id)
+            
+            # 根据 file_type 收集文件路径和大小
+            if file_type == 'dwg' or file_type == 'both':
+                if product.dwg_file_path:
+                    relative_path = str(product.dwg_file_path)
+                    if relative_path.startswith('media/'):
+                        relative_path = relative_path[len('media/'):]
+                    elif relative_path.startswith('/media/'):
+                        relative_path = relative_path[len('/media/'):]
+                    full_file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+                    if os.path.exists(full_file_path):
+                        file_size_bytes = os.path.getsize(full_file_path)
+                        total_download_size_mb += (file_size_bytes / (1024 * 1024))
+                        files_to_zip.append({'path': full_file_path, 'type': 'dwg', 'product': product})
+
+            if file_type == 'step' or file_type == 'both':
+                if product.step_file_path:
+                    relative_path = str(product.step_file_path)
+                    if relative_path.startswith('media/'):
+                        relative_path = relative_path[len('media/'):]
+                    elif relative_path.startswith('/media/'):
+                        relative_path = relative_path[len('/media/'):]
+                    full_file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+                    if os.path.exists(full_file_path):
+                        file_size_bytes = os.path.getsize(full_file_path)
+                        total_download_size_mb += (file_size_bytes / (1024 * 1024))
+                        files_to_zip.append({'path': full_file_path, 'type': 'step', 'product': product})
+
+        except Product.DoesNotExist:
+            messages.warning(request, f"产品ID {product_id} 不存在。")
+            continue
+        except Exception as e:
+            messages.error(request, f"处理产品ID {product_id} 时发生错误: {e}")
+            continue
+
+    # 检查批量下载限制
+    can_download, message = user_profile.can_download_file(total_download_size_mb, is_batch=True)
+    if not can_download:
+        messages.error(request, f"批量下载失败：{message}")
+        # 修改：下载失败后返回来源页面，通常是搜索结果页面
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
+        else:
+            return redirect('clamps:search_results')
+
+    # 创建一个内存中的 ZIP 文件
+    zip_buffer = io.BytesIO()
+    zip_file_name = f"selected_clamps_{file_type}_{timezone.now().strftime('%Y%m%d%H%M%S')}.zip"
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        downloaded_count = 0
+        for file_info in files_to_zip:
+            full_file_path = file_info['path']
+            file_type_single = file_info['type']
+            product = file_info['product']
+            drawing_no = product.drawing_no_1 if product.drawing_no_1 else f"product_{product.id}"
+
+            # 获取原始文件名（不带路径）
+            original_file_basename = os.path.basename(full_file_path)
+            base_name, ext = os.path.splitext(original_file_basename)
+            
+            # 去除特定后缀
+            if file_type_single == 'dwg' and base_name.endswith('_DWG'):
+                base_name = base_name[:-4]
+            elif file_type_single == 'step' and base_name.endswith('_STEP'):
+                base_name = base_name[:-5]
+            
+            # 使用新的文件名作为ZIP文件中的文件名
+            arcname = f"{base_name}{ext}" 
+            zf.write(full_file_path, arcname=arcname)
+            downloaded_count += 1
+
+    zip_buffer.seek(0)
+    
+    if downloaded_count == 0:
+        messages.error(request, "没有找到任何可下载的文件。")
+        # 修改：下载失败后返回来源页面，通常是搜索结果页面
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
+        else:
+            return redirect('clamps:search_results')
+
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{zip_file_name}"'
+    
+    # 记录批量下载日志
+    log_entry = Log(user=request.user, action_type='batch_download', ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                    details=f'批量下载了 {downloaded_count} 个 {file_type} 文件，产品ID: {product_ids_str}, 总大小: {total_download_size_mb:.2f}MB')
+    log_entry.save()
+    
+    # 记录下载统计
+    user_profile.record_download(total_download_size_mb)
+    
+    return response
+
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
 def management_dashboard(request):
     total_products = Product.objects.count()
     total_users = User.objects.count()
@@ -224,17 +579,94 @@ def management_dashboard(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_staff_or_superuser)
 def manage_users(request):
-    users = User.objects.all().order_by('username')
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id')
+        
+        if action == 'activate':
+            user = User.objects.get(id=user_id)
+            user.is_active = True
+            user.save()
+            log_entry = Log(user=request.user, action_type='activate_user', ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'User {user.username} activated')
+            log_entry.save()
+            messages.success(request, f'用户 {user.username} 已激活')
+            
+        elif action == 'deactivate':
+            user = User.objects.get(id=user_id)
+            user.is_active = False
+            user.save()
+            log_entry = Log(user=request.user, action_type='deactivate_user', ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'User {user.username} deactivated')
+            log_entry.save()
+            messages.success(request, f'用户 {user.username} 已停用')
+            
+        elif action == 'update_config':
+            user = User.objects.get(id=user_id)
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            # 更新密码有效期设置
+            password_validity = request.POST.get('password_validity_days')
+            if password_validity:
+                user_profile.password_validity_days = int(password_validity)
+            
+            # 更新下载限制设置
+            max_single_download = request.POST.get('max_single_download_mb')
+            if max_single_download:
+                user_profile.max_single_download_mb = int(max_single_download)
+                
+            max_daily_download_gb = request.POST.get('max_daily_download_gb')
+            if max_daily_download_gb:
+                user_profile.max_daily_download_gb = int(max_daily_download_gb)
+                
+            max_daily_download_count = request.POST.get('max_daily_download_count')
+            if max_daily_download_count:
+                user_profile.max_daily_download_count = int(max_daily_download_count)
+            
+            # 添加批量下载限制设置
+            max_batch_download_mb = request.POST.get('max_batch_download_mb')
+            if max_batch_download_mb:
+                user_profile.max_batch_download_mb = int(max_batch_download_mb)
+            
+            user_profile.save()
+            
+            log_entry = Log(user=request.user, action_type='update_user_config', ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Updated config for user {user.username}')
+            log_entry.save()
+            messages.success(request, f'用户 {user.username} 的配置已更新')
+        
+        return redirect('clamps:manage_users')
+    
+    # 获取所有用户及其配置
+    # 如果当前用户是超级管理员，显示所有用户
+    # 如果当前用户是管理员，只显示普通用户
+    if request.user.is_superuser:
+        users = User.objects.all().order_by('username')
+    else: # is_staff == True
+        users = User.objects.filter(is_staff=False, is_superuser=False).order_by('username')
+
+    users_with_profiles = []
+    
+    for user in users:
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        users_with_profiles.append({
+            'user': user,
+            'profile': profile,
+            'password_expired': profile.is_password_expired(),
+            'password_expiry_date': profile.get_password_expiry_date()
+        })
+    
     context = {
-        'users': users
+        'users_with_profiles': users_with_profiles,
+        'password_validity_choices': UserProfile.get_password_validity_choices()
     }
     return render(request, 'management/users.html', context)
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_staff_or_superuser)
 def toggle_user_active(request, user_id):
     user = User.objects.get(id=user_id)
     user.is_active = not user.is_active
@@ -246,20 +678,28 @@ def toggle_user_active(request, user_id):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_staff_or_superuser)
 def reset_user_password(request, user_id):
     user = User.objects.get(id=user_id)
-    new_password = User.objects.make_random_password()
+    new_password = generate_random_password()
     user.set_password(new_password)
     user.save()
+    
+    # 更新密码修改时间
+    user_profile, created = UserProfile.objects.get_or_create(user=user)
+    user_profile.password_last_changed = timezone.now()
+    user_profile.save()
+    
     log_entry = Log(user=request.user, action_type='reset_user_password', ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'User {user.username} password reset. New password: {new_password}')
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'User {user.username} password reset')
     log_entry.save()
-    return render(request, 'management/users.html', {'users': User.objects.all(), 'message': f'用户 {user.username} 的新密码是: {new_password}'})
+    
+    messages.success(request, f'用户 {user.username} 的新密码是: {new_password}')
+    return redirect('clamps:manage_users')
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_staff_or_superuser)
 def delete_user(request, user_id):
     user = User.objects.get(id=user_id)
     username = user.username
@@ -271,397 +711,266 @@ def delete_user(request, user_id):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_staff_or_superuser)
 def view_logs(request):
-    logs = Log.objects.all().order_by("-timestamp")
+    logs = Log.objects.all().order_by('-timestamp')
 
-    # Apply filters
-    action_type = request.GET.get("action_type")
-    username = request.GET.get("username")
-    date_from = request.GET.get("date_from")
-    date_to = request.GET.get("date_to")
+    action_type = request.GET.get('action_type')
+    username = request.GET.get('username')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
 
-    if action_type:
+    if action_type and action_type != 'all':
         logs = logs.filter(action_type=action_type)
     if username:
         logs = logs.filter(user__username__icontains=username)
     if date_from:
         logs = logs.filter(timestamp__gte=date_from)
     if date_to:
-        logs = logs.filter(timestamp__lte=date_to)
+        # 结束日期增加一天，以包含选择日期的整天
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+        date_to_inclusive = date_to_obj + timedelta(days=1)
+        logs = logs.filter(timestamp__lt=date_to_inclusive)
+    total_count = logs.count()
 
-    total_count = logs.count() # Get total count before pagination
+    # 统计各项操作的次数
+    login_count = logs.filter(action_type='login').count()
+    search_count = logs.filter(action_type='search').count()
+    download_count = logs.filter(action_type='download').count()
+    view_count = logs.filter(action_type='view').count()
 
-    paginator = Paginator(logs, 50)  # 每页50条日志
-    page_number = request.GET.get("page")
+    paginator = Paginator(logs, 50)  # 每页50条记录
+    page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
     context = {
-        "page_obj": page_obj,
-        "total_count": total_count, # Pass total count to template
-        "login_count": Log.objects.filter(action_type="login").count(),
-        "search_count": Log.objects.filter(action_type="search").count(),
-        "download_count": Log.objects.filter(action_type="download").count(),
-        "view_count": Log.objects.filter(action_type="view").count(),
+        'page_obj': page_obj,
+        'total_count': total_count,
+        'login_count': login_count,
+        'search_count': search_count,
+        'download_count': download_count,
+        'view_count': view_count,
     }
-    return render(request, "management/logs.html", context)
+    return render(request, 'management/logs.html', context)
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_staff_or_superuser)
 def export_data(request):
     if request.method == 'POST':
-        data_type = request.POST.get('data_type')
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{data_type}_export_{timezone.now().strftime("%Y%m%d%H%M%S")}.csv"'
-
-        writer = csv.writer(response)
-
-        if data_type == 'products':
-            writer.writerow(["ID", "Category", "Description", "Drawing No 1", "Sub Category Type", "Stroke", "Clamping Force", "Weight", "Throat Depth", "Throat Width", "Transformer", "Electrode Arm End", "Motor Manufacturer", "Has Balance", "Water Circuit", "Bracket Direction", "Bracket Angle", "Bracket Count", "Gearbox Type", "Bracket Material", "Gearbox Stroke", "Tool Changer", "Static Arm Eccentricity", "Static Electrode Arm End", "Moving Arm Eccentricity", "Moving Electrode Arm End", "Pivot to Drive Center Dist", "Static Arm Front Length", "Static Arm Front Height", "Moving Arm Front Length", "Moving Arm Front Height", "Eccentricity to Center", "Grip Extension Length", "Eccentricity", "Eccentricity Direction", "Guidance Method", "DWG File Path", "STEP File Path", "BMP File Path"])
+        export_type = request.POST.get('export_type')
+        
+        if export_type == 'products':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="products.csv"'
+            
+            writer = csv.writer(response)
+            writer.writerow(['ID', '分类', '描述', '图号1', '子分类类型', '行程', '电极臂端部', '加压力', '电极臂', '变压器', '重量'])
+            
             for product in Product.objects.all():
                 writer.writerow([
-                    product.id, product.category.name, product.description, product.drawing_no_1, product.sub_category_type,
-                    product.stroke, product.clamping_force, product.weight, product.throat_depth, product.throat_width, product.transformer,
-                    product.electrode_arm_end, product.motor_manufacturer, product.has_balance, product.water_circuit, product.bracket_direction,
-                    product.bracket_angle, product.bracket_count, product.gearbox_type, product.bracket_material, product.gearbox_stroke,
-                    product.tool_changer, product.static_arm_eccentricity, product.static_electrode_arm_end, product.moving_arm_eccentricity,
-                    product.moving_electrode_arm_end, product.pivot_to_drive_center_dist, product.static_arm_front_length,
-                    product.static_arm_front_height, product.moving_arm_front_length, product.moving_arm_front_height,
-                    product.eccentricity_to_center, product.grip_extension_length, product.eccentricity, product.eccentricity_direction,
-                    product.guidance_method, product.dwg_file_path, product.step_file_path, product.bmp_file_path
+                    product.id,
+                    product.category.name if product.category else '',
+                    product.description or '',
+                    product.drawing_no_1 or '',
+                    product.sub_category_type or '',
+                    product.stroke or '',
+                    product.electrode_arm_end or '',
+                    product.clamping_force or '',
+                    product.electrode_arm_type or '',
+                    product.transformer or '',
+                    product.weight or ''
                 ])
-        elif data_type == 'users':
-            writer.writerow(['ID', 'Username', 'Email', 'Is Active', 'Is Superuser', 'Date Joined', 'Last Login'])
+            
+            filename = 'products.csv'
+        
+        elif export_type == 'users':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="users.csv"'
+            
+            writer = csv.writer(response)
+            writer.writerow(['ID', '用户名', '邮箱', '姓名', '是否活跃', '是否管理员', '注册时间', '最后登录'])
+            
             for user in User.objects.all():
                 writer.writerow([
-                    user.id, user.username, user.email, user.is_active, user.is_superuser, user.date_joined, user.last_login
+                    user.id,
+                    user.username,
+                    user.email or '',
+                    f"{user.first_name} {user.last_name}".strip() or '',
+                    '是' if user.is_active else '否',
+                    '是' if user.is_staff else '否',
+                    user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+                    user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else '从未登录'
                 ])
-        elif data_type == 'logs':
-            writer.writerow(['ID', 'Timestamp', 'User', 'action_type', 'IP Address', 'User Agent', 'Details'])
-            for log in Log.objects.all():
-                writer.writerow([
-                    log.id, log.timestamp, log.user.username if log.user else 'N/A', log.action_type, log.ip_address, log.user_agent, log.details
-                ])
+            
+            filename = 'users.csv'
         
+        elif export_type == 'logs':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="logs.csv"'
+            
+            writer = csv.writer(response)
+            writer.writerow(['ID', '用户', '操作类型', '详情', '时间', 'IP地址', '用户代理'])
+            
+            # 获取筛选条件
+            action_type = request.POST.get('action_type')
+            username = request.POST.get('username')
+            date_from = request.POST.get('date_from')
+            date_to = request.POST.get('date_to')
+
+            export_logs = Log.objects.all().order_by('-timestamp')
+
+            if action_type and action_type != 'all':
+                export_logs = export_logs.filter(action_type=action_type)
+            if username:
+                export_logs = export_logs.filter(user__username__icontains=username)
+            if date_from:
+                export_logs = export_logs.filter(timestamp__gte=date_from)
+            if date_to:
+                export_logs = export_logs.filter(timestamp__lte=date_to)
+
+            for log in export_logs:
+                writer.writerow([
+                    log.id,
+                    log.user.username if log.user else '匿名',
+                    log.action_type,
+                    log.details or '',
+                    log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                    log.ip_address or '',
+                    log.user_agent or ''
+                ])
+            
+            filename = 'logs.csv'
+        
+        # 记录导出日志
         log_entry = Log(user=request.user, action_type='export_data', ip_address=request.META.get('REMOTE_ADDR'),
-                        user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Exported {data_type} data.')
+                        user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Exported {export_type} data')
         log_entry.save()
+        
         return response
+    
     return render(request, 'management/export.html')
 
 
 @login_required
-@user_passes_test(is_admin)
-@csrf_exempt # 暂时禁用CSRF，方便测试，生产环境请启用
+@user_passes_test(is_staff_or_superuser)
 def import_csv(request):
-    if request.method == 'POST' and request.FILES['csv_file']:
+    if request.method == 'POST' and request.FILES.get('csv_file'):
         csv_file = request.FILES['csv_file']
-        file_data = csv_file.read()
+        
         # 检测文件编码
-        result = chardet.detect(file_data)
-        encoding = result['encoding'] if result['encoding'] else 'utf-8'
-
-        decoded_file = file_data.decode(encoding).splitlines()
-        reader = csv.DictReader(decoded_file)
-
-        updated_count = 0
-        created_count = 0
-        errors = []
-
-        # 字段映射，CSV表头到模型字段
-        field_mapping = {
-            '描述': 'description',
-            '图号1(o)': 'drawing_no_1',
-            '子分类类型': 'sub_category_type',
-            '行程': 'stroke',
-            '加压力': 'clamping_force',
-            '重量': 'weight',
-            '喉深': 'throat_depth',
-            '喉宽': 'throat_width',
-            '变压器': 'transformer',
-            '电极臂端部': 'electrode_arm_end',
-            '电极臂类型': 'electrode_arm_type',
-            '变压器放置方向': 'transformer_placement',
-            '法兰盘P.C.D': 'flange_pcd',
-            '分类': 'sub_category_type',
-            'X2C-V2-C型分类': 'sub_category_type',
-            'X2C-V3-C型分类': 'sub_category_type',
-            'X2C-X型分类': 'sub_category_type',
-            'X2C-V2-X型分类': 'sub_category_type',
-            'X2C-V3-X型分类': 'sub_category_type',
-            'X2C-C型分类': 'sub_category_type',
-            '有无平衡': 'has_balance',
-            '水路': 'water_circuit',
-            '托架方向': 'bracket_direction',
-            '托架角度': 'bracket_angle',
-            'MOTOR厂家': 'motor_manufacturer',
-            '托架个数': 'bracket_count',
-            '齿轮箱型式': 'gearbox_type',
-            '托架材料': 'bracket_material',
-            '齿轮箱行程': 'gearbox_stroke',
-            '换枪装置': 'tool_changer',
-            # X型分类独有参数
-            '静臂偏心': 'static_arm_eccentricity',
-            '静电极臂端部': 'static_electrode_arm_end',
-            '动臂偏心': 'moving_arm_eccentricity',
-            '动电极臂端部': 'moving_electrode_arm_end',
-            '支轴到驱动中心距离': 'pivot_to_drive_center_dist',
-            '静电极臂前部长': 'static_arm_front_length',
-            '静电极臂前部高': 'static_arm_front_height',
-            '动电极臂前部长': 'moving_arm_front_length',
-            '动电极臂前部高': 'moving_arm_front_height',
-            '偏心是否回到中心面': 'eccentricity_to_center',
-            '握杆伸出长度': 'grip_extension_length',
-            '偏心': 'eccentricity',
-            '偏心方向': 'eccentricity_direction',
-            '导向方式': 'guidance_method',
-        }
-
-        # 获取分类信息，用于关联产品
-        category_name = csv_file.name.split('.')[0] # 假设文件名就是分类名，例如X2C-C
+        raw_data = csv_file.read()
+        result = chardet.detect(raw_data)
+        encoding = result['encoding']
+        
+        # 重置文件指针
+        csv_file.seek(0)
+        
         try:
-            category = Category.objects.get(name=category_name)
-        except Category.DoesNotExist:
-            messages.error(request, f"分类 '{category_name}' 不存在。请先创建该分类。")
-            return render(request, 'management/import_csv.html', {'errors': errors})
-
-        for row in reader:
-            drawing_no_1 = row.get('图号1(o)')
-            if not drawing_no_1:
-                errors.append(f"跳过缺少'图号1(o)'的行: {row}")
-                continue
-
-            product_data = {'category': category}
-            for csv_header, model_field in field_mapping.items():
-                value = row.get(csv_header)
-                if value is not None:
-                    # 处理空字符串为None，以便模型字段的null=True生效
-                    if value == '':
-                        product_data[model_field] = None
+            # 使用检测到的编码读取文件
+            decoded_file = csv_file.read().decode(encoding)
+            csv_reader = csv.DictReader(io.StringIO(decoded_file))
+            
+            imported_count = 0
+            for row in csv_reader:
+                # 这里需要根据实际的CSV格式来处理数据
+                # 示例代码，需要根据实际情况修改
+                try:
+                    category_name = row.get('分类', '').strip()
+                    if category_name:
+                        category, created = Category.objects.get_or_create(name=category_name)
                     else:
-                        # 尝试转换数字类型字段
-                        if model_field in ["stroke", "clamping_force", "weight", "throat_depth", "throat_width", "bracket_count", "eccentricity", "static_arm_eccentricity", "moving_arm_eccentricity", "pivot_to_drive_center_dist", "static_arm_front_length", "static_arm_front_height", "moving_arm_front_length", "moving_arm_front_height", "grip_extension_length", "bracket_angle"]:
+                        category = None
+                    
+                    product = Product(
+                        category=category,
+                        description=row.get('描述', '').strip() or None,
+                        drawing_no_1=row.get('图号1', '').strip() or None,
+                        sub_category_type=row.get('子分类类型', '').strip() or None,
+                    )
+                    
+                    # 处理数值字段
+                    for field in ['stroke', 'clamping_force', 'weight', 'throat_depth', 'throat_width']:
+                        value = row.get(field, '').strip()
+                        if value:
                             try:
-                                product_data[model_field] = float(value)
+                                setattr(product, field, float(value))
                             except ValueError:
-                                errors.append(f"行 {drawing_no_1}: 字段 '{csv_header}' 的值 '{value}' 不是有效的数字。")
-                                product_data[model_field] = None # 设置为None或跳过，取决于业务需求
-                        elif model_field == 'has_balance':
-                            product_data[model_field] = (value.lower() == '有')
-                        else:
-                            product_data[model_field] = value
-
-            try:
-                product, created = Product.objects.update_or_create(
-                    drawing_no_1=drawing_no_1,
-                    defaults=product_data
-                )
-                if created:
-                    created_count += 1
-                else:
-                    updated_count += 1
-            except Exception as e:
-                errors.append(f"处理行 {drawing_no_1} 时发生错误: {e}")
-
-        log_entry = Log(user=request.user, action_type='import_csv', ip_address=request.META.get('REMOTE_ADDR'),
-                        user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                        details=f'Imported CSV: {csv_file.name}. Created: {created_count}, Updated: {updated_count}, Errors: {len(errors)}.')
-        log_entry.save()
-
-        if not errors:
-            messages.success(request, f"CSV文件 '{csv_file.name}' 导入成功！新增 {created_count} 条，更新 {updated_count} 条记录。")
-        else:
-            messages.warning(request, f"CSV文件 '{csv_file.name}' 导入完成，但存在 {len(errors)} 个错误。请查看详情。")
-            for error in errors:
-                messages.error(request, error)
-
-        return render(request, 'management/import_csv.html', {'errors': errors, 'updated_count': updated_count, 'created_count': created_count})
+                                pass
+                    
+                    # 处理文本字段
+                    for field in ['electrode_arm_end', 'electrode_arm_type', 'transformer', 'transformer_placement']:
+                        value = row.get(field, '').strip()
+                        if value:
+                            setattr(product, field, value)
+                    
+                    product.save()
+                    imported_count += 1
+                    
+                except Exception as e:
+                    messages.warning(request, f"导入行时出错: {e}")
+                    continue
+            
+            messages.success(request, f"成功导入 {imported_count} 条记录")
+            
+            # 记录导入日志
+            log_entry = Log(user=request.user, action_type='import_csv', ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Imported {imported_count} records from CSV')
+            log_entry.save()
+            
+        except Exception as e:
+            messages.error(request, f"导入失败: {e}")
+    
     return render(request, 'management/import_csv.html')
 
 
-
-
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_staff_or_superuser)
 def sync_files(request):
-    """
-    同步media文件夹中的dwg、step和bmp文件到数据库
-    """
-    import os
-    import re
-    from django.conf import settings
-    
-    media_dir = os.path.join(settings.BASE_DIR, 'media')
-    if not os.path.exists(media_dir):
-        messages.error(request, "Media文件夹不存在")
+    if request.method == 'POST':
+        media_root = settings.MEDIA_ROOT
+        synced_count = 0
+        
+        # 遍历所有产品，检查文件路径
+        for product in Product.objects.all():
+            updated = False
+            
+            # 检查DWG文件
+            if product.dwg_file_path:
+                full_path = os.path.join(media_root, product.dwg_file_path.lstrip('/media/'))
+                if not os.path.exists(full_path):
+                    product.dwg_file_path = None
+                    updated = True
+            
+            # 检查STEP文件
+            if product.step_file_path:
+                full_path = os.path.join(media_root, product.step_file_path.lstrip('/media/'))
+                if not os.path.exists(full_path):
+                    product.step_file_path = None
+                    updated = True
+            
+            # 检查BMP文件
+            if product.bmp_file_path:
+                full_path = os.path.join(media_root, product.bmp_file_path.lstrip('/media/'))
+                if not os.path.exists(full_path):
+                    product.bmp_file_path = None
+                    updated = True
+            
+            if updated:
+                product.save()
+                synced_count += 1
+        
+        messages.success(request, f"文件同步完成，更新了 {synced_count} 个产品的文件路径")
+        
+        # 记录同步日志
+        log_entry = Log(user=request.user, action_type='sync_files', ip_address=request.META.get('REMOTE_ADDR'),
+                        user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Synced {synced_count} product file paths')
+        log_entry.save()
+        
         return redirect('clamps:management_dashboard')
     
-    # 获取所有文件
-    files = []
-    for filename in os.listdir(media_dir):
-        if filename.lower().endswith(('.dwg', '.step', '.bmp')):
-            files.append(filename)
-    
-    updated_count = 0
-    errors = []
-    
-    for filename in files:
-        # 从文件名中提取图号
-        # 假设文件名格式为: 图号.扩展名
-        base_name = os.path.splitext(filename)[0]
-        extension = os.path.splitext(filename)[1].lower()
-        
-        # 尝试匹配产品
-        try:
-            # 首先尝试精确匹配
-            product = Product.objects.filter(drawing_no_1=base_name).first()
-            
-            if not product:
-                # 如果精确匹配失败，尝试模糊匹配
-                product = Product.objects.filter(drawing_no_1__icontains=base_name).first()
-            
-            if product:
-                # 修改此处：不再加 media 前缀，因为我们已经在 media 目录下
-                file_path = filename  # ✅ 关键修改点
-
-                # 根据文件扩展名更新对应字段
-                if extension == '.dwg':
-                    product.dwg_file_path = file_path
-                elif extension == '.step':
-                    product.step_file_path = file_path
-                elif extension == '.bmp':
-                    product.bmp_file_path = file_path
-                
-                product.save()
-                updated_count += 1
-            else:
-                errors.append(f"未找到匹配的产品: {base_name}")
-                
-        except Exception as e:
-            errors.append(f"处理文件 {filename} 时发生错误: {e}")
-    
-    # 记录日志
-    log_entry = Log(user=request.user, action_type='sync_files', ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                    details=f'Synced files. Updated: {updated_count}, Errors: {len(errors)}.')
-    log_entry.save()
-    
-    if not errors:
-        messages.success(request, f"文件同步成功！更新了 {updated_count} 个产品的文件路径。")
-    else:
-        messages.warning(request, f"文件同步完成，更新了 {updated_count} 个产品，但存在 {len(errors)} 个错误。")
-        for error in errors:
-            messages.error(request, error)
-    
-    return redirect('clamps:management_dashboard')
+    return render(request, 'management/dashboard.html')
 
 
 
-@login_required
-def batch_download(request, file_type):
-    """批量下载文件"""
-    import zipfile
-    import tempfile
-    
-    product_ids = request.GET.get('ids', '').split(',')
-    if not product_ids or product_ids == ['']:
-        messages.error(request, '未选择任何产品进行下载。')
-        return redirect('clamps:search_results')
-    
-    # 获取选中的产品
-    products = Product.objects.filter(id__in=product_ids)
-    
-    if not products.exists():
-        messages.error(request, '未找到选中的产品。')
-        return redirect('clamps:search_results')
-    
-    # 创建临时ZIP文件
-    temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
-    
-    try:
-        with zipfile.ZipFile(temp_zip.name, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            file_count = 0
-            
-            for product in products:
-                # 根据文件类型获取对应的文件路径
-                file_paths = []
-                
-                if file_type == 'dwg':
-                    if product.dwg_file_path:
-                        file_paths.append(('dwg', product.dwg_file_path))
-                elif file_type == 'step':
-                    if product.step_file_path:
-                        file_paths.append(('step', product.step_file_path))
-                elif file_type == 'both':
-                    if product.dwg_file_path:
-                        file_paths.append(('dwg', product.dwg_file_path))
-                    if product.step_file_path:
-                        file_paths.append(('step', product.step_file_path))
-                
-                for file_ext, file_path in file_paths:
-                    # 确保文件路径是相对于 MEDIA_ROOT 的路径
-                    if file_path.startswith('media/'):
-                        file_path = file_path[len('media/'):]
-                    elif file_path.startswith('/media/'):
-                        file_path = file_path[len('/media/'):]
-                    
-                    full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
-                    
-                    if os.path.exists(full_file_path):
-                        # 生成ZIP内的文件名，包含产品描述或图号
-                        product_name = product.drawing_no_1 or product.description or f"product_{product.id}"
-                        # 清理文件名中的特殊字符
-                        import re
-                        product_name = re.sub(r'[<>:"/\\|?*]', '_', product_name)
-                        
-                        file_extension = os.path.splitext(file_path)[1]
-                        zip_filename = f"{product_name}{file_extension}"
-                        
-                        # 如果文件名重复，添加序号
-                        counter = 1
-                        original_zip_filename = zip_filename
-                        while zip_filename in [info.filename for info in zip_file.infolist()]:
-                            name_without_ext = os.path.splitext(original_zip_filename)[0]
-                            zip_filename = f"{name_without_ext}_{counter}{file_extension}"
-                            counter += 1
-                        
-                        zip_file.write(full_file_path, zip_filename)
-                        file_count += 1
-            
-            if file_count == 0:
-                file_type_display = {
-                    'dwg': 'DWG',
-                    'step': 'STEP',
-                    'both': 'DWG或STEP'
-                }.get(file_type, file_type.upper())
-                messages.error(request, f'所选产品中没有可用的 {file_type_display} 文件。')
-                return redirect('clamps:search_results')
-        
-        # 读取ZIP文件内容并返回
-        with open(temp_zip.name, 'rb') as zip_file:
-            response = HttpResponse(zip_file.read(), content_type='application/zip')
-            response['Content-Disposition'] = f'attachment; filename="batch_download_{file_type}_{timezone.now().strftime("%Y%m%d_%H%M%S")}.zip"'
-            
-            # 记录批量下载日志
-            log_entry = Log(
-                user=request.user, 
-                action_type='batch_download', 
-                ip_address=request.META.get('REMOTE_ADDR'),
-                user_agent=request.META.get('HTTP_USER_AGENT', ''), 
-                details=f'Batch downloaded {file_count} {file_type} files for products: {", ".join(product_ids)}'
-            )
-            log_entry.save()
-            
-            return response
-            
-    except Exception as e:
-        messages.error(request, f'批量下载时发生错误: {str(e)}')
-        return redirect('clamps:search_results')
-    
-    finally:
-        # 清理临时文件
-        try:
-            os.unlink(temp_zip.name)
-        except:
-            pass
 

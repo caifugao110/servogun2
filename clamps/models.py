@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from datetime import timedelta
 import enum
 
 # 定义一些常用的可选项枚举类
@@ -207,7 +208,7 @@ class ProductSubCategoryTypeChoices(enum.Enum):
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="分类名称")
-    parent_category = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='children', verbose_name="父级分类")
+    parent_category = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="children", verbose_name="父级分类")
     description = models.TextField(null=True, blank=True, verbose_name="分类描述")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="最后更新时间")
@@ -221,7 +222,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', verbose_name="所属分类")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products", verbose_name="所属分类")
     description = models.TextField(null=True, blank=True, verbose_name="描述")
     drawing_no_1 = models.CharField(max_length=255, null=True, blank=True, verbose_name="图号1(o)")
     sub_category_type = models.CharField(max_length=100, null=True, blank=True, choices=ProductSubCategoryTypeChoices.choices(), verbose_name="产品子分类类型")
@@ -303,4 +304,142 @@ class Log(models.Model):
 
     def __str__(self):
         return f"{self.timestamp}: {self.user or '匿名'} - {self.action_type}"
+
+
+class UserProfile(models.Model):
+    """用户配置模型，用于存储用户的额外配置信息"""
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile", verbose_name="用户")
+    
+    # 密码有效期设置 - 修改为支持1-15天和永久有效
+    password_validity_days = models.IntegerField(
+        default=5, 
+        verbose_name="密码有效期（天）",
+        help_text="设置为0表示永久有效，1-15表示有效天数"
+    )
+    password_last_changed = models.DateTimeField(
+        default=timezone.now, 
+        verbose_name="密码最后修改时间"
+    )
+    
+    # 文件下载限制设置
+    max_single_download_mb = models.IntegerField(
+        default=100, 
+        verbose_name="单次最大下载大小（MB）"
+    )
+    max_daily_download_gb = models.IntegerField(
+        default=100, 
+        verbose_name="每日最大下载大小（GB）"
+    )
+    max_daily_download_count = models.IntegerField(
+        default=100, 
+        verbose_name="每日最大下载文件数"
+    )
+    max_batch_download_mb = models.IntegerField(
+        default=200, 
+        verbose_name="单次批量下载最大大小（MB）"
+    )
+    
+    # 当日下载统计（每日重置）
+    daily_download_size_mb = models.IntegerField(
+        default=0, 
+        verbose_name="当日已下载大小（MB）"
+    )
+    daily_download_count = models.IntegerField(
+        default=0, 
+        verbose_name="当日已下载文件数"
+    )
+    last_download_date = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name="最后下载日期"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    
+    class Meta:
+        verbose_name = "用户配置"
+        verbose_name_plural = "用户配置"
+    
+    def __str__(self):
+        return f"{self.user.username} 的配置"
+    
+    @classmethod
+    def get_password_validity_choices(cls):
+        """获取密码有效期选择项"""
+        choices = []
+        # 添加1-15天的选项
+        for i in range(1, 16):
+            choices.append((i, f"{i}天"))
+        # 添加永久有效选项
+        choices.append((0, "永久有效"))
+        return choices
+    
+    def is_password_expired(self):
+        """检查密码是否已过期"""
+        if self.password_validity_days == 0:  # 永久有效
+            return False
+        
+        from datetime import timedelta
+        expiry_date = self.password_last_changed + timedelta(days=self.password_validity_days)
+        return timezone.now() > expiry_date
+
+    def get_password_expiry_date(self):
+        """获取密码过期时间，如果永久有效则返回'永久有效'"""
+        if self.password_validity_days == 0:
+            return "永久有效"
+        expiry_date = self.password_last_changed + timedelta(days=self.password_validity_days)
+        return expiry_date.strftime("%Y-%m-%d %H:%M:%S")
+    
+    def reset_daily_download_stats(self):
+        """重置每日下载统计"""
+        self.daily_download_size_mb = 0
+        self.daily_download_count = 0
+        self.last_download_date = timezone.now().date()
+        self.save()
+    
+    def can_download_file(self, file_size_mb, is_batch=False):
+        """检查是否可以下载指定大小的文件"""
+        today = timezone.now().date()
+        
+        # 如果是新的一天，重置统计
+        if self.last_download_date != today:
+            self.reset_daily_download_stats()
+        
+        # 设置单次下载大小限制，批量下载使用专门的限制
+        if is_batch:
+            max_single_download = self.max_batch_download_mb
+        else:
+            max_single_download = self.max_single_download_mb
+        
+        # 检查单次下载大小限制
+        if file_size_mb > max_single_download:
+            return False, f"文件大小超过{'批量' if is_batch else '单次'}下载限制（{max_single_download}MB）"
+        
+        # 检查每日下载大小限制
+        if (self.daily_download_size_mb + file_size_mb) > (self.max_daily_download_gb * 1024):
+            return False, f"今日下载量将超过限制（{self.max_daily_download_gb}GB）"
+        
+        # 检查每日下载次数限制
+        if self.daily_download_count >= self.max_daily_download_count:
+            return False, f"今日下载文件数已达到限制（{self.max_daily_download_count}个）"
+        
+        return True, "可以下载"
+    
+    def record_download(self, file_size_mb):
+        """记录下载行为"""
+        today = timezone.now().date()
+        
+        # 如果是新的一天，重置统计
+        if self.last_download_date != today:
+            self.reset_daily_download_stats()
+        
+        # 更新统计
+        self.daily_download_size_mb += file_size_mb
+        self.daily_download_count += 1
+        self.last_download_date = today
+        self.save()
+
+
 

@@ -50,12 +50,38 @@
                                 </div>
                             </div>
                             
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="agreementCheck" required>
+                                <label class="form-check-label" for="agreementCheck">
+                                    已阅读并同意 小原焊钳选型数据库 的 <a href="/static/pdf/用户协议.pdf" target="_blank">使用协议</a> 
+                                </label>
+                                <div class="invalid-feedback">
+                                    请勾选此项以同意使用协议
+                                </div>
+                            </div>
+                            
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg">
+                                <button type="submit" class="btn btn-primary btn-lg" id="loginButton" disabled>
                                     <i class="bi bi-box-arrow-in-right me-2"></i>
                                     登录
                                 </button>
                             </div>
+							<br>
+							<br>
+							<div class="alert alert-info">
+								<strong>安全策略说明</strong>
+								<span style="color: red;">
+                                <p class="mb-2">
+                                    1.初次分发得到的账户密码有效期默认5天，单次批量下载大小200MB,每日最大下载文件数100个。
+								</p>
+								<p class="mb-2">
+									2.账号被限制登录/下载，请联系您的营业经理进行账号续期和下载配额更新。
+                                </p>
+								<p class="mb-0">
+									3.图纸模型数据为我公司技术机密，登录后代表您同意相关安全策略。服务器将自动监测数据访问情况，对于非法获取数据的行为，我们将依法采取相应措施，以保障数据安全。
+                                </p>
+								</span>
+							</div>
                         </form>
                     </div>
                     
@@ -101,7 +127,7 @@
                                 </p>
                                 <p class="mb-2">
                                     <i class="bi bi-telephone me-2"></i>
-                                    <strong>营业直线：</strong>(025)52106195
+                                    <strong>营业直线：</strong>(025 )52106195
                                     <br>
                                     <small class="text-muted">Sales Department: (025)52106195</small>
                                 </p>
@@ -140,6 +166,10 @@
             });
         }, false);
     })();
+
+    // 登录按钮启用/禁用逻辑
+    document.getElementById('agreementCheck').addEventListener('change', function() {
+        document.getElementById('loginButton').disabled = !this.checked;
+    });
 </script>
 {% endblock %}
-

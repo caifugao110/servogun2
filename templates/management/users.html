@@ -27,7 +27,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                {% if users %}
+                {% if users_with_profiles %}
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -37,13 +37,16 @@
                                     <th>姓名</th>
                                     <th>状态</th>
                                     <th>权限</th>
+                                    <th>密码状态</th>
+                                    <th>下载限制</th>
                                     <th>注册时间</th>
                                     <th>最后登录</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for user in users %}
+                                {% for item in users_with_profiles %}
+                                    {% with user=item.user profile=item.profile password_expired=item.password_expired %}
                                     <tr>
                                         <td>
                                             <strong>{{ user.username }}</strong>
@@ -88,6 +91,31 @@
                                             {% endif %}
                                         </td>
                                         <td>
+                                            {% if profile.password_validity_days == 0 %}
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-infinity me-1"></i>
+                                                    永久有效
+                                                </span>
+                                            {% elif password_expired %}
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                                    已过期
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    {{ profile.password_validity_days }}天有效
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                单次: {{ profile.max_single_download_mb }}MB<br>
+                                                批量: {{ profile.max_batch_download_mb }}MB<br>
+                                                每日: {{ profile.max_daily_download_gb }}GB / {{ profile.max_daily_download_count }}个
+                                            </small>
+                                        </td>
+                                        <td>
                                             <small class="text-muted">
                                                 {{ user.date_joined|date:"Y-m-d H:i" }}
                                             </small>
@@ -99,6 +127,10 @@
                                                 {% else %}
                                                     从未登录
                                                 {% endif %}
+                                            </small>
+                                            <br>
+                                            <small class="text-muted">
+                                                截止: {{ item.password_expiry_date }}
                                             </small>
                                         </td>
                                         <td>
@@ -126,12 +158,24 @@
                                                             </button>
                                                         </form>
                                                     {% endif %}
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                            data-bs-toggle="modal" data-bs-target="#configModal{{ user.id }}">
+                                                        <i class="bi bi-gear me-1"></i>
+                                                        配置
+                                                    </button>
+                                                    <a href="{% url 'clamps:reset_user_password' user.id %}" 
+                                                       class="btn btn-outline-warning btn-sm"
+                                                       onclick="return confirm('确定要重置用户 {{ user.username }} 的密码吗？')">
+                                                        <i class="bi bi-key me-1"></i>
+                                                        重置密码
+                                                    </a>
                                                 </div>
                                             {% else %}
                                                 <span class="text-muted small">超级管理员</span>
                                             {% endif %}
                                         </td>
                                     </tr>
+                                    {% endwith %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -152,7 +196,7 @@
                 <div class="card text-center fade-in-up">
                     <div class="card-body">
                         <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
-                        <h4 class="mt-2">{{ users|length }}</h4>
+                        <h4 class="mt-2">{{ users_with_profiles|length }}</h4>
                         <p class="text-muted mb-0">总用户数</p>
                     </div>
                 </div>
@@ -163,8 +207,13 @@
                     <div class="card-body">
                         <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
                         <h4 class="mt-2">
-                            {% with active_users=users|dictsort:"is_active"|slice:":"|length %}
-                                {{ users|length|add:active_users|floatformat:0 }}
+                            {% with active_count=0 %}
+                                {% for item in users_with_profiles %}
+                                    {% if item.user.is_active %}
+                                        {% with active_count=active_count|add:1 %}{% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ active_count }}
                             {% endwith %}
                         </h4>
                         <p class="text-muted mb-0">活跃用户</p>
@@ -177,8 +226,13 @@
                     <div class="card-body">
                         <i class="bi bi-person-badge text-warning" style="font-size: 2rem;"></i>
                         <h4 class="mt-2">
-                            {% with staff_users=users|dictsort:"is_staff"|slice:":"|length %}
-                                {{ users|length|add:staff_users|floatformat:0 }}
+                            {% with staff_count=0 %}
+                                {% for item in users_with_profiles %}
+                                    {% if item.user.is_staff %}
+                                        {% with staff_count=staff_count|add:1 %}{% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ staff_count }}
                             {% endwith %}
                         </h4>
                         <p class="text-muted mb-0">管理员</p>
@@ -189,13 +243,18 @@
             <div class="col-md-3">
                 <div class="card text-center fade-in-up">
                     <div class="card-body">
-                        <i class="bi bi-clock-history text-info" style="font-size: 2rem;"></i>
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2rem;"></i>
                         <h4 class="mt-2">
-                            {% with recent_users=users|dictsort:"date_joined"|slice:"-7:"|length %}
-                                {{ recent_users }}
+                            {% with expired_count=0 %}
+                                {% for item in users_with_profiles %}
+                                    {% if item.password_expired %}
+                                        {% with expired_count=expired_count|add:1 %}{% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ expired_count }}
                             {% endwith %}
                         </h4>
-                        <p class="text-muted mb-0">近7天新增</p>
+                        <p class="text-muted mb-0">密码过期</p>
                     </div>
                 </div>
             </div>
@@ -211,7 +270,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <h6>用户状态管理</h6>
                         <ul class="list-unstyled">
                             <li class="mb-2">
@@ -224,20 +283,50 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="col-md-6">
-                        <h6>权限说明</h6>
+                    <div class="col-md-3">
+                        <h6>密码有效期</h6>
                         <ul class="list-unstyled">
                             <li class="mb-2">
-                                <i class="bi bi-shield-fill text-danger me-2"></i>
-                                <strong>超级管理员：</strong>拥有所有权限，不可停用
+                                <i class="bi bi-infinity text-info me-2"></i>
+                                <strong>永久：</strong>密码永不过期
                             </li>
                             <li class="mb-2">
-                                <i class="bi bi-person-badge text-warning me-2"></i>
-                                <strong>管理员：</strong>可访问管理功能
+                                <i class="bi bi-clock text-success me-2"></i>
+                                <strong>限期：</strong>1-15天后过期，可任意设置
                             </li>
                             <li class="mb-2">
-                                <i class="bi bi-person text-primary me-2"></i>
-                                <strong>普通用户：</strong>只能使用搜索功能
+                                <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                                <strong>过期：</strong>需要重置密码
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>下载限制</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-file-earmark text-primary me-2"></i>
+                                <strong>单次限制：</strong>单个文件最大下载大小
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-files text-info me-2"></i>
+                                <strong>批量限制：</strong>批量下载最大总大小
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-calendar-day text-warning me-2"></i>
+                                <strong>每日限制：</strong>每天总下载量和文件数
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>配置建议</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-lightbulb text-warning me-2"></i>
+                                <strong>批量下载：</strong>建议设置为单次限制的3-5倍
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-shield-check text-success me-2"></i>
+                                <strong>安全考虑：</strong>根据用户权限合理设置限制
                             </li>
                         </ul>
                     </div>
@@ -246,6 +335,134 @@
         </div>
     </div>
 </div>
+
+<!-- 用户配置模态框 -->
+{% for item in users_with_profiles %}
+    {% with user=item.user profile=item.profile %}
+    <div class="modal fade" id="configModal{{ user.id }}" tabindex="-1" aria-labelledby="configModalLabel{{ user.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="configModalLabel{{ user.id }}">
+                        <i class="bi bi-gear me-2"></i>
+                        配置用户：{{ user.username }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_config">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-key me-2"></i>
+                                    密码有效期设置
+                                </h6>
+                                <div class="mb-3">
+                                    <label for="passwordValidity{{ user.id }}" class="form-label">密码有效期</label>
+                                    <select class="form-select" id="passwordValidity{{ user.id }}" name="password_validity_days">
+                                        {% for value, label in password_validity_choices %}
+                                            <option value="{{ value }}" {% if profile.password_validity_days == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        密码最后修改时间：{{ profile.password_last_changed|date:"Y-m-d H:i" }}
+                                        <br>
+                                        <small class="text-info">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            可设置1-15天或永久有效，默认5天
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-download me-2"></i>
+                                    文件下载限制(大小为压缩前文件原始大小)
+                                </h6>
+                                <div class="mb-3">
+                                    <label for="maxSingleDownload{{ user.id }}" class="form-label">单次最大下载大小（MB）</label>
+                                    <input type="number" class="form-control" id="maxSingleDownload{{ user.id }}" 
+                                           name="max_single_download_mb" value="{{ profile.max_single_download_mb }}" min="1" max="1000">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="maxBatchDownload{{ user.id }}" class="form-label">单次批量下载最大大小（MB）</label>
+                                    <input type="number" class="form-control" id="maxBatchDownload{{ user.id }}" 
+                                           name="max_batch_download_mb" value="{{ profile.max_batch_download_mb }}" min="1" max="5000">
+                                    <div class="form-text">
+                                        建议设置为单次下载限制的3-5倍，默认200MB
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="maxDailyDownloadGB{{ user.id }}" class="form-label">每日最大下载大小（GB）</label>
+                                    <input type="number" class="form-control" id="maxDailyDownloadGB{{ user.id }}" 
+                                           name="max_daily_download_gb" value="{{ profile.max_daily_download_gb }}" min="1" max="100">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="maxDailyDownloadCount{{ user.id }}" class="form-label">每日最大下载文件数</label>
+                                    <input type="number" class="form-control" id="maxDailyDownloadCount{{ user.id }}" 
+                                           name="max_daily_download_count" value="{{ profile.max_daily_download_count }}" min="1" max="1000">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-bar-chart me-2"></i>
+                                    今日下载统计(今日无下载则显示上次下载数据)
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">已下载大小</h6>
+                                                <p class="card-text">{{ profile.daily_download_size_mb }} MB</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">已下载文件数</h6>
+                                                <p class="card-text">{{ profile.daily_download_count }} 个</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">最后下载日期</h6>
+                                                <p class="card-text">
+                                                    {% if profile.last_download_date %}
+                                                        {{ profile.last_download_date|date:"Y-m-d" }}
+                                                    {% else %}
+                                                        从未下载
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check me-1"></i>
+                            保存配置
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+{% endfor %}
 {% endblock %}
 
 {% block extra_js %}
@@ -253,21 +470,27 @@
     // 确认操作提示
     document.querySelectorAll('form button[type="submit"]').forEach(button => {
         button.addEventListener('click', function(e) {
-            const action = this.form.querySelector('input[name="action"]').value;
-            const username = this.closest('tr').querySelector('strong').textContent;
+            const form = this.closest('form');
+            const action = form.querySelector('input[name="action"]');
             
-            let message = '';
-            if (action === 'activate') {
-                message = `确定要激活用户 ${username} 吗？`;
-            } else if (action === 'deactivate') {
-                message = `确定要停用用户 ${username} 吗？`;
-            }
-            
-            if (message && !confirm(message)) {
-                e.preventDefault();
+            if (action && action.value !== 'update_config') {
+                const username = this.closest('tr').querySelector('strong').textContent;
+                
+                let message = '';
+                if (action.value === 'activate') {
+                    message = `确定要激活用户 ${username} 吗？`;
+                } else if (action.value === 'deactivate') {
+                    message = `确定要停用用户 ${username} 吗？`;
+                }
+                
+                if (message && !confirm(message)) {
+                    e.preventDefault();
+                }
             }
         });
     });
 </script>
 {% endblock %}
+
+
 
