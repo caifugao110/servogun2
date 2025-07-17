@@ -39,6 +39,12 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            # 检查密码是否过期
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            if user_profile.is_password_expired():
+                logout(request)
+                return render(request, 'login.html', {'error': '您的密码已过期，请联系管理员重置。'})
+
             # 记录登录日志
             log_entry = Log(user=user, action_type='login', ip_address=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT', ''))
             log_entry.save()
@@ -610,7 +616,16 @@ def manage_users(request):
             # 更新密码有效期设置
             password_validity = request.POST.get('password_validity_days')
             if password_validity:
-                user_profile.password_validity_days = int(password_validity)
+                new_validity_days = int(password_validity)
+                old_validity_days = user_profile.password_validity_days
+                
+                # 如果密码已过期且设置了新的有效期（非永久），则重置密码状态
+                if user_profile.is_password_expired() and new_validity_days > 0:
+                    # 重置密码最后修改时间为当前时间，使密码重新生效
+                    user_profile.password_last_changed = timezone.now()
+                    messages.info(request, f'用户 {user.username} 的密码状态已重置，新的有效期为 {new_validity_days} 天')
+                
+                user_profile.password_validity_days = new_validity_days
             
             # 更新下载限制设置
             max_single_download = request.POST.get('max_single_download_mb')
@@ -630,6 +645,23 @@ def manage_users(request):
             if max_batch_download_mb:
                 user_profile.max_batch_download_mb = int(max_batch_download_mb)
             
+            # 更新用户信息
+            customer_name = request.POST.get('customer_name')
+            if customer_name is not None:  # 允许空字符串
+                user_profile.customer_name = customer_name.strip()
+            
+            email = request.POST.get('email')
+            if email is not None:  # 允许空字符串
+                user.email = email.strip()
+            
+            password_remark = request.POST.get('password_remark')
+            if password_remark is not None:  # 允许空字符串
+                # 将密码备注存储到first_name和last_name字段
+                remark_parts = password_remark.strip().split(' ', 1)
+                user.first_name = remark_parts[0] if remark_parts else ''
+                user.last_name = remark_parts[1] if len(remark_parts) > 1 else ''
+            
+            user.save()
             user_profile.save()
             
             log_entry = Log(user=request.user, action_type='update_user_config', ip_address=request.META.get('REMOTE_ADDR'),
@@ -973,4 +1005,109 @@ def sync_files(request):
 
 
 
+
+
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def add_user(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        password_remark = request.POST.get('password_remark')
+        customer_name = request.POST.get('customer_name')
+        
+        if not username or not password or not password_remark or not customer_name:
+            messages.error(request, '用户名、密码、密码备注和客户名称不能为空。')
+            return redirect('clamps:manage_users')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, '该用户名已存在。')
+            return redirect('clamps:manage_users')
+            
+        try:
+            user = User.objects.create_user(username=username, password=password)
+            user.is_staff = False  # 默认为普通用户
+            user.is_superuser = False
+            user.first_name = password_remark  # 将密码备注存储到first_name字段
+            user.save()
+            
+            # 创建用户配置，设置默认密码有效期为5天，并保存客户名称
+            UserProfile.objects.create(
+                user=user, 
+                password_validity_days=5, 
+                password_last_changed=timezone.now(),
+                customer_name=customer_name
+            )
+            
+            log_entry = Log(user=request.user, action_type='add_user', ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Added new user {username} with customer name {customer_name}')
+            log_entry.save()
+            messages.success(request, f'用户 {username} 添加成功。')
+        except Exception as e:
+            messages.error(request, f'添加用户失败: {e}')
+            
+        return redirect('clamps:manage_users')
+    return redirect('clamps:manage_users')
+
+
+
+@login_required
+@user_passes_test(is_superuser)
+def export_users(request):
+    """导出所有用户信息为CSV文件"""
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="users_export.csv"'
+    
+    # 添加BOM以支持Excel正确显示中文
+    response.write('\ufeff')
+    
+    writer = csv.writer(response)
+    writer.writerow(['用户ID', '用户名', '客户名称', '邮箱', '密码备注', '状态', '权限', '密码有效期', '单次下载限制(MB)', '批量下载限制(MB)', '每日下载限制(GB)', '每日下载文件数限制', '注册时间', '最后登录'])
+    
+    for user in User.objects.all().order_by('id'):
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        
+        # 确定用户权限
+        if user.is_superuser:
+            permission = '超级管理员'
+        elif user.is_staff:
+            permission = '管理员'
+        else:
+            permission = '普通用户'
+        
+        # 确定密码有效期
+        if profile.password_validity_days == 0:
+            password_validity = '永久有效'
+        else:
+            password_validity = f'{profile.password_validity_days}天'
+        
+        writer.writerow([
+            user.id,
+            user.username,
+            profile.customer_name or '',
+            user.email or '',
+            f"{user.first_name} {user.last_name}".strip() or '',
+            '活跃' if user.is_active else '停用',
+            permission,
+            password_validity,
+            profile.max_single_download_mb,
+            profile.max_batch_download_mb,
+            profile.max_daily_download_gb,
+            profile.max_daily_download_count,
+            user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+            user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else '从未登录'
+        ])
+    
+    # 记录导出日志
+    log_entry = Log(
+        user=request.user, 
+        action_type='export_users', 
+        ip_address=request.META.get('REMOTE_ADDR'),
+        user_agent=request.META.get('HTTP_USER_AGENT', ''), 
+        details='Exported all users information'
+    )
+    log_entry.save()
+    
+    return response
 

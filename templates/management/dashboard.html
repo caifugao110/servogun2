@@ -80,7 +80,6 @@
                 </div>
             </div>
             
-            {% if request.user.is_superuser %}
             <div class="col-md-6">
                 <div class="card h-100 fade-in-up">
                     <div class="card-header">
@@ -99,6 +98,7 @@
                 </div>
             </div>
             
+            {% if request.user.is_superuser %}
             <div class="col-md-6">
                 <div class="card h-100 fade-in-up">
                     <div class="card-header">
@@ -161,7 +161,6 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
 
             <div class="col-md-6">
                 <div class="card h-100 fade-in-up">
@@ -180,6 +179,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
         
         <!-- 最近操作日志 -->

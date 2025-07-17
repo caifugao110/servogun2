@@ -311,6 +311,15 @@ class UserProfile(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile", verbose_name="用户")
     
+    # 客户名称字段
+    customer_name = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="客户名称",
+        help_text="用于备注客户名称"
+    )
+    
     # 密码有效期设置 - 修改为支持1-15天和永久有效
     password_validity_days = models.IntegerField(
         default=5, 

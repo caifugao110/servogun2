@@ -11,6 +11,16 @@
                 用户管理
             </h1>
             <div>
+                {% if user.is_superuser %}
+                    <button type="button" class="btn btn-info me-2" onclick="exportUsers()">
+                        <i class="bi bi-download me-2"></i>
+                        导出用户信息
+                    </button>
+                {% endif %}
+                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="bi bi-person-plus me-2"></i>
+                    新增用户
+                </button>
                 <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-2"></i>
                     返回仪表板
@@ -33,8 +43,9 @@
                             <thead>
                                 <tr>
                                     <th>用户名</th>
+                                    <th>用户备注</th>
                                     <th>邮箱</th>
-                                    <th>姓名</th>
+                                    <th>密码备注</th>
                                     <th>状态</th>
                                     <th>权限</th>
                                     <th>密码状态</th>
@@ -50,6 +61,13 @@
                                     <tr>
                                         <td>
                                             <strong>{{ user.username }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if profile.customer_name %}
+                                                {{ profile.customer_name }}
+                                            {% else %}
+                                                --
+                                            {% endif %}
                                         </td>
                                         <td>{{ user.email|default:"--" }}</td>
                                         <td>
@@ -296,7 +314,7 @@
                             </li>
                             <li class="mb-2">
                                 <i class="bi bi-exclamation-triangle text-danger me-2"></i>
-                                <strong>过期：</strong>需要重置密码
+                                <strong>过期：</strong>需要配置延期或者重置密码
                             </li>
                         </ul>
                     </div>
@@ -332,6 +350,64 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增用户模态框 -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">
+                    <i class="bi bi-person-plus me-2"></i>
+                    新增用户
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'clamps:add_user' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <div class="form-text">用户名为英文小写4~10字符长度，不能重复</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="customer_name" class="form-label">客户名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                        <div class="form-text">请备注客户名称</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">请设置安全的密码</div>
+                    </div>
+					<div class="mb-3">
+                        <label for="password_remark" class="form-label">密码备注 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="password_remark" name="password_remark" required>
+                        <div class="form-text">请再次输入密码</div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>默认设置：</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>用户类型：普通用户</li>
+                            <li>密码有效期：5天</li>
+                            <li>单次下载限制：100MB</li>
+                            <li>批量下载限制：200MB</li>
+                            <li>每日下载限制：100GB / 100个文件</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check me-1"></i>
+                        创建用户
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -377,6 +453,32 @@
                                             可设置1-15天或永久有效，默认5天
                                         </small>
                                     </div>
+                                </div>
+                                
+                                <h6 class="mb-3 mt-4">
+                                    <i class="bi bi-person-lines-fill me-2"></i>
+                                    用户信息编辑
+                                </h6>
+                                <div class="mb-3">
+                                    <label for="customerName{{ user.id }}" class="form-label">用户备注</label>
+                                    <input type="text" class="form-control" id="customerName{{ user.id }}" 
+                                           name="customer_name" value="{{ profile.customer_name|default:'' }}" 
+                                           placeholder="请输入客户名称或备注信息">
+                                    <div class="form-text">用于备注客户名称或其他相关信息</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="userEmail{{ user.id }}" class="form-label">邮箱</label>
+                                    <input type="email" class="form-control" id="userEmail{{ user.id }}" 
+                                           name="email" value="{{ user.email|default:'' }}" 
+                                           placeholder="请输入邮箱地址">
+                                    <div class="form-text">用户的邮箱地址</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="passwordRemark{{ user.id }}" class="form-label">密码备注</label>
+                                    <input type="text" class="form-control" id="passwordRemark{{ user.id }}" 
+                                           name="password_remark" value="{{ user.first_name|default:'' }} {{ user.last_name|default:'' }}" 
+                                           placeholder="请输入密码相关备注">
+                                    <div class="form-text">用于记录密码相关的备注信息</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -489,6 +591,13 @@
             }
         });
     });
+
+    // 导出用户信息功能
+    function exportUsers() {
+        if (confirm('确定要导出所有用户信息吗？')) {
+            window.location.href = "{% url 'clamps:export_users' %}";
+        }
+    }
 </script>
 {% endblock %}
 
