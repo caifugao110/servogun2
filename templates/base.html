@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -6,24 +7,16 @@
     <meta name="description" content="小原焊钳选型数据库 - 专业的焊钳选型工具">
     <title>{% block title %}小原焊钳选型数据库{% endblock %}</title>
     
-    <!-- ✅ 推荐方式：使用 CDN1 引入（如使用请取消注释） -->
+    <!-- ✅ 推荐方式：使用 CDN1 引入（如使用请取消注释） 
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-	
-	 <!-- ✅ 推荐方式：使用 CDN2 引入（如使用请取消注释） -->
-	 <!--
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-	 -->
+	-->
 
-    <!-- 📁 或者使用本地资源（请先下载并放到项目 css 目录下，注意目录结构在外层static文件夹，如使用请取消注释） -->
-    <!--
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="css/all.min.css">
-    -->
+    <!-- 📁 使用本地资源 -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}">
     
     <style>
         :root {
@@ -505,11 +498,12 @@
     </footer>
     
     <!-- Bootstrap JS -->
-	<!-- ✅ 推荐方式：使用 CDN1 引入（如使用请取消注释） -->
+	<!-- ✅ 推荐方式：使用 CDN1 引入（如使用请取消注释） 
     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-	<!--
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	-->
+	
+	 <!-- 📁 使用本地资源 -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     
     <script>
         // 主题切换功能
