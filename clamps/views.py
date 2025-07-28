@@ -31,6 +31,9 @@ def is_staff_or_superuser(user):
 def home(request):
     return render(request, 'home.html')
 
+def home_en(request):
+    return render(request, 'home_en.html')
+
 
 def user_login(request):
     if request.method == 'POST':
@@ -53,6 +56,24 @@ def user_login(request):
             return render(request, 'login.html', {'error': '无效的用户名或密码'})
     return render(request, 'login.html')
 
+def user_login_en(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            if user_profile.is_password_expired():
+                logout(request)
+                return render(request, 'login_en.html', {'error': 'Your password has expired, please contact the administrator to reset it.'})
+            log_entry = Log(user=user, action_type='login', ip_address=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT', ''))
+            log_entry.save()
+            return redirect('clamps:home_en')
+        else:
+            return render(request, 'login_en.html', {'error': 'Invalid username or password'})
+    return render(request, 'login_en.html')
+
 
 def generate_random_password(length=12):
     characters = string.ascii_letters + string.digits + string.punctuation
@@ -72,6 +93,11 @@ def user_logout(request):
 def search(request):
     categories = Category.objects.all()
     return render(request, 'search.html', {'categories': categories})
+
+@login_required
+def search_en(request):
+    categories = Category.objects.all()
+    return render(request, 'search_en.html', {'categories': categories})
 
 
 @login_required
@@ -170,6 +196,98 @@ def search_results(request):
     }
     return render(request, 'search_results.html', context)
 
+@login_required
+def search_results_en(request):
+    query_params = request.GET.copy()
+    category_id = query_params.get('category')
+    description = query_params.get('description')
+    drawing_no_1 = query_params.get('drawing_no_1')
+    sub_category_type = query_params.get('sub_category_type')
+
+    stroke = query_params.get('stroke')
+    clamping_force = query_params.get('clamping_force')
+    weight = query_params.get('weight')
+    throat_depth = query_params.get('throat_depth')
+    throat_width = query_params.get('throat_width')
+
+    transformer = query_params.get('transformer')
+    electrode_arm_end = query_params.get('electrode_arm_end')
+    motor_manufacturer = query_params.get('motor_manufacturer')
+    has_balance = query_params.get('has_balance')
+
+    queryset = Product.objects.all()
+
+    if category_id:
+        queryset = queryset.filter(category_id=category_id)
+    if description:
+        queryset = queryset.filter(description__icontains=description)
+    if drawing_no_1:
+        queryset = queryset.filter(drawing_no_1__icontains=drawing_no_1)
+    if sub_category_type:
+        queryset = queryset.filter(sub_category_type__icontains=sub_category_type)
+
+    def parse_range_query(field_name, query_string, current_queryset):
+        if query_string:
+            query_string = query_string.strip()
+            if '~' in query_string:
+                parts = query_string.split('~')
+                min_val_str = parts[0].strip()
+                max_val_str = parts[1].strip()
+
+                q_objects = Q()
+                if min_val_str:
+                    try:
+                        min_val = float(min_val_str)
+                        q_objects &= Q(**{f'{field_name}__gte': min_val})
+                    except ValueError:
+                        pass
+                if max_val_str:
+                    try:
+                        max_val = float(max_val_str)
+                        q_objects &= Q(**{f'{field_name}__lte': max_val})
+                    except ValueError:
+                        pass
+                
+                if q_objects:
+                    current_queryset = current_queryset.filter(q_objects)
+            else:
+                try:
+                    exact_val = float(query_string)
+                    current_queryset = current_queryset.filter(**{field_name: exact_val})
+                except ValueError:
+                    pass
+        return current_queryset
+
+    queryset = parse_range_query('stroke', stroke, queryset)
+    queryset = parse_range_query('clamping_force', clamping_force, queryset)
+    queryset = parse_range_query('weight', weight, queryset)
+    queryset = parse_range_query('throat_depth', throat_depth, queryset)
+    queryset = parse_range_query('throat_width', throat_width, queryset)
+
+    if transformer:
+        queryset = queryset.filter(transformer__icontains=transformer)
+    if electrode_arm_end:
+        queryset = queryset.filter(electrode_arm_end__icontains=electrode_arm_end)
+    if motor_manufacturer:
+        queryset = queryset.filter(motor_manufacturer__icontains=motor_manufacturer)
+    if has_balance:
+        queryset = queryset.filter(has_balance=True if has_balance == '有' else False)
+
+    log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=str(query_params))
+    log_entry.save()
+
+    paginator = Paginator(queryset, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'total_results': paginator.count,
+        'query_params': query_params,
+    }
+    return render(request, 'search_results_en.html', context)
+
 
 @login_required
 def product_detail(request, product_id):
@@ -179,6 +297,14 @@ def product_detail(request, product_id):
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id}')
     log_entry.save()
     return render(request, 'product_detail.html', {'product': product})
+
+@login_required
+def product_detail_en(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    log_entry = Log(user=request.user, action_type='view_detail', ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id} (English)')
+    log_entry.save()
+    return render(request, 'product_detail_en.html', {'product': product})
 
 
 # 新增：检查文件大小的API端点
@@ -1110,4 +1236,6 @@ def export_users(request):
     log_entry.save()
     
     return response
+
+
 

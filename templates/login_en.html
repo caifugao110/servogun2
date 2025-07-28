@@ -1,0 +1,169 @@
+{% extends 'base_en.html' %}
+
+{% block title %}Login - OBARA Welding Gun Selection Database{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card fade-in-up">
+            <div class="card-header text-center">
+                <h2 class="mb-0">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    User Login
+                </h2>
+                <p class="mb-0 mt-2 text-light">Develop with global automobile industry together</p>
+            </div>
+            <div class="card-body p-5">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form method="post" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="username" class="form-label">
+                                    <i class="bi bi-person me-2"></i>
+                                    Username
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="username" 
+                                       name="username" 
+                                       placeholder="Please enter username"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Please enter username
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label">
+                                    <i class="bi bi-lock me-2"></i>
+                                    Password
+                                </label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       placeholder="Please enter password"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Please enter password
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="agreementCheck" required>
+                                <label class="form-check-label" for="agreementCheck">
+                                    I have read and agree to the <a href="/static/pdf/用户协议.pdf" target="_blank">User Agreement</a> of OBARA Welding Gun Selection Database
+                                </label>
+                                <div class="invalid-feedback">
+                                    Please check this box to agree to the User Agreement
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="loginButton" disabled>
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Login
+                                </button>
+                            </div>
+							<br>
+							<br>
+							<div class="alert alert-info">
+								<strong>Security Policy Notice</strong>
+								<span style="color: red;">
+                                <p class="mb-2">
+                                    1. The initially distributed account password is valid for 5 days by default, with a single batch download size of 200MB and a maximum of 100 files downloaded per day.
+								</p>
+								<p class="mb-2">
+									2. If your account is restricted from login/download, please contact your sales manager for account renewal and download quota update.
+                                </p>
+								<p class="mb-0">
+									3. Drawing and model data are technical secrets of our company. Logging in means you agree to the relevant security policies. The server will automatically monitor data access. For illegal data acquisition, we will take corresponding measures in accordance with the law to ensure data security.
+                                </p>
+								</span>
+							</div>
+                        </form>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="ps-md-4">
+                            <h4 class="mb-3">
+                                <i class="bi bi-question-circle me-2"></i>
+                                How to Get Username
+                            </h4>
+                            <div class="alert alert-info">
+                                <p class="mb-2">
+                                    The Username and Password of OBARA Welding Gun Selection Database are uniformly 
+                                    distributed by the Technical Development Department of OBARA (Nanjing) Mechanical 
+                                    and Electrical Co., Ltd. The welding gun parameters, drawings and model data are 
+                                    technical secrets of our company and are prohibited from being used for purposes 
+                                    other than product selection.
+                                </p>
+                            </div>
+                            
+                            <h4 class="mb-3 mt-4">
+                                <i class="bi bi-telephone me-2"></i>
+                                Contact Us
+                            </h4>
+                            <div class="contact-info">
+                                <p class="mb-2">
+                                    <i class="bi bi-building me-2"></i>
+                                    <strong>OBARA (NANJING) MACHINERY & ELECTRIC CO.,LTD.</strong>
+                                    <br>
+                                </p>
+                                <p class="mb-2">
+                                    <i class="bi bi-geo-alt me-2"></i>
+                                    <strong>Address:</strong>
+                                    <a href="https://j.map.baidu.com/73/Y8F" 
+                       target="_blank" class="text-decoration-none">
+                        No.28, Renjie Road, Jiangning District, Nanjing, China
+                    </a>
+                                    <br>
+                                </p>
+                                <p class="mb-2">
+                                    <i class="bi bi-telephone me-2"></i>
+                                    <strong>Sales Department:</strong>(025)52106195
+                                    <br>
+                                </p>
+                                <p class="mb-0">
+                                    <i class="bi bi-envelope me-2"></i>
+                                    <strong>IT Department Email:</strong>
+                                    <a href="mailto:sunxx@obara.com.cn" class="text-decoration-none">sunxx@obara.com.cn</a>
+                                    <br>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+
+    // Login button enable/disable logic
+    document.getElementById('agreementCheck').addEventListener('change', function() {
+        document.getElementById('loginButton').disabled = !this.checked;
+    });
+</script>
+{% endblock %}
+

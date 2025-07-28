@@ -4,25 +4,24 @@ from . import views
 app_name = 'clamps'
 
 urlpatterns = [
-    # 基本页面
+    # 中文页面URL
     path('', views.home, name='home'),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
-    
-    # 搜索功能
     path('search/', views.search, name='search'),
     path('search/results/', views.search_results, name='search_results'),
     re_path(r'^product/(?P<product_id>\d+)/$', views.product_detail, name='product_detail'),
     re_path(r'^download/(?P<product_id>\d+)/(?P<file_type>\w+)/$', views.download_file, name='download_file'),
-    
-    # 批量下载功能
     path('batch_download/<str:file_type>/', views.batch_download_view, name='batch_download'),
-    
-    # 文件大小检查API端点
     re_path(r'^check_file_size/(?P<product_id>\d+)/(?P<file_type>\w+)/$', views.check_file_size, name='check_file_size'),
     path('check_batch_file_size/', views.check_batch_file_size, name='check_batch_file_size'),
 
-    # 管理功能
+    # 英文页面URL
+    path('_en/', views.home_en, name='home_en'),
+    path('login_en/', views.user_login_en, name='login_en'),
+    path("search_en/", views.search_en, name="search_en"),
+    path('search/results_en/', views.search_results_en, name='search_results_en'),
+    re_path(r'^product/(?P<product_id>\d+)_en/$', views.product_detail_en, name='product_detail_en'),  # 管理功能 (保持不变)
     path('management/', views.management_dashboard, name='management_dashboard'),
     path('management/users/', views.manage_users, name='manage_users'),
     path('management/users/toggle/<int:user_id>/', views.toggle_user_active, name='toggle_user_active'),
@@ -35,4 +34,5 @@ urlpatterns = [
     path('management/import_csv/', views.import_csv, name='import_csv'),
     path('management/sync_files/', views.sync_files, name='sync_files'),
 ]
+
 

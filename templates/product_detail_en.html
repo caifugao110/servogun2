@@ -1,0 +1,491 @@
+{% extends 'base_en.html' %}
+
+{% block title %}{{ product.drawing_no_1|default:"Product Details" }} - OBARA Welding Gun Selection Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Product Details Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
+            <div>
+                <h1 class="display-6 fw-bold">
+                    <i class="bi bi-gear me-2"></i>
+                    {{ product.drawing_no_1|default:"Unknown Product" }}
+                </h1>
+                </h1>
+                <p class="lead text-muted">No description available</p>
+            </div>
+            <div>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Back
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Product Image -->
+            <div class="col-lg-4">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-image me-2"></i>
+                            Product Image
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        {% if product.bmp_file_path %}
+                            <img src="/media/{{ product.bmp_file_path }}" 
+                                 class="img-fluid rounded shadow" 
+                                 onclick="previewImage('/media/{{ product.bmp_file_path }}', '{{ product.drawing_no_1 }}')"
+                                 style="cursor: pointer; max-height: 300px;"
+                                 alt="Product Image"
+                                 onerror="this.src='/static/images/no-image.png'">
+                            <p class="text-muted mt-2 small">Click image to enlarge</p>
+                        {% else %}
+                            <div class="py-5">
+                                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                                <p class="text-muted mt-3">No product image available</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- File Download -->
+                <div class="card mt-4 fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-download me-2"></i>
+                            File Download (Do not download if no preview image)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            {% if product.dwg_file_path %}
+                                <a href="{% url 'clamps:download_file' product.id 'dwg' %}" 
+                                   class="btn btn-outline-primary download-btn">
+                                    <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                                    Download DWG File
+                                </a>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-file-earmark-x me-2"></i>
+                                    DWG File Unavailable
+                                </button>
+                            {% endif %}
+                            
+                            {% if product.step_file_path %}
+                                <a href="{% url 'clamps:download_file' product.id 'step' %}" 
+                                   class="btn btn-outline-success download-btn">
+                                    <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                                    Download STEP File
+                                </a>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-file-earmark-x me-2"></i>
+                                    STEP File Unavailable
+                                </button>
+                            {% endif %}
+                            
+                            {% if product.bmp_file_path %}
+                                <a href="{% url 'clamps:download_file' product.id 'bmp' %}" 
+                                   class="btn btn-outline-info download-btn">
+                                    <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                                    Download BMP File
+                                </a>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-file-earmark-x me-2"></i>
+                                    BMP File Unavailable
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Parameters -->
+            <div class="col-lg-8">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul me-2"></i>
+                            Product Parameters (Manually exported from database, accuracy not guaranteed, for reference only)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Basic Information -->
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Basic Information
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Category:</strong>
+                                <span class="badge bg-primary">{{ product.category.name }}</span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Sub-category Type:</strong>
+                                {{ product.sub_category_type|default:"--" }}
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                <strong>Description:</strong>
+                                No description available
+                            </div>
+                            
+                            <!-- Technical Parameters -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-gear-wide-connected me-2"></i>
+                                    Technical Parameters
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Stroke:</strong>
+                                {% if product.stroke %}{{ product.stroke }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Clamping Force:</strong>
+                                {% if product.clamping_force %}{{ product.clamping_force }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Weight:</strong>
+                                {% if product.weight %}{{ product.weight }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong class="highlight-field">Throat Depth:</strong>
+                                {% if product.throat_depth %}{{ product.throat_depth }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong class="highlight-field">Throat Width:</strong>
+                                {% if product.throat_width %}{{ product.throat_width }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong class="highlight-field">Transformer:</strong>
+                                {{ product.transformer|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Electrode Arm End:</strong>
+                                {{ product.electrode_arm_end|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Electrode Arm Type:</strong>
+                                {{ product.electrode_arm_type|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Transformer Placement:</strong>
+                                {{ product.transformer_placement|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Flange P.C.D:</strong>
+                                {{ product.flange_pcd|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Balance:</strong>
+                                {{ product.has_balance|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Water Circuit:</strong>
+                                {{ product.water_circuit|default:"--" }}
+                            </div>
+                            
+                            <!-- Bracket and Gearbox Parameters -->
+                            <div class="col-12 mt-4">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-tools me-2"></i>
+                                    Bracket and Gearbox
+                                </h6>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Bracket Direction:</strong>
+                                {{ product.bracket_direction|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Bracket Angle:</strong>
+                                {% if product.bracket_angle %}{{ product.bracket_angle }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Motor Manufacturer:</strong>
+                                {{ product.motor_manufacturer|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Bracket Count:</strong>
+                                {% if product.bracket_count %}{{ product.bracket_count }}{% else %}--{% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Gearbox Type:</strong>
+                                {{ product.gearbox_type|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Bracket Material:</strong>
+                                {{ product.bracket_material|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Gearbox Stroke:</strong>
+                                {{ product.gearbox_stroke|default:"--" }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <strong>Tool Changer:</strong>
+                                {{ product.tool_changer|default:"--" }}
+                            </div>
+                            
+                            <!-- X-Type Specific Parameters -->
+                            {% if product.static_arm_eccentricity or product.moving_arm_eccentricity %}
+                                <div class="col-12 mt-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="bi bi-arrows-angle-expand me-2"></i>
+                                        X-Type Specific Parameters
+                                    </h6>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Static Arm Eccentricity:</strong>
+                                    {% if product.static_arm_eccentricity %}{{ product.static_arm_eccentricity }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Moving Arm Eccentricity:</strong>
+                                    {% if product.moving_arm_eccentricity %}{{ product.moving_arm_eccentricity }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Static Electrode Arm End:</strong>
+                                    {{ product.static_electrode_arm_end|default:"--" }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Moving Electrode Arm End:</strong>
+                                    {{ product.moving_electrode_arm_end|default:"--" }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Pivot to Drive Center Distance:</strong>
+                                    {% if product.pivot_to_drive_center_dist %}{{ product.pivot_to_drive_center_dist }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Static Arm Front Length:</strong>
+                                    {% if product.static_arm_front_length %}{{ product.static_arm_front_length }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Static Arm Front Height:</strong>
+                                    {% if product.static_arm_front_height %}{{ product.static_arm_front_height }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Moving Arm Front Length:</strong>
+                                    {% if product.moving_arm_front_length %}{{ product.moving_arm_front_length }}{% else %}--{% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <strong>Moving Arm Front Height:</strong>
+                                    {% if product.moving_arm_front_height %}{{ product.moving_arm_front_height }}{% else %}--{% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Other Parameters -->
+                            {% if product.eccentricity or product.grip_extension_length %}
+                                <div class="col-12 mt-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="bi bi-plus-circle me-2"></i>
+                                        Other Parameters
+                                    </h6>
+                                </div>
+                                
+                                {% if product.eccentricity %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Eccentricity Distance:</strong>
+                                        {{ product.eccentricity }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if product.eccentricity_direction %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Eccentricity Direction:</strong>
+                                        {{ product.eccentricity_direction }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if product.eccentricity_to_center %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Eccentricity Return to Center:</strong>
+                                        {{ product.eccentricity_to_center }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if product.guidance_method %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Guidance Method:</strong>
+                                        {{ product.guidance_method }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if product.grip_extension_length %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Grip Extension Length:</strong>
+                                        {{ product.grip_extension_length }}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Creation and Update Time -->
+                <div class="card mt-4 fade-in-up">
+                    <div class="card-body">
+                        <div class="row text-muted small">
+                            <div class="col-md-6">
+                                <i class="bi bi-calendar-plus me-2"></i>
+                                Created: {{ product.created_at|date:"Y-m-d H:i:s" }}
+                            </div>
+                            <div class="col-md-6">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                Updated: {{ product.updated_at|date:"Y-m-d H:i:s" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show prompt when downloading files
+    document.querySelectorAll('.download-btn').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const fileName = this.textContent.trim();
+            const downloadUrl = this.href;
+            
+            // Show warning
+            showDownloadWarning(() => {
+                // Start download after 3 seconds
+                setTimeout(() => {
+                    window.location.href = downloadUrl;
+                }, 3000);
+            });
+        });
+    });
+    
+    function showDownloadWarning(callback) {
+        const warningHtml = `
+            <div class="modal fade" id="downloadWarningModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Download Notice</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Drawing and model data may change for various reasons without notice. The selection database cannot guarantee the complete accuracy of drawing and model data, and this data is not used as any reference basis.
+                            </div>
+                            <div class="text-center">
+                                <div class="spinner-border text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span id="countdown">3</span> seconds until automatic download...<br>Server compression takes time when data is large, please wait patiently
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="directDownloadBtn">Click here for direct download if window doesn't redirect automatically</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal
+        const existingModal = document.getElementById('downloadWarningModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', warningHtml);
+        const modal = new bootstrap.Modal(document.getElementById('downloadWarningModal'));
+        
+        let countdown = 3;
+        const countdownElement = document.getElementById('countdown');
+        const directDownloadBtn = document.getElementById('directDownloadBtn');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(timer);
+                modal.hide();
+                callback();
+            }
+        }, 1000);
+        
+        directDownloadBtn.addEventListener('click', () => {
+            clearInterval(timer);
+            modal.hide();
+            callback();
+        });
+        
+        modal.show();
+        
+        // Clean up timer when modal is closed
+        document.getElementById('downloadWarningModal').addEventListener('hidden.bs.modal', () => {
+            clearInterval(timer);
+            document.getElementById('downloadWarningModal').remove();
+        });
+    }
+    
+    function showToast(message, type = 'info') {
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toast = new bootstrap.Toast(toastContainer.lastElementChild);
+        toast.show();
+    }
+</script>
+{% endblock %}
+

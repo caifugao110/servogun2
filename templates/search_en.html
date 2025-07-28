@@ -1,0 +1,382 @@
+{% extends 'base_en.html' %}
+
+{% block title %}Product Search - OBARA Welding Gun Selection Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-4 fade-in-up">
+            <h1 class="display-5 fw-bold">
+                <i class="bi bi-search me-3"></i>
+                SERVO GUN Product Search
+            </h1>
+            <p class="lead text-muted">Please select category and fill in search criteria</p>
+        </div>
+        
+        <div class="search-form fade-in-up">
+            <form method="get" action="{% url 'clamps:search_results_en' %}" id="searchForm">
+                <!-- First six main search fields -->
+                <div class="row g-3 mb-4">
+                    <!-- Product Category -->
+                    <div class="col-md-6">
+                        <label for="category" class="form-label">
+                            <i class="bi bi-diagram-3 me-2"></i>
+                            Product Category (Click the question mark if unsure about category) <span class="text-danger">*</span>
+                            <a href="/static/pdf/产品搜索使用指南.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="User Guide">
+                                <i class="bi bi-question-circle"></i>
+                            </a>
+                        </label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Select from dropdown, recommend first two options X2C-C and X2C-X</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Sub-category Type -->
+                    <div class="col-md-6">
+                        <label for="sub_category_type" class="form-label">
+                            <i class="bi bi-tags me-2"></i>
+                            Sub-category Type
+                        </label>
+                        <select class="form-select" id="sub_category_type" name="sub_category_type">
+                            <option value="">Please select, default is empty</option>
+                            <!-- Dynamic loading options -->
+                        </select>
+                    </div>
+                    
+                    <!-- Throat Depth -->
+                    <div class="col-md-6">
+                        <label for="throat_depth" class="form-label">
+                            <i class="bi bi-rulers me-2"></i>
+                            Throat Depth
+                        </label>
+                        <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="Outer contour value perpendicular to electrode pressure direction, e.g.: ~350, 350~600, 600~">
+                    </div>
+                    
+                    <!-- Throat Width -->
+                    <div class="col-md-6">
+                        <label for="throat_width" class="form-label">
+                            <i class="bi bi-arrows-expand me-2"></i>
+                            Throat Width
+                        </label>
+                        <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="Outer contour value parallel to electrode pressure direction, e.g.: ~350, 350~600, 600~">
+                    </div>
+                    
+                    <!-- Transformer -->
+                    <div class="col-md-6">
+                        <label for="transformer" class="form-label">
+                            <i class="bi bi-cpu me-2"></i>
+                            Transformer
+                        </label>
+                        <select class="form-select" id="transformer" name="transformer">
+                            <option value="">Please select, default is empty</option>
+                            <option value="ITS85">ITS85 (Recommended)</option>
+                            <option value="DB6-100R1">DB6-100R1 (Recommended)</option>
+                            <option value="RT552">RT552</option>
+                            <option value="RT752">RT752</option>
+                            <option value="RT906">RT906</option>
+                            <option value="DB6-90-510">DB6-90-510</option>
+                            <option value="SMF-100">SMF-100</option>
+                            <option value="MF-100">MF-100</option>
+                            <option value="其他">Others</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Motor Manufacturer -->
+                    <div class="col-md-6">
+                        <label for="motor_manufacturer" class="form-label">
+                            <i class="bi bi-gear-wide-connected me-2"></i>
+                            Motor Manufacturer
+                        </label>
+                        <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+                            <option value="">Please select, default is empty</option>
+                            <option value="FANUC">FANUC</option>
+                            <option value="KUKA">KUKA</option>
+                            <option value="YASKAWA">YASKAWA</option>
+                            <option value="ABB">ABB</option>
+                            <option value="TOLOMATIC">TOLOMATIC</option>
+                            <option value="多摩川">Tamagawa</option>
+                            <option value="PANASONIC">PANASONIC</option>
+                            <option value="DIAKONT">DIAKONT</option>
+                            <option value="SEW">SEW</option>
+                            <option value="SANYO">SANYO</option>
+                            <option value="其他">Others</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Advanced Search Fields -->
+                <div class="mt-4">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
+                        <i class="bi bi-gear me-2"></i>
+                        Advanced Search Options
+                    </button>
+                </div>
+                
+                <div class="collapse mt-3" id="advancedSearch">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <!-- Drawing No.1(o) - First -->
+                                <div class="col-md-6">
+                                    <label for="drawing_no_1" class="form-label">
+                                        <i class="bi bi-file-earmark-text me-2"></i>
+                                        Drawing No.1(o)
+                                    </label>
+                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="Welding gun drawing number, default is empty">
+                                </div>
+                                
+                                <!-- Description -->
+                                <div class="col-md-6">
+                                    <label for="description" class="form-label">
+                                        <i class="bi bi-card-text me-2"></i>
+                                        Description
+                                    </label>
+                                    <input type="text" class="form-control" id="description" name="description" placeholder="Customer description, default is empty">
+                                </div>
+                                
+                                <!-- Stroke -->
+                                <div class="col-md-4">
+                                    <label for="stroke" class="form-label">
+                                        <i class="bi bi-arrows-move me-2"></i>
+                                        Stroke
+                                    </label>
+                                    <input type="text" class="form-control" id="stroke" name="stroke" placeholder="e.g.: ~90, 100~190, 210~">
+                                </div>
+                                
+                                <!-- Clamping Force -->
+                                <div class="col-md-4">
+                                    <label for="clamping_force" class="form-label">
+                                        <i class="bi bi-lightning me-2"></i>
+                                        Clamping Force
+                                    </label>
+                                    <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="e.g.: ~3500, 3500~5500, 5500~">
+                                </div>
+                                
+                                <!-- Weight -->
+                                <div class="col-md-4">
+                                    <label for="weight" class="form-label">
+                                        <i class="bi bi-box me-2"></i>
+                                        Weight
+                                    </label>
+                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="e.g.: ~90, 90~120, 120~">
+                                </div>
+                                
+                                <!-- Electrode Arm End -->
+                                <div class="col-md-4">
+                                    <label for="electrode_arm_end" class="form-label">
+                                        <i class="bi bi-tools me-2"></i>
+                                        Electrode Arm End
+                                    </label>
+                                    <select class="form-select" id="electrode_arm_end" name="electrode_arm_end">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="握杆（铝）">Grip Rod (Aluminum)</option>
+                                        <option value="TIP BASE（F 型）">TIP BASE (F Type)</option>
+                                        <option value="握杆（SBA）">Grip Rod (SBA)</option>
+                                        <option value="TIP BASE（G 型）">TIP BASE (G Type)</option>
+                                        <option value="GUN HEAD（?36）">GUN HEAD (?36)</option>
+                                        <option value="GUN HEAD（?45）">GUN HEAD (?45)</option>
+                                        <option value="GUN HEAD（?40）">GUN HEAD (?40)</option>
+                                        <option value="GUN HEAD（?50）">GUN HEAD (?50)</option>
+                                        <option value="GUN HEAD（?60）">GUN HEAD (?60)</option>
+                                        <option value="握杆?45（铝）">Grip Rod ?45 (Aluminum)</option>
+                                        <option value="握杆?50（铝）">Grip Rod ?50 (Aluminum)</option>
+                                        <option value="特殊">Special</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Balance -->
+                                <div class="col-md-4">
+                                    <label for="has_balance" class="form-label">
+                                        <i class="bi bi-water me-2"></i>
+                                        Balance
+                                    </label>
+                                    <select class="form-select" id="has_balance" name="has_balance">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="有">Yes</option>
+                                        <option value="无">No</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Transformer Placement -->
+                                <div class="col-md-4">
+                                    <label for="transformer_placement" class="form-label">
+                                        <i class="bi bi-compass me-2"></i>
+                                        Transformer Placement
+                                    </label>
+                                    <select class="form-select" id="transformer_placement" name="transformer_placement">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="水平">Horizontal</option>
+                                        <option value="竖直">Vertical</option>
+                                        <option value="下置">Bottom</option>
+                                        <option value="上置">Top</option>
+                                        <option value="右置">Right</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Flange P.C.D -->
+                                <div class="col-md-4">
+                                    <label for="flange_pcd" class="form-label">
+                                        <i class="bi bi-circle me-2"></i>
+                                        Flange P.C.D
+                                    </label>
+                                    <select class="form-select" id="flange_pcd" name="flange_pcd">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="125">125</option>
+                                        <option value="125-160">125-160</option>
+                                        <option value="160">160</option>
+                                        <option value="200">200</option>
+                                        <option value="92">92</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Bracket Direction -->
+                                <div class="col-md-4">
+                                    <label for="bracket_direction" class="form-label">
+                                        <i class="bi bi-arrow-up-right me-2"></i>
+                                        Bracket Direction
+                                    </label>
+                                    <select class="form-select" id="bracket_direction" name="bracket_direction">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="右">Right</option>
+                                        <option value="上">Up</option>
+                                        <option value="前">Front</option>
+                                        <option value="下">Down</option>
+                                        <option value="后">Back</option>
+                                        <option value="三维">3D</option>
+                                        <option value="左">Left</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Water Circuit -->
+                                <div class="col-md-4">
+                                    <label for="water_circuit" class="form-label">
+                                        <i class="bi bi-droplet me-2"></i>
+                                        Water Circuit
+                                    </label>
+                                    <select class="form-select" id="water_circuit" name="water_circuit">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="1进1出">1 In 1 Out</option>
+                                        <option value="2进2出">2 In 2 Out</option>
+                                        <option value="3进3出">3 In 3 Out</option>
+                                        <option value="1进2出">1 In 2 Out</option>
+                                        <option value="2进3出">2 In 3 Out</option>
+                                        <option value="1进3出">1 In 3 Out</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Buttons -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-search me-2"></i>
+                        Start Search
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        Reset Criteria
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Search Tips -->
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">Search Tips</h5>
+                        <p class="card-text text-muted">
+                            All search criteria are optional. Leaving them empty means no restriction on that criteria.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">Exact Matching</h5>
+                        <p class="card-text text-muted">
+                            Numeric fields support exact matching, text fields support fuzzy search.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">File Download</h5>
+                        <p class="card-text text-muted">
+                            DWG, STEP and BMP files can be downloaded directly from search results.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Category to sub-category type mapping
+        const categorySubTypes = {
+            'X2C-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
+            'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
+            'X2C-V3-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
+            'X2C-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y'],
+            'X2C-V2-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y'],
+            'X2C-V3-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y']
+        };
+        
+        // Form reset functionality
+        document.querySelector('button[type="reset"]').addEventListener('click', function() {
+            document.getElementById('searchForm').reset();
+            // Reset all select elements
+            document.querySelectorAll('select').forEach(select => {
+                select.selectedIndex = 0;
+            });
+            // Clear sub-category type
+            updateSubCategoryOptions('');
+        });
+        
+        // Handle category selection change
+        document.getElementById('category').addEventListener('change', function() {
+            const categorySelect = this;
+            const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
+            updateSubCategoryOptions(selectedText);
+        });
+        
+        // Update sub-category type options
+        function updateSubCategoryOptions(categoryName) {
+            const subCategorySelect = document.getElementById('sub_category_type');
+            
+            // Clear existing options
+            subCategorySelect.innerHTML = '<option value="">Please select, default is empty</option>';
+            
+            if (categoryName && categorySubTypes[categoryName]) {
+                categorySubTypes[categoryName].forEach(subType => {
+                    const option = document.createElement('option');
+                    option.value = subType;
+                    option.textContent = subType;
+                    subCategorySelect.appendChild(option);
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}
+

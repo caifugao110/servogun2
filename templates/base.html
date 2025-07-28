@@ -287,6 +287,26 @@
             color: var(--primary-color);
             transform: rotate(180deg);
         }
+
+        .language-toggle {
+            background: none;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .language-toggle:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            text-decoration: none;
+        }
         
         .footer {
             background: linear-gradient(135deg, #2c3e50, #34495e);
@@ -413,6 +433,11 @@
                 </ul>
                 
                 <ul class="navbar-nav">
+                    <li class="nav-item" id="language-toggle-container">
+                        <a href="javascript:void(0)" class="language-toggle me-3" onclick="switchLanguage()" title="Switch Language">
+                            <i class="bi bi-translate me-1"></i>English
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <button class="theme-toggle me-3" onclick="toggleTheme()" title="切换主题">
                             <i class="bi bi-sun-fill" id="theme-icon"></i>
@@ -522,15 +547,76 @@
             }
         }
         
-        // 初始化主题
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('theme-icon');
-            
-            html.setAttribute('data-bs-theme', savedTheme);
-            themeIcon.className = savedTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-        });
+        /// **修正后的语言切换功能**
+    function switchLanguage() {
+        const currentPath = window.location.pathname;
+        let newPath = currentPath;
+
+        // 定义中英文页面的URL映射关系
+        const translatablePaths = [
+            { zh: "/", en: "/_en/" },
+            { zh: "/login/", en: "/login_en/" },
+            { zh: "/search/", en: "/search_en/" },
+            { zh: "/search/results/", en: "/search/results_en/" },
+            // 使用正则表达式处理产品详情页
+            { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
+            { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" }
+        ];
+
+        // 判断当前是在中文页还是英文页
+        const isEnglishPage = currentPath.includes('_en/') || translatablePaths.some(p => p.en instanceof RegExp && p.en.test(currentPath));
+
+        if (isEnglishPage) {
+            // 当前是英文页，目标是切换到中文
+            for (const pathMap of translatablePaths) {
+                if (typeof pathMap.en === 'string' && currentPath === pathMap.en) {
+                    newPath = pathMap.zh;
+                    break;
+                } else if (pathMap.en instanceof RegExp && pathMap.en.test(currentPath)) {
+                    newPath = currentPath.replace(pathMap.en, pathMap.zh);
+                    break;
+                }
+            }
+        } else {
+            // 当前是中文页，目标是切换到英文
+            for (const pathMap of translatablePaths) {
+                if (typeof pathMap.zh === 'string' && currentPath === pathMap.zh) {
+                    newPath = pathMap.en;
+                    break;
+                } else if (pathMap.zh instanceof RegExp && pathMap.zh.test(currentPath)) {
+                    newPath = currentPath.replace(pathMap.zh, pathMap.en);
+                    break;
+                }
+            }
+        }
+
+        // 如果路径发生变化，则跳转
+        if (newPath !== currentPath) {
+            // 保留查询参数
+            window.location.href = newPath + window.location.search;
+        }
+    }
+
+    // 初始化主题和语言状态 (大部分保持不变，仅微调)
+    document.addEventListener("DOMContentLoaded", function() {
+        // 主题初始化
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        document.getElementById('theme-icon').className = savedTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+
+        // 语言切换按钮文本初始化
+        const languageToggleBtn = document.querySelector(".language-toggle");
+        const currentPath = window.location.pathname;
+        const isEnglishPage = currentPath.includes('_en/');
+        
+        if (languageToggleBtn) {
+            if (isEnglishPage) {
+                languageToggleBtn.innerHTML = "<i class=\"bi bi-translate me-1\"></i>中文";
+            } else {
+                languageToggleBtn.innerHTML = "<i class=\"bi bi-translate me-1\"></i>English";
+            }
+        }
+    });
         
         // 加载动画
         function showLoading() {

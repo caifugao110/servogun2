@@ -1,0 +1,596 @@
+{% extends 'base_en.html' %}
+
+{% block title %}Search Results - OBARA Welding Gun Selection Database{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 1. Increase row height when search results need multiple lines for better appearance, ensure highlighted text doesn't overlap */
+    .table-responsive table.table td {
+        padding-top: 0.75rem; /* Increase top padding */
+        padding-bottom: 0.75rem; /* Increase bottom padding */
+        vertical-align: middle; /* Vertical center */
+        line-height: 1.5; /* Increase line height for better multi-line text readability */
+    }
+
+    /* Ensure highlighted text doesn't look crowded in multiple lines and highlight area looks good */
+    .table-responsive table.table td .highlight-field {
+        /* If highlight is background color, increasing line height and padding helps visual separation */
+        padding: 0.1rem 0.2rem; /* Slightly increase padding in highlight area */
+        border-radius: 0.25rem; /* Slight rounded corners */
+        display: inline; /* Ensure it's inline element for text wrapping */
+        /* box-decoration-break property controls background, border, shadow appearance when element breaks inline */
+        box-decoration-break: clone; /* Try this property, may improve multi-line highlight appearance */
+        -webkit-box-decoration-break: clone; /* Webkit prefix */
+    }
+
+    /* 2. Make the three option buttons for DWG Only, STEP Only, and DWG and STEP look better, no dropdown, with borders, no conflict with original background */
+    .file-type-buttons .btn {
+        border-radius: 0.25rem; /* Keep button rounded corners */
+        margin-right: 0.5rem; /* Spacing between buttons */
+        min-width: 80px; /* Ensure consistent button width */
+    }
+    .file-type-buttons .btn:last-child {
+        margin-right: 0; /* Last button doesn't need right margin */
+    }
+    /* Active state button style */
+    .file-type-buttons .btn.active {
+        background-color: var(--bs-primary); /* Use theme primary color as background */
+        border-color: var(--bs-primary); /* Border color consistent with background */
+        color: white; /* Text color white */
+    }
+
+    /* Image preview style */
+    .image-preview {
+        transition: transform 0.2s ease;
+        border: 1px solid #dee2e6;
+    }
+    
+    .image-preview:hover {
+        transform: scale(1.05);
+        border-color: #007bff;
+        box-shadow: 0 2px 8px rgba(0,123,255,0.25);
+    }
+
+    /* Image preview modal style */
+    .modal-lg {
+        max-width: 90vw;
+    }
+    
+    #previewImage {
+        max-width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 0.375rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Search Results Header -->
+        <div class="results-header fade-in-up">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-search me-2"></i>
+                        Search Results
+                    </h2>
+                    <p class="mb-0">Found {{ total_results }} matching products</p>
+                </div>
+                <div>
+                    <a href="{% url 'clamps:search_en' %}" class="btn btn-light">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Back to Search
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% if page_obj %}
+            <!-- Search Results Table -->
+            <div class="card fade-in-up">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Search Results List</h5>
+                    <div>
+                        <div class="input-group">
+                            <!-- Replace dropdown with button group -->
+                            <div class="btn-group file-type-buttons" role="group" aria-label="File Type Selection">
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="dwg">DWG Only</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm active" data-file-type="step">STEP Only</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">DWG & STEP</button>
+                            </div>
+                            <button id="batchDownloadBtn" class="btn btn-primary btn-sm" disabled>
+                                <i class="bi bi-download me-2"></i>Batch Download Selected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="5%"><input type="checkbox" id="selectAll"></th>
+                                    <th width="5%">No.</th>
+                                    <th width="15%" class="highlight-field">Drawing No.1(o)</th>
+                                    <th width="15%" class="highlight-field">Throat Depth</th>
+                                    <th width="15%" class="highlight-field">Throat Width</th>
+                                    <th width="18%" class="highlight-field">Transformer</th>
+                                    <th width="15%">Preview</th>
+                                    <th width="12%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in page_obj %}
+                                    <tr class="product-row" data-product-id="{{ product.id }}">
+                                        <td><input type="checkbox" class="product-checkbox" value="{{ product.id }}"></td>
+                                        <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                                        <td>
+                                            <span class="highlight-field" onclick="viewDetail_en({{ product.id }})">
+                                                {{ product.drawing_no_1|default:"--" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="highlight-field" onclick="viewDetail_en({{ product.id }})">
+                                                {% if product.throat_depth %}
+                                                    {{ product.throat_depth }}
+                                                {% else %}
+                                                    --
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="highlight-field" onclick="viewDetail_en({{ product.id }})">
+                                                {% if product.throat_width %}
+                                                    {{ product.throat_width }}
+                                                {% else %}
+                                                    --
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="highlight-field" onclick="viewDetail_en({{ product.id }})">
+                                                {{ product.transformer|default:"--" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if product.bmp_file_path %}
+                                                <img src="{{ MEDIA_URL }}{{ product.bmp_file_path }}" 
+                                                     class="image-preview" 
+                                                     onclick="previewImage('{{ MEDIA_URL }}{{ product.bmp_file_path }}', '{{ product.drawing_no_1|default:"Unknown Product" }}')"
+                                                     alt="Product Preview"
+                                                     style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; border-radius: 4px;"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                                                     title="Click image to enlarge">
+                                                <span class="text-muted" style="display: none;">No Image</span>
+                                            {% else %}
+                                                <span class="text-muted">No Image</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group-vertical btn-group-sm">
+                                                <a href="{% url 'clamps:product_detail_en' product.id %}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye me-1"></i>Details
+                                                </a>
+                                                {% if product.dwg_file_path %}
+                                                    <a href="{% url 'clamps:download_file' product.id 'dwg' %}" 
+                                                       class="btn btn-outline-success btn-sm delayed-download"
+                                                       data-product-id="{{ product.id }}" 
+                                                       data-file-type="dwg">
+                                                        <i class="bi bi-download me-1"></i>DWG
+                                                    </a>
+                                                {% endif %}
+                                                {% if product.step_file_path %}
+                                                    <a href="{% url 'clamps:download_file' product.id 'step' %}" 
+                                                       class="btn btn-outline-info btn-sm delayed-download"
+                                                       data-product-id="{{ product.id }}" 
+                                                       data-file-type="step">
+                                                        <i class="bi bi-download me-1"></i>STEP
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination Navigation -->
+            {% if page_obj.has_other_pages %}
+                <nav aria-label="Search Results Pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in query_params.items %}{{ key }}={{ value }}&{% endfor %}page=1">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in query_params.items %}{{ key }}={{ value }}&{% endfor %}page={{ page_obj.previous_page_number }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in query_params.items %}{{ key }}={{ value }}&{% endfor %}page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in query_params.items %}{{ key }}={{ value }}&{% endfor %}page={{ page_obj.next_page_number }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in query_params.items %}{{ key }}={{ value }}&{% endfor %}page={{ page_obj.paginator.num_pages }}">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+                <div class="text-center text-muted">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    (Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ total_results }} records)
+                </div>
+            {% endif %}
+            
+        {% else %}
+            <!-- No Search Results -->
+            <div class="text-center py-5 fade-in-up">
+                <div class="card">
+                    <div class="card-body py-5">
+                        <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                        <h3 class="mt-3 text-muted">No Matching Products Found</h3>
+                        <p class="text-muted">Please try adjusting your search criteria or using different keywords</p>
+                        <a href="{% url 'clamps:search_en' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Search Again
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Search Criteria Summary -->
+        {% if query_params %}
+            <div class="card mt-4 fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2"></i>
+                        Current Search Criteria
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for key, value in query_params.items %}
+                            {% if value %}
+                                <div class="col-md-3 mb-2">
+                                    <span class="badge bg-primary">
+                                        {{ key }}: {{ value }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 800px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewModalLabel">
+                    <i class="bi bi-image me-2"></i>
+                    Product Preview
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <img id="previewImage" src="" alt="Product Preview" class="img-fluid" >
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function viewDetail_en(productId) {
+        window.location.href = `/product/${productId}_en/`;
+    }
+    
+    // Image preview function - enhanced version, consistent with product_detail.html
+    function previewImage(imageSrc, productName) {
+        const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+        const previewImg = document.getElementById('previewImage');
+        const modalTitle = document.getElementById('imagePreviewModalLabel');
+        
+        // Set image source and title
+        previewImg.src = imageSrc;
+        modalTitle.innerHTML = `<i class="bi bi-image me-2"></i>Product Preview - ${productName || 'Unknown Product'}`;
+        
+        // Show modal
+        modal.show();
+        
+        // Image loading error handling
+        previewImg.onerror = function() {
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGVlMmU2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjNmM3NTdkIj5JbWFnZSBOb3QgRm91bmQ8L3RleHQ+PC9zdmc+';
+            modalTitle.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>Image Load Failed - ${productName || 'Unknown Product'}`;
+        };
+    }
+    
+    // Select all/deselect all functionality
+    document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateBatchDownloadButton();
+    });
+    
+    // Listen to individual checkbox changes
+    document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateBatchDownloadButton);
+    });
+    
+    // Update batch download button status
+    function updateBatchDownloadButton() {
+        const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
+        const batchDownloadBtn = document.getElementById('batchDownloadBtn');
+        
+        if (checkedBoxes.length > 0) {
+            batchDownloadBtn.disabled = false;
+            batchDownloadBtn.innerHTML = `<i class="bi bi-download me-2"></i>Batch Download Selected (${checkedBoxes.length})`;
+        } else {
+            batchDownloadBtn.disabled = true;
+            batchDownloadBtn.innerHTML = '<i class="bi bi-download me-2"></i>Batch Download Selected';
+        }
+    }
+    
+    // File type button toggle
+    document.querySelectorAll('.file-type-buttons .btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            document.querySelectorAll('.file-type-buttons .btn').forEach(b => b.classList.remove('active'));
+            // Add active class to current button
+            this.classList.add('active');
+        });
+    });
+    
+    // Batch download functionality - add file size check
+    document.getElementById('batchDownloadBtn').addEventListener('click', function() {
+        const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
+        if (checkedBoxes.length === 0) {
+            showToast('Please select products to download first', 'warning');
+            return;
+        }
+        
+        const productIds = Array.from(checkedBoxes).map(cb => cb.value);
+        const activeFileType = document.querySelector('.file-type-buttons .btn.active').dataset.fileType;
+        
+        // Check file size first
+        checkBatchFileSize(productIds, activeFileType, () => {
+            // Check passed, show download warning
+            showDownloadWarning(() => {
+                // Start download after 3 seconds
+                setTimeout(() => {
+                    const downloadUrl = `/batch_download/${activeFileType}/?ids=${productIds.join(',')}`;
+                    window.location.href = downloadUrl;
+                }, 3000);
+            });
+        });
+    });
+    
+    // Add delayed download functionality for DWG and STEP download buttons - add file size check
+    document.querySelectorAll('.delayed-download').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const downloadUrl = this.href;
+            const productId = this.dataset.productId;
+            const fileType = this.dataset.fileType;
+            
+            // Check file size first
+            checkFileSize(productId, fileType, () => {
+                // Check passed, show download warning
+                showDownloadWarning(() => {
+                    // Start download after 3 seconds
+                    setTimeout(() => {
+                        // Check if download is successful, if failed return to current page
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = downloadUrl;
+                        document.body.appendChild(iframe);
+                        
+                        // Listen for iframe load completion
+                        iframe.onload = function() {
+                            // Check if redirected to error page or detail page
+                            try {
+                                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                                if (iframeDoc.title.includes('Product Details') || iframeDoc.body.innerHTML.includes('Download Failed')) {
+                                    // Download failed, stay on current page
+                                    console.log('Download failed, staying on current page');
+                                }
+                            } catch (e) {
+                                // Cross-origin or other error, assume download successful
+                                console.log('Download request sent');
+                            }
+                            
+                            // Clean up iframe
+                            setTimeout(() => {
+                                document.body.removeChild(iframe);
+                            }, 1000);
+                        };
+                    }, 3000);
+                });
+            });
+        });
+    });
+    
+    // Check single file size
+    function checkFileSize(productId, fileType, callback) {
+        fetch(`/check_file_size/${productId}/${fileType}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.can_download) {
+                    callback();
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error checking file size:', error);
+                showToast('Error checking file size, please try again later', 'danger');
+            });
+    }
+    
+    // Check batch download file size
+    function checkBatchFileSize(productIds, fileType, callback) {
+        const params = new URLSearchParams({
+            ids: productIds.join(','),
+            file_type: fileType
+        });
+        
+        fetch(`/check_batch_file_size/?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.can_download) {
+                    callback();
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error checking batch file size:', error);
+                showToast('Error checking file size, please try again later', 'danger');
+            });
+    }
+    
+    function showDownloadWarning(callback) {
+        const warningHtml = `
+            <div class="modal fade" id="downloadWarningModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-download me-2"></i>
+                                Download Notice
+                            </h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Drawing and model data may change for various reasons without notice. The selection database cannot guarantee the complete accuracy of drawing and model data, and this data is not used as any reference basis.
+                            </div>
+                            <div class="text-center">
+                                <div class="spinner-border text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span id="countdown">3</span> seconds until automatic download...<br>Server compression takes time when data is large, please wait patiently
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="directDownloadBtn">
+                                <i class="bi bi-download me-1"></i>
+                                Click here for direct download if window doesn't redirect automatically
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal
+        const existingModal = document.getElementById('downloadWarningModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', warningHtml);
+        const modal = new bootstrap.Modal(document.getElementById('downloadWarningModal'));
+        
+        let countdown = 3;
+        const countdownElement = document.getElementById('countdown');
+        const directDownloadBtn = document.getElementById('directDownloadBtn');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(timer);
+                modal.hide();
+                callback();
+            }
+        }, 1000);
+        
+        directDownloadBtn.addEventListener('click', () => {
+            clearInterval(timer);
+            modal.hide();
+            callback();
+        });
+        
+        modal.show();
+        
+        // Clean up timer when modal is closed
+        document.getElementById('downloadWarningModal').addEventListener('hidden.bs.modal', () => {
+            clearInterval(timer);
+            document.getElementById('downloadWarningModal').remove();
+        });
+    }
+    
+    function showToast(message, type = 'info') {
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toast = new bootstrap.Toast(toastContainer.lastElementChild);
+        toast.show();
+        
+        // Auto cleanup toast element
+        setTimeout(() => {
+            const toastElement = toastContainer.lastElementChild;
+            if (toastElement) {
+                toastElement.remove();
+            }
+        }, 5000);
+    }
+</script>
+{% endblock %}
+
