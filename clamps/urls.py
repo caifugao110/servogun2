@@ -19,9 +19,12 @@ urlpatterns = [
     # 英文页面URL
     path('_en/', views.home_en, name='home_en'),
     path('login_en/', views.user_login_en, name='login_en'),
+    path('logout_en/', views.user_logout_en, name='logout_en'), # 新增：专门用于英文登出的URL
     path("search_en/", views.search_en, name="search_en"),
     path('search/results_en/', views.search_results_en, name='search_results_en'),
-    re_path(r'^product/(?P<product_id>\d+)_en/$', views.product_detail_en, name='product_detail_en'),  # 管理功能 (保持不变)
+    re_path(r'^product/(?P<product_id>\d+)_en/$', views.product_detail_en, name='product_detail_en'),
+
+    # 管理功能 (保持不变)
     path('management/', views.management_dashboard, name='management_dashboard'),
     path('management/users/', views.manage_users, name='manage_users'),
     path('management/users/toggle/<int:user_id>/', views.toggle_user_active, name='toggle_user_active'),
