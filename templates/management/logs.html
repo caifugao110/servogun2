@@ -82,7 +82,7 @@
                 <div>
                     <form method="post" action="{% url 'clamps:export_data' %}" style="display: inline;">
                         {% csrf_token %}
-                        <input type="hidden" name="export_type" value="logs">
+                        <input type="hidden" name="data_type" value="logs">
                         <!-- 保持当前筛选条件 -->
                         {% if request.GET.action_type %}
                             <input type="hidden" name="action_type" value="{{ request.GET.action_type }}">

@@ -99,7 +99,7 @@
                             <div class="btn-group file-type-buttons" role="group" aria-label="File Type Selection">
                                 <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="dwg">DWG Only</button>
                                 <button type="button" class="btn btn-outline-primary btn-sm active" data-file-type="step">STEP Only</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">DWG & STEP</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">DWG and STEP</button>
                             </div>
                             <button id="batchDownloadBtn" class="btn btn-primary btn-sm" disabled>
                                 <i class="bi bi-download me-2"></i>Batch Download Selected
@@ -128,12 +128,12 @@
                                         <td><input type="checkbox" class="product-checkbox" value="{{ product.id }}"></td>
                                         <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
                                         <td>
-                                            <span class="highlight-field" onclick="viewDetail_en({{ product.id }})">
+                                            <span class="highlight-field" onclick="viewDetail({{ product.id }})">
                                                 {{ product.drawing_no_1|default:"--" }}
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="highlight-field" onclick="viewDetail_en({{ product.id }})">
+                                            <span class="highlight-field" onclick="viewDetail({{ product.id }})">
                                                 {% if product.throat_depth %}
                                                     {{ product.throat_depth }}
                                                 {% else %}
@@ -142,7 +142,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="highlight-field" onclick="viewDetail_en({{ product.id }})">
+                                            <span class="highlight-field" onclick="viewDetail({{ product.id }})">
                                                 {% if product.throat_width %}
                                                     {{ product.throat_width }}
                                                 {% else %}
@@ -151,7 +151,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="highlight-field" onclick="viewDetail_en({{ product.id }})">
+                                            <span class="highlight-field" onclick="viewDetail({{ product.id }})">
                                                 {{ product.transformer|default:"--" }}
                                             </span>
                                         </td>
@@ -163,7 +163,7 @@
                                                      alt="Product Preview"
                                                      style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; border-radius: 4px;"
                                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-                                                     title="Click image to enlarge">
+                                                     title="Click to enlarge">
                                                 <span class="text-muted" style="display: none;">No Image</span>
                                             {% else %}
                                                 <span class="text-muted">No Image</span>
@@ -201,7 +201,7 @@
                 </div>
             </div>
             
-            <!-- Pagination Navigation -->
+            <!-- Pagination -->
             {% if page_obj.has_other_pages %}
                 <nav aria-label="Search Results Pagination" class="mt-4">
                     <ul class="pagination justify-content-center">
@@ -257,7 +257,7 @@
                 <div class="card">
                     <div class="card-body py-5">
                         <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
-                        <h3 class="mt-3 text-muted">No Matching Products Found</h3>
+                        <h3 class="mt-3 text-muted">No matching products found</h3>
                         <p class="text-muted">Please try adjusting your search criteria or using different keywords</p>
                         <a href="{% url 'clamps:search_en' %}" class="btn btn-primary">
                             <i class="bi bi-arrow-left me-2"></i>
@@ -316,11 +316,11 @@
 
 {% block extra_js %}
 <script>
-    function viewDetail_en(productId) {
+    function viewDetail(productId) {
         window.location.href = `/product/${productId}_en/`;
     }
     
-    // Image preview function - enhanced version, consistent with product_detail.html
+    // Image preview functionality - enhanced version, consistent with product_detail.html
     function previewImage(imageSrc, productName) {
         const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
         const previewImg = document.getElementById('previewImage');
@@ -368,7 +368,7 @@
         }
     }
     
-    // File type button toggle
+    // File type button switching
     document.querySelectorAll('.file-type-buttons .btn').forEach(btn => {
         btn.addEventListener('click', function() {
             // Remove active class from all buttons
@@ -378,7 +378,7 @@
         });
     });
     
-    // Batch download functionality - add file size check
+    // Batch download functionality - fixed to use POST request
     document.getElementById('batchDownloadBtn').addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
         if (checkedBoxes.length === 0) {
@@ -393,10 +393,34 @@
         checkBatchFileSize(productIds, activeFileType, () => {
             // Check passed, show download warning
             showDownloadWarning(() => {
-                // Start download after 3 seconds
+                // Start download after 3 seconds - use POST request
                 setTimeout(() => {
-                    const downloadUrl = `/batch_download/${activeFileType}/?ids=${productIds.join(',')}`;
-                    window.location.href = downloadUrl;
+                    // Create form and submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `{% url 'clamps:batch_download' 'FILETYPE' %}`.replace('FILETYPE', activeFileType);
+                    
+                    // Add CSRF token
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = csrfToken.value;
+                        form.appendChild(csrfInput);
+                    }
+                    
+                    // Add product ID parameter
+                    const productIdsInput = document.createElement('input');
+                    productIdsInput.type = 'hidden';
+                    productIdsInput.name = 'product_ids';
+                    productIdsInput.value = productIds.join(',');
+                    form.appendChild(productIdsInput);
+                    
+                    // Submit form
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
                 }, 3000);
             });
         });
@@ -422,7 +446,7 @@
                         iframe.src = downloadUrl;
                         document.body.appendChild(iframe);
                         
-                        // Listen for iframe load completion
+                        // Listen to iframe load completion
                         iframe.onload = function() {
                             // Check if redirected to error page or detail page
                             try {
@@ -449,7 +473,7 @@
     
     // Check single file size
     function checkFileSize(productId, fileType, callback) {
-        fetch(`/check_file_size/${productId}/${fileType}/`)
+        fetch(`{% url 'clamps:check_file_size' 0 'TYPE' %}`.replace('0', productId).replace('TYPE', fileType))
             .then(response => response.json())
             .then(data => {
                 if (data.can_download) {
@@ -464,14 +488,22 @@
             });
     }
     
-    // Check batch download file size
+    // Check batch download file size - fixed to use POST request
     function checkBatchFileSize(productIds, fileType, callback) {
-        const params = new URLSearchParams({
-            ids: productIds.join(','),
-            file_type: fileType
-        });
+        const formData = new FormData();
+        formData.append('product_ids', productIds.join(','));
+        formData.append('file_type', fileType);
         
-        fetch(`/check_batch_file_size/?${params}`)
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            formData.append('csrfmiddlewaretoken', csrfToken.value);
+        }
+        
+        fetch('{% url "clamps:check_batch_file_size" %}', {
+            method: 'POST',
+            body: formData
+        })
             .then(response => response.json())
             .then(data => {
                 if (data.can_download) {
@@ -500,13 +532,13 @@
                         <div class="modal-body">
                             <div class="alert alert-warning">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
-                                Drawing and model data may change for various reasons without notice. The selection database cannot guarantee the complete accuracy of drawing and model data, and this data is not used as any reference basis.
+                                Drawing and model data may change for various reasons without notice. The selection database cannot guarantee the complete accuracy of drawing and model data, and this data should not be used as any reference basis.
                             </div>
                             <div class="text-center">
                                 <div class="spinner-border text-primary me-2" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <span id="countdown">3</span> seconds until automatic download...<br>Server compression takes time when data is large, please wait patiently
+                                <span id="countdown">3</span> seconds until automatic download...<br>Server compression takes time when there's a lot of data, please be patient
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -583,7 +615,7 @@
         const toast = new bootstrap.Toast(toastContainer.lastElementChild);
         toast.show();
         
-        // Auto cleanup toast element
+        // Auto clean up toast element
         setTimeout(() => {
             const toastElement = toastContainer.lastElementChild;
             if (toastElement) {
@@ -592,5 +624,8 @@
         }, 5000);
     }
 </script>
+
+<!-- Add CSRF token to page for JavaScript use -->
+{% csrf_token %}
 {% endblock %}
 

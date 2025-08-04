@@ -48,7 +48,7 @@
                         </ul>
                         <form method="post" action="{% url 'clamps:export_data' %}" style="display: inline;">
                             {% csrf_token %}
-                            <input type="hidden" name="export_type" value="products">
+                            <input type="hidden" name="data_type" value="products">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-download me-2"></i>
                                 导出产品数据
@@ -91,7 +91,7 @@
                         </a>
                         <form method="post" action="{% url 'clamps:export_data' %}" style="display: inline;">
                             {% csrf_token %}
-                            <input type="hidden" name="export_type" value="logs">
+                            <input type="hidden" name="data_type" value="logs">
                             <button type="submit" class="btn btn-outline-success ms-2">
                                 <i class="bi bi-download me-2"></i>
                                 导出全部日志

@@ -26,12 +26,16 @@
                                 <i class="bi bi-question-circle"></i>
                             </a>
                         </label>
-                        <select class="form-select" id="category" name="category" required>
-                            <option value="">下拉选择，推荐前两项X2C-C和X2C-X</option>
-                            {% for category in categories %}
-                                <option value="{{ category.id }}">{{ category.name }}</option>
-                            {% endfor %}
-                        </select>
+						<select class="form-select" id="category" name="category" required>
+							<option value="">请选择</option>
+							{% for category in categories %}
+								{% if category.name in 'X2C-C,X2C-X' %}
+									<option value="{{ category.id }}">{{ category.name }}(推荐)</option>
+								{% else %}
+									<option value="{{ category.id }}">{{ category.name }}</option>
+								{% endif %}
+							{% endfor %}
+						</select>
                     </div>
                     
                     <!-- 子分类类型 -->

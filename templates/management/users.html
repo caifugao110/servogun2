@@ -446,6 +446,7 @@
                                         {% endfor %}
                                     </select>
                                     <div class="form-text">
+										<!-- 修改密码有效期后，截止时间将从今天开始重新计算。 -->
                                         密码最后修改时间：{{ profile.password_last_changed|date:"Y-m-d H:i" }}
                                         <br>
                                         <small class="text-info">

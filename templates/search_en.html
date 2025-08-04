@@ -26,12 +26,16 @@
                                 <i class="bi bi-question-circle"></i>
                             </a>
                         </label>
-                        <select class="form-select" id="category" name="category" required>
-                            <option value="">Select from dropdown, recommend first two options X2C-C and X2C-X</option>
-                            {% for category in categories %}
-                                <option value="{{ category.id }}">{{ category.name }}</option>
-                            {% endfor %}
-                        </select>
+						<select class="form-select" id="category" name="category" required>
+							<option value="">Please select</option>
+							{% for category in categories %}
+								{% if category.name in 'X2C-C,X2C-X' %}
+									<option value="{{ category.id }}">{{ category.name }}(Recommended)</option>
+								{% else %}
+									<option value="{{ category.id }}">{{ category.name }}</option>
+								{% endif %}
+							{% endfor %}
+						</select>
                     </div>
                     
                     <!-- Sub-category Type -->
@@ -72,8 +76,8 @@
                         </label>
                         <select class="form-select" id="transformer" name="transformer">
                             <option value="">Please select, default is empty</option>
-                            <option value="ITS85">ITS85 (Recommended)</option>
-                            <option value="DB6-100R1">DB6-100R1 (Recommended)</option>
+                            <option value="ITS85">ITS85(Recommended)</option>
+                            <option value="DB6-100R1">DB6-100R1(Recommended)</option>
                             <option value="RT552">RT552</option>
                             <option value="RT752">RT752</option>
                             <option value="RT906">RT906</option>

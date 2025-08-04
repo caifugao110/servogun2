@@ -56,15 +56,15 @@
                 <ul class="list-unstyled">
                     <li class="mb-2">
                         <i class="bi bi-check-circle text-success me-2"></i>
-                        <strong>文件格式：</strong> 必须是CSV文件，且文件编码应为UTF-8或GB2312。
+                        <strong>文件格式：</strong> <span style="color: red;">上传前必须使用 <code>process_csv.py</code> 程序对csv文件进行标准化处理。</span>
                     </li>
                     <li class="mb-2">
                         <i class="bi bi-check-circle text-success me-2"></i>
-                        <strong>文件命名：</strong> CSV文件名（不含扩展名）将被视为产品分类名称，例如 <code>X2C-C.csv</code> 将导入到 <code>X2C-C</code> 分类下。
+                        <strong>文件命名：</strong> CSV文件名（不含扩展名）将被视为产品分类名称，例如 <code>X2C-C.csv</code> 将导入到 <code>X2C-C</code> 分类下。分类不存在时会自动创建分类。
                     </li>
                     <li class="mb-2">
                         <i class="bi bi-check-circle text-success me-2"></i>
-                        <strong>表头匹配：</strong> CSV文件中的列名必须与系统中的产品字段名称（如“描述”、“图号1(o)”等）严格匹配。
+                        <strong>表头匹配：</strong> CSV文件中的列名必须与系统中的产品字段名称严格匹配。20250801更新字段为（描述、图号1(o)、产品子分类类型、行程、电极臂端部、加压力、电极臂、变压器、重量、变压器放置方向、法兰P.C.D、托架方向、托架角度、MOTOR厂家、托架个数、齿轮箱型式、托架材料、齿轮箱行程、换枪装置、喉深、有无平衡、喉宽、水路、握杆伸出长度、偏心距离、偏心方向、偏心是否回到中心面、导向方式、静臂偏心、静电极臂端部、动臂偏心、动电极臂端部、支轴到驱动中心距离、静电极臂前部长、静电极臂前部高、动电极臂前部长、动电极臂前部高）
                     </li>
                     <li class="mb-2">
                         <i class="bi bi-check-circle text-success me-2"></i>

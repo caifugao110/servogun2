@@ -388,7 +388,7 @@
         });
     });
     
-    // 批量下载功能 - 增加文件大小检查
+    // 批量下载功能 - 修复为使用POST请求
     document.getElementById('batchDownloadBtn').addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
         if (checkedBoxes.length === 0) {
@@ -403,10 +403,34 @@
         checkBatchFileSize(productIds, activeFileType, () => {
             // 检查通过，显示下载提示
             showDownloadWarning(() => {
-                // 3秒后开始下载
+                // 3秒后开始下载 - 使用POST请求
                 setTimeout(() => {
-                    const downloadUrl = `/batch_download/${activeFileType}/?ids=${productIds.join(',')}`;
-                    window.location.href = downloadUrl;
+                    // 创建表单并提交
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `{% url 'clamps:batch_download' 'FILETYPE' %}`.replace('FILETYPE', activeFileType);
+                    
+                    // 添加CSRF token
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = csrfToken.value;
+                        form.appendChild(csrfInput);
+                    }
+                    
+                    // 添加产品ID参数
+                    const productIdsInput = document.createElement('input');
+                    productIdsInput.type = 'hidden';
+                    productIdsInput.name = 'product_ids';
+                    productIdsInput.value = productIds.join(',');
+                    form.appendChild(productIdsInput);
+                    
+                    // 提交表单
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
                 }, 3000);
             });
         });
@@ -459,7 +483,7 @@
     
     // 检查单个文件大小
     function checkFileSize(productId, fileType, callback) {
-        fetch(`/check_file_size/${productId}/${fileType}/`)
+        fetch(`{% url 'clamps:check_file_size' 0 'TYPE' %}`.replace('0', productId).replace('TYPE', fileType))
             .then(response => response.json())
             .then(data => {
                 if (data.can_download) {
@@ -474,14 +498,22 @@
             });
     }
     
-    // 检查批量下载文件大小
+    // 检查批量下载文件大小 - 修复为使用POST请求
     function checkBatchFileSize(productIds, fileType, callback) {
-        const params = new URLSearchParams({
-            ids: productIds.join(','),
-            file_type: fileType
-        });
+        const formData = new FormData();
+        formData.append('product_ids', productIds.join(','));
+        formData.append('file_type', fileType);
         
-        fetch(`/check_batch_file_size/?${params}`)
+        // 添加CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            formData.append('csrfmiddlewaretoken', csrfToken.value);
+        }
+        
+        fetch('{% url "clamps:check_batch_file_size" %}', {
+            method: 'POST',
+            body: formData
+        })
             .then(response => response.json())
             .then(data => {
                 if (data.can_download) {
@@ -602,5 +634,8 @@
         }, 5000);
     }
 </script>
+
+<!-- 添加CSRF token到页面中供JavaScript使用 -->
+{% csrf_token %}
 {% endblock %}
 
