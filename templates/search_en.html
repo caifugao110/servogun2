@@ -21,13 +21,13 @@
                     <div class="col-md-6">
                         <label for="category" class="form-label">
                             <i class="bi bi-diagram-3 me-2"></i>
-                            Product Category (Click the question mark if unsure about category) <span class="text-danger">*</span>
+                            <span style="color: red; font-weight: bold;">Product Category</span> (Click the question mark if unsure about category) <span class="text-danger">*</span>
                             <a href="/static/pdf/Product Search User Guide.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="User Guide">
                                 <i class="bi bi-question-circle"></i>
                             </a>
                         </label>
 						<select class="form-select" id="category" name="category" required>
-							<option value="">Please select</option>
+							<option value="">Please select, required option</option>
 							{% for category in categories %}
 								{% if category.name in 'X2C-C,X2C-X' %}
 									<option value="{{ category.id }}">{{ category.name }}(Recommended)</option>
@@ -337,14 +337,43 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Category to sub-category type mapping
-        const categorySubTypes = {
-            'X2C-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
-            'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
-            'X2C-V3-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
-            'X2C-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y'],
-            'X2C-V2-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y'],
-            'X2C-V3-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y']
-        };
+		const categorySubTypes = {
+			'X2C-C(Recommended)': [
+				{ label: 'Large', value: '大型' },
+				{ label: 'Special', value: '特殊' },
+				{ label: 'Crane Type', value: '仙鹤型' },
+				{ label: 'Small-Medium', value: '中小型' }
+			],
+			'X2C-V2-C': [
+				{ label: 'Large', value: '大型' },
+				{ label: 'Special', value: '特殊' },
+				{ label: 'Crane Type', value: '仙鹤型' },
+				{ label: 'Small-Medium', value: '中小型' }
+			],
+			'X2C-V3-C': [
+				{ label: 'Large', value: '大型' },
+				{ label: 'Small', value: '小型' }
+			],
+			'X2C-X(Recommended)': [
+				{ label: 'Large', value: '大型' },
+				{ label: 'Special', value: '特殊' },
+				{ label: 'Small-Medium', value: '中小型' },
+				{ label: 'X', value: 'X' },
+				{ label: 'Y', value: 'Y' }
+			],
+			'X2C-V2-X': [
+				{ label: 'Large', value: '大型' },
+				{ label: 'Special', value: '特殊' },
+				{ label: 'Small', value: '小型' },
+				{ label: 'Medium', value: '中型' },
+				{ label: 'X', value: 'X' },
+				{ label: 'Y', value: 'Y' }
+			],
+			'X2C-V3-X': [
+				{ label: 'Large', value: '大型' },
+				{ label: 'Small', value: '小型' }
+			]
+		};
         
         // Form reset functionality
         document.querySelector('button[type="reset"]').addEventListener('click', function() {
@@ -365,21 +394,18 @@
         });
         
         // Update sub-category type options
-        function updateSubCategoryOptions(categoryName) {
-            const subCategorySelect = document.getElementById('sub_category_type');
-            
-            // Clear existing options
-            subCategorySelect.innerHTML = '<option value="">Please select, default is empty</option>';
-            
-            if (categoryName && categorySubTypes[categoryName]) {
-                categorySubTypes[categoryName].forEach(subType => {
-                    const option = document.createElement('option');
-                    option.value = subType;
-                    option.textContent = subType;
-                    subCategorySelect.appendChild(option);
-                });
-            }
-        }
+		function updateSubCategoryOptions(categoryName) {
+			const subCategorySelect = document.getElementById('sub_category_type');
+			subCategorySelect.innerHTML = '<option value="">Please select, default is empty</option>';
+
+			const options = categorySubTypes[categoryName] || [];
+			options.forEach(item => {
+				const option = document.createElement('option');
+				option.value = item.value;   // 提交的是中文
+				option.textContent = item.label; // 显示的是英文
+				subCategorySelect.appendChild(option);
+			});
+		}
     });
 </script>
 {% endblock %}

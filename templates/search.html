@@ -21,13 +21,13 @@
                     <div class="col-md-6">
                         <label for="category" class="form-label">
                             <i class="bi bi-diagram-3 me-2"></i>
-                            产品分类（不清楚分类可点击旁边的问号） <span class="text-danger">*</span>
+                            <span style="color: red; font-weight: bold;">产品分类</span>（不清楚分类可点击旁边的问号） <span class="text-danger">*</span>
                             <a href="/static/pdf/产品搜索使用指南.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
                                 <i class="bi bi-question-circle"></i>
                             </a>
                         </label>
 						<select class="form-select" id="category" name="category" required>
-							<option value="">请选择</option>
+							<option value="">请选择，必选项</option>
 							{% for category in categories %}
 								{% if category.name in 'X2C-C,X2C-X' %}
 									<option value="{{ category.id }}">{{ category.name }}(推荐)</option>
@@ -347,12 +347,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         // 分类对应的子分类类型映射
         const categorySubTypes = {
-            'X2C-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
-            'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
-            'X2C-V3-C': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型'],
-            'X2C-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y'],
-            'X2C-V2-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y'],
-            'X2C-V3-X': ['大型', '特殊', '仙鹤型', '中小型', '小型', '中型', 'X', 'Y']
+            'X2C-C(推荐)': ['大型', '特殊', '仙鹤型', '中小型'],
+            'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型'],
+            'X2C-V3-C': ['大型', '小型'],
+            'X2C-X(推荐)': ['大型', '特殊', '中小型', 'X', 'Y'],
+            'X2C-V2-X': ['大型', '特殊', '小型', '中型', 'X', 'Y'],
+            'X2C-V3-X': ['大型', '小型']
         };
         
         // 表单重置功能

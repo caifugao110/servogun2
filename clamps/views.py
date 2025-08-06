@@ -313,7 +313,7 @@ def search_results_en(request):
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     # 记录查看详情日志
-    log_entry = Log(user=request.user, action_type='view_detail', ip_address=request.META.get('REMOTE_ADDR'),
+    log_entry = Log(user=request.user, action_type='view', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id}')
     log_entry.save()
     return render(request, 'product_detail.html', {'product': product})
@@ -321,7 +321,7 @@ def product_detail(request, product_id):
 @login_required
 def product_detail_en(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    log_entry = Log(user=request.user, action_type='view_detail', ip_address=request.META.get('REMOTE_ADDR'),
+    log_entry = Log(user=request.user, action_type='view', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id} (English)')
     log_entry.save()
     return render(request, 'product_detail_en.html', {'product': product})
@@ -849,7 +849,7 @@ def view_logs(request):
     login_count = logs.filter(action_type='login').count()
     search_count = logs.filter(action_type='search').count()
     download_count = logs.filter(action_type='download').count()
-    view_count = logs.filter(action_type='view_detail').count()
+    view_count = logs.filter(action_type='view').count()
 
     paginator = Paginator(logs, 20)  # 每页显示20条日志
     page_number = request.GET.get("page")
