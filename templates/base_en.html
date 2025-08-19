@@ -500,25 +500,25 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5><i class="fas fa-industry me-2"></i>OBARA (NANJING) MACHINERY & ELECTRIC CO.,LTD.</h5>
+                    <h5><i class="fas fa-industry me-2"></i>OBARA (NANJING) Electromechanical Co., Ltd</h5>
                     <p class="mb-1">
                         <i class="bi bi-geo-alt me-2"></i>
                         No.28, Renjie Road, Jiangning District, Nanjing, China
                     </p>
-                    <p class="mb-1">
-                        <i class="bi bi-telephone me-2"></i>
-                        Sales Department: (025)52106195
-                    </p>
+					<p class="mb-1">
+						<i class="bi bi-card-text me-2"></i>
+						ICP Registration: Su ICP Bei 05020192-1
+					</p>
                     <p class="mb-0">
                         <i class="bi bi-envelope me-2"></i>
-                        IT Department Email: sunxx@obara.com.cn
+                        Tech Dept Emai: gaoj@obara.com.cn
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">
 					<br>
                     <p class="mb-1">Be customer-oriented care employees encourage innovations take in the fresh</p>
                     <p class="mb-0">
-                        <small>Copyright © 1994-2025 OBARA (NANJING) MACHINERY & ELECTRIC CO.,LTD.</small>
+                        <small>Copyright © <span id="current-year">1994</span>-<span id="current-year-end"></span>  OBARA (NANJING) Electromechanical Co., Ltd</small>
                     </p>
 					<br>
                 </div>
@@ -681,6 +681,10 @@
                 });
             });
         });
+		
+		// Automatically obtain the current year
+		const currentYear = new Date().getFullYear();
+		document.getElementById('current-year-end').textContent = currentYear;
     </script>
     
     {% block extra_js %}{% endblock %}

@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="小原焊钳选型数据库 - 专业的焊钳选型工具">
-    <title>{% block title %}小原焊钳选型数据库{% endblock %}</title>
+    <meta name="description" content="小原焊枪选型数据库 - 专业的焊枪选型工具">
+    <title>{% block title %}小原焊枪选型数据库{% endblock %}</title>
 	{% load static %}
     <link rel="icon" type="image/x-icon" href="{% static 'icon/Obara_logo.bmp' %}">
 	
@@ -409,7 +409,7 @@
         <div class="container">
             <a class="navbar-brand" href="{% url 'clamps:home' %}">
                 <i class="fas fa-industry me-2"></i>
-                小原焊钳选型数据库
+                小原焊枪选型数据库
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -502,22 +502,22 @@
                     <h5><i class="fas fa-industry me-2"></i>小原（南京）机电有限公司</h5>
                     <p class="mb-1">
                         <i class="bi bi-geo-alt me-2"></i>
-                        中国·南京市江宁经济技术开发区仁杰路28号
+                        中国·南京市江宁区仁杰路28号
                     </p>
                     <p class="mb-1">
-                        <i class="bi bi-telephone me-2"></i>
-                        营业直线：(025)52106195
+                        <i class="bi bi-card-text me-2"></i>
+                        备案号：苏ICP备05020192号-1
                     </p>
                     <p class="mb-0">
                         <i class="bi bi-envelope me-2"></i>
-                        IT部门邮箱：sunxx@obara.com.cn
+                        技术部门邮箱：gaoj@obara.com.cn
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="mb-1">以客户为中心 关怀员工 鼓励创新 纳新去旧</p>
                     <p class="mb-1"><small>Be customer-oriented care employees encourage innovations take in the fresh</small></p>
-                    <p class="mb-1">版权所有 © 1994-2025 小原（南京）机电有限公司</p>
-					<p class="mb-0">Released and deployed from version V2.6.4</p>
+                    <p class="mb-1">版权所有 © <span id="current-year">1994</span>-<span id="current-year-end"></span> 小原（南京）机电有限公司</p>
+					<p class="mb-0">Released and deployed as version V2.6.5</p>
                 </div>
             </div>
         </div>
@@ -678,6 +678,10 @@
                 });
             });
         });
+		
+		// 自动获取当前年份
+		const currentYear = new Date().getFullYear();
+		document.getElementById('current-year-end').textContent = currentYear;
     </script>
     
     {% block extra_js %}{% endblock %}
