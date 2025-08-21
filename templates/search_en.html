@@ -10,104 +10,110 @@
                 <i class="bi bi-search me-3"></i>
                 SERVO GUN Product Search
             </h1>
-            <p class="lead text-muted">Please select category and fill in search criteria</p>
+            <p class="lead text-muted">Please select a category and fill in the search criteria</p>
         </div>
         
         <div class="search-form fade-in-up">
             <form method="get" action="{% url 'clamps:search_results_en' %}" id="searchForm">
-                <!-- First six main search fields -->
+                <!-- Main search fields and image preview -->
                 <div class="row g-3 mb-4">
-                    <!-- Product Category -->
-                    <div class="col-md-6">
-                        <label for="category" class="form-label">
-                            <i class="bi bi-diagram-3 me-2"></i>
-                            <span style="color: red; font-weight: bold;">Product Category</span> (Click the question mark if unsure about category) <span class="text-danger">*</span>
-                            <a href="/static/pdf/Product Search User Guide.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="User Guide">
-                                <i class="bi bi-question-circle"></i>
-                            </a>
-                        </label>
-						<select class="form-select" id="category" name="category" required>
-							<option value="">Please select, required option</option>
-							{% for category in categories %}
-								{% if category.name in 'X2C-C,X2C-X' %}
-									<option value="{{ category.id }}">{{ category.name }}(Recommended)</option>
-								{% else %}
-									<option value="{{ category.id }}">{{ category.name }}</option>
-								{% endif %}
-							{% endfor %}
-						</select>
+                    <!-- Left two columns: input fields -->
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <!-- Row 1 -->
+                            <!-- Product Category -->
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">
+                                    <i class="bi bi-diagram-3 me-2"></i>
+                                    <span style="color: red; font-weight: bold;">Product Category</span> <span class="text-danger">*</span>
+                                    <a href="/static/pdf/Product Search User Guide.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="User Guide">
+                                        <i class="bi bi-question-circle"></i>
+                                    </a>
+                                </label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Please select, required option</option>
+                                    {% for category in categories %}
+                                        {% if category.name in 'X2C-C,X2C-X' %}
+                                            <option value="{{ category.id }}">{{ category.name }}(Recommended)</option>
+                                        {% else %}
+                                            <option value="{{ category.id }}">{{ category.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Sub-category Type -->
+                            <div class="col-md-6">
+                                <label for="sub_category_type" class="form-label">
+                                    <i class="bi bi-tags me-2"></i>
+                                    Sub-category Type
+                                </label>
+                                <select class="form-select" id="sub_category_type" name="sub_category_type">
+                                    <option value="">Please select, default is empty</option>
+                                    <!-- Options loaded dynamically -->
+                                </select>
+                            </div>
+
+                            <!-- Row 2 -->
+                            <!-- Throat Depth -->
+                            <div class="col-md-6">
+                                <label for="throat_depth" class="form-label">
+                                    <i class="bi bi-rulers me-2"></i>
+                                    Throat Depth
+                                </label>
+                                <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="e.g.: ~350, 350~600, 600~">
+                            </div>
+                            
+                            <!-- Throat Width -->
+                            <div class="col-md-6">
+                                <label for="throat_width" class="form-label">
+                                    <i class="bi bi-arrows-expand me-2"></i>
+                                    Throat Width
+                                </label>
+                                <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="e.g.: ~350, 350~600, 600~">
+                            </div>
+
+                            <!-- Row 3 -->
+                            <!-- Transformer -->
+                            <div class="col-md-6">
+                                <label for="transformer" class="form-label">
+                                    <i class="bi bi-cpu me-2"></i>
+                                    Transformer
+                                </label>
+                                <select class="form-select" id="transformer" name="transformer">
+                                    <option value="">Please select, default is empty</option>
+                                    <option value="ITS85">ITS85 (Recommended)</option>
+                                    <option value="DB6-100R1">DB6-100R1 (Recommended)</option>
+                                    <option value="RT552">RT552</option>
+                                    <option value="RT752">RT752</option>
+                                    <option value="RT906">RT906</option>
+                                    <option value="DB6-90-510">DB6-90-510</option>
+                                    <option value="SMF-100">SMF-100</option>
+                                    <option value="MF-100">MF-100</option>
+                                    <option value="其他">Others</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Clamping Force -->
+                            <div class="col-md-6">
+                                <label for="clamping_force" class="form-label">
+                                    <i class="bi bi-lightning me-2"></i>
+                                    Clamping Force
+                                </label>
+                                <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="e.g.: ~3500, 3500~5500, 5500~">
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- Sub-category Type -->
-                    <div class="col-md-6">
-                        <label for="sub_category_type" class="form-label">
-                            <i class="bi bi-tags me-2"></i>
-                            Sub-category Type
-                        </label>
-                        <select class="form-select" id="sub_category_type" name="sub_category_type">
-                            <option value="">Please select, default is empty</option>
-                            <!-- Dynamic loading options -->
-                        </select>
-                    </div>
-                    
-                    <!-- Throat Depth -->
-                    <div class="col-md-6">
-                        <label for="throat_depth" class="form-label">
-                            <i class="bi bi-rulers me-2"></i>
-                            Throat Depth
-                        </label>
-                        <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="Outer contour value perpendicular to electrode pressure direction, e.g.: ~350, 350~600, 600~">
-                    </div>
-                    
-                    <!-- Throat Width -->
-                    <div class="col-md-6">
-                        <label for="throat_width" class="form-label">
-                            <i class="bi bi-arrows-expand me-2"></i>
-                            Throat Width
-                        </label>
-                        <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="Outer contour value parallel to electrode pressure direction, e.g.: ~350, 350~600, 600~">
-                    </div>
-                    
-                    <!-- Transformer -->
-                    <div class="col-md-6">
-                        <label for="transformer" class="form-label">
-                            <i class="bi bi-cpu me-2"></i>
-                            Transformer
-                        </label>
-                        <select class="form-select" id="transformer" name="transformer">
-                            <option value="">Please select, default is empty</option>
-                            <option value="ITS85">ITS85(Recommended)</option>
-                            <option value="DB6-100R1">DB6-100R1(Recommended)</option>
-                            <option value="RT552">RT552</option>
-                            <option value="RT752">RT752</option>
-                            <option value="RT906">RT906</option>
-                            <option value="DB6-90-510">DB6-90-510</option>
-                            <option value="SMF-100">SMF-100</option>
-                            <option value="MF-100">MF-100</option>
-                            <option value="其他">Others</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Motor Manufacturer -->
-                    <div class="col-md-6">
-                        <label for="motor_manufacturer" class="form-label">
-                            <i class="bi bi-gear-wide-connected me-2"></i>
-                            Motor Manufacturer
-                        </label>
-                        <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
-                            <option value="">Please select, default is empty</option>
-                            <option value="FANUC">FANUC</option>
-                            <option value="KUKA">KUKA</option>
-                            <option value="YASKAWA">YASKAWA</option>
-                            <option value="ABB">ABB</option>
-                            <option value="TOLOMATIC">TOLOMATIC</option>
-                            <option value="多摩川">Tamagawa</option>
-                            <option value="PANASONIC">PANASONIC</option>
-                            <option value="DIAKONT">DIAKONT</option>
-                            <option value="SEW">SEW</option>
-                            <option value="SANYO">SANYO</option>
-                            <option value="其他">Others</option>
-                        </select>
+
+                    <!-- Right column: Image display area -->
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h5 class="card-title">Sub-category Option Preview</h5>
+                                <p class="text-muted small mb-2">Preview only shows window style, ignoring transformer orientation and gearbox type</p>
+                                <img id="product_image" src="/static/images/No image available.png" alt="Product Preview" class="img-fluid" style="max-height: 250px;">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -123,13 +129,13 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="row g-3">
-                                <!-- Drawing No.1(o) - First -->
+                                <!-- Drawing No. 1(o) -->
                                 <div class="col-md-6">
                                     <label for="drawing_no_1" class="form-label">
                                         <i class="bi bi-file-earmark-text me-2"></i>
-                                        Drawing No.1(o)
+                                        Drawing No. 1(o)
                                     </label>
-                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="Welding gun drawing number, default is empty">
+                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="Weld gun drawing number, default is empty">
                                 </div>
                                 
                                 <!-- Description -->
@@ -150,14 +156,27 @@
                                     <input type="text" class="form-control" id="stroke" name="stroke" placeholder="e.g.: ~90, 100~190, 210~">
                                 </div>
                                 
-                                <!-- Clamping Force -->
-                                <div class="col-md-4">
-                                    <label for="clamping_force" class="form-label">
-                                        <i class="bi bi-lightning me-2"></i>
-                                        Clamping Force
-                                    </label>
-                                    <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="e.g.: ~3500, 3500~5500, 5500~">
-                                </div>
+								<!-- MOTOR Manufacturer -->
+								<div class="col-md-4">
+									<label for="motor_manufacturer" class="form-label">
+										<i class="bi bi-gear-wide-connected me-2"></i>
+										MOTOR Manufacturer
+									</label>
+									<select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+										<option value="">Please select, default is empty</option>
+										<option value="FANUC">FANUC</option>
+										<option value="KUKA">KUKA</option>
+										<option value="YASKAWA">YASKAWA</option>
+										<option value="ABB">ABB</option>
+										<option value="TOLOMATIC">TOLOMATIC</option>
+										<option value="多摩川">Tamagawa</option>
+										<option value="PANASONIC">PANASONIC</option>
+										<option value="DIAKONT">DIAKONT</option>
+										<option value="SEW">SEW</option>
+										<option value="SANYO">SANYO</option>
+										<option value="其他">Others</option>
+									</select>
+								</div>
                                 
                                 <!-- Weight -->
                                 <div class="col-md-4">
@@ -196,7 +215,7 @@
                                 <div class="col-md-4">
                                     <label for="has_balance" class="form-label">
                                         <i class="bi bi-water me-2"></i>
-                                        Balance
+                                        Has Balance
                                     </label>
                                     <select class="form-select" id="has_balance" name="has_balance">
                                         <option value="">Please select, default is empty</option>
@@ -301,7 +320,7 @@
                         <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">Search Tips</h5>
                         <p class="card-text text-muted">
-                            All search criteria are optional. Leaving them empty means no restriction on that criteria.
+                            All search criteria are optional. Leaving a field empty means no restriction on that condition.
                         </p>
                     </div>
                 </div>
@@ -310,9 +329,9 @@
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
-                        <h5 class="card-title mt-3">Exact Matching</h5>
+                        <h5 class="card-title mt-3">Precise Matching</h5>
                         <p class="card-text text-muted">
-                            Numeric fields support exact matching, text fields support fuzzy search.
+                            Numeric fields support precise matching, while text fields support fuzzy search.
                         </p>
                     </div>
                 </div>
@@ -323,7 +342,7 @@
                         <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">File Download</h5>
                         <p class="card-text text-muted">
-                            DWG, STEP and BMP files can be downloaded directly from search results.
+                            DWG, STEP, and BMP files can be downloaded directly from the search results.
                         </p>
                     </div>
                 </div>
@@ -336,45 +355,48 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Category to sub-category type mapping
-		const categorySubTypes = {
-			'X2C-C(Recommended)': [
-				{ label: 'Large', value: '大型' },
-				{ label: 'Special', value: '特殊' },
-				{ label: 'Crane Type', value: '仙鹤型' },
-				{ label: 'Small-Medium', value: '中小型' }
-			],
-			'X2C-V2-C': [
-				{ label: 'Large', value: '大型' },
-				{ label: 'Special', value: '特殊' },
-				{ label: 'Crane Type', value: '仙鹤型' },
-				{ label: 'Small-Medium', value: '中小型' }
-			],
-			'X2C-V3-C': [
-				{ label: 'Large', value: '大型' },
-				{ label: 'Small', value: '小型' }
-			],
-			'X2C-X(Recommended)': [
-				{ label: 'Large', value: '大型' },
-				{ label: 'Special', value: '特殊' },
-				{ label: 'Small-Medium', value: '中小型' },
-				{ label: 'X', value: 'X' },
-				{ label: 'Y', value: 'Y' }
-			],
-			'X2C-V2-X': [
-				{ label: 'Large', value: '大型' },
-				{ label: 'Special', value: '特殊' },
-				{ label: 'Small', value: '小型' },
-				{ label: 'Medium', value: '中型' },
-				{ label: 'X', value: 'X' },
-				{ label: 'Y', value: 'Y' }
-			],
-			'X2C-V3-X': [
-				{ label: 'Large', value: '大型' },
-				{ label: 'Small', value: '小型' }
-			]
-		};
+        // Mapping of category to sub-category types
+        const categorySubTypes = {
+            'X2C-C(Recommended)': [
+                { label: 'Large', value: '大型' },
+                { label: 'Special', value: '特殊' },
+                { label: 'Crane Type', value: '仙鹤型' },
+                { label: 'Small-Medium', value: '中小型' }
+            ],
+            'X2C-V2-C': [
+                { label: 'Large', value: '大型' },
+                { label: 'Special', value: '特殊' },
+                { label: 'Crane Type', value: '仙鹤型' },
+                { label: 'Small-Medium', value: '中小型' }
+            ],
+            'X2C-V3-C': [
+                { label: 'Large', value: '大型' },
+                { label: 'Small', value: '小型' }
+            ],
+            'X2C-X(Recommended)': [
+                { label: 'Large', value: '大型' },
+                { label: 'Special', value: '特殊' },
+                { label: 'Small-Medium', value: '中小型' },
+                { label: 'X', value: 'X' },
+                { label: 'Y', value: 'Y' }
+            ],
+            'X2C-V2-X': [
+                { label: 'Large', value: '大型' },
+                { label: 'Special', value: '特殊' },
+                { label: 'Small', value: '小型' },
+                { label: 'Medium', value: '中型' },
+                { label: 'X', value: 'X' },
+                { label: 'Y', value: 'Y' }
+            ],
+            'X2C-V3-X': [
+                { label: 'Large', value: '大型' },
+                { label: 'Small', value: '小型' }
+            ]
+        };
         
+        const defaultImagePath = '/static/images/No image available.png';
+        const productImageElement = document.getElementById('product_image');
+
         // Form reset functionality
         document.querySelector('button[type="reset"]').addEventListener('click', function() {
             document.getElementById('searchForm').reset();
@@ -382,8 +404,10 @@
             document.querySelectorAll('select').forEach(select => {
                 select.selectedIndex = 0;
             });
-            // Clear sub-category type
+            // Clear sub-category types
             updateSubCategoryOptions('');
+            // Reset image
+            productImageElement.src = defaultImagePath;
         });
         
         // Handle category selection change
@@ -391,22 +415,61 @@
             const categorySelect = this;
             const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
             updateSubCategoryOptions(selectedText);
+            updateProductImage(); // Also update image on category change
+        });
+
+        // Handle sub-category type selection change
+        document.getElementById('sub_category_type').addEventListener('change', function() {
+            updateProductImage();
         });
         
         // Update sub-category type options
-		function updateSubCategoryOptions(categoryName) {
-			const subCategorySelect = document.getElementById('sub_category_type');
-			subCategorySelect.innerHTML = '<option value="">Please select, default is empty</option>';
+        function updateSubCategoryOptions(categoryName) {
+            const subCategorySelect = document.getElementById('sub_category_type');
+            
+            // Clear existing options
+            subCategorySelect.innerHTML = '<option value="">Please select, default is empty</option>';
+            
+            if (categoryName && categorySubTypes[categoryName]) {
+                categorySubTypes[categoryName].forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.value; // Submit the original value
+                    option.textContent = item.label; // Display the English label
+                    subCategorySelect.appendChild(option);
+                });
+            }
+        }
 
-			const options = categorySubTypes[categoryName] || [];
-			options.forEach(item => {
-				const option = document.createElement('option');
-				option.value = item.value;   // 提交的是中文
-				option.textContent = item.label; // 显示的是英文
-				subCategorySelect.appendChild(option);
-			});
-		}
+        // Update product image
+        function updateProductImage() {
+            const categorySelect = document.getElementById('category');
+            const subCategorySelect = document.getElementById('sub_category_type');
+
+            const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
+            const selectedSubCategoryValue = subCategorySelect.value;
+
+            if (selectedCategoryText && selectedSubCategoryValue) {
+                // Construct image name using the original Chinese value for sub-category
+                const imageName = `${selectedCategoryText}-${selectedSubCategoryValue}.png`;
+                const imagePath = `/static/images/${imageName}`;
+                
+                // Try to load the image, fall back to default if it fails
+                const img = new Image();
+                img.onload = function() {
+                    productImageElement.src = imagePath;
+                };
+                img.onerror = function() {
+                    productImageElement.src = defaultImagePath;
+                };
+                img.src = imagePath; // Set src to trigger loading
+            } else {
+                productImageElement.src = defaultImagePath;
+            }
+        }
+
+        // Initialize sub-category types and image on page load
+        updateSubCategoryOptions(document.getElementById('category').options[document.getElementById('category').selectedIndex].text);
+        updateProductImage();
     });
 </script>
 {% endblock %}
-

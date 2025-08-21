@@ -337,7 +337,7 @@ class UserProfile(models.Model):
         verbose_name="单次最大下载大小（MB）"
     )
     max_daily_download_gb = models.IntegerField(
-        default=100, 
+        default=10, 
         verbose_name="每日最大下载大小（GB）"
     )
     max_daily_download_count = models.IntegerField(

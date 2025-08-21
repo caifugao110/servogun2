@@ -15,108 +15,105 @@
         
         <div class="search-form fade-in-up">
             <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm">
-                <!-- 前六个主要搜索字段 -->
+                <!-- 主要搜索字段和图片预览 -->
                 <div class="row g-3 mb-4">
-                    <!-- 产品分类 -->
-                    <div class="col-md-6">
-                        <label for="category" class="form-label">
-                            <i class="bi bi-diagram-3 me-2"></i>
-                            <span style="color: red; font-weight: bold;">产品分类</span>（不清楚分类可点击旁边的问号） <span class="text-danger">*</span>
-                            <a href="/static/pdf/产品搜索使用指南.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
-                                <i class="bi bi-question-circle"></i>
-                            </a>
-                        </label>
-						<select class="form-select" id="category" name="category" required>
-							<option value="">请选择，必选项</option>
-							{% for category in categories %}
-								{% if category.name in 'X2C-C,X2C-X' %}
-									<option value="{{ category.id }}">{{ category.name }}(推荐)</option>
-								{% else %}
-									<option value="{{ category.id }}">{{ category.name }}</option>
-								{% endif %}
-							{% endfor %}
-						</select>
+                    <!-- 左侧两列：输入字段 -->
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <!-- 第一行 -->
+                            <!-- 产品分类 -->
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">
+                                    <i class="bi bi-diagram-3 me-2"></i>
+                                    <span style="color: red; font-weight: bold;">产品分类</span> <span class="text-danger">*</span>
+                                    <a href="/static/pdf/产品搜索使用指南.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
+                                        <i class="bi bi-question-circle"></i>
+                                    </a>
+                                </label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">请选择，必选项</option>
+                                    {% for category in categories %}
+                                        {% if category.name in 'X2C-C,X2C-X' %}
+                                            <option value="{{ category.id }}">{{ category.name }}(推荐)</option>
+                                        {% else %}
+                                            <option value="{{ category.id }}">{{ category.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- 子分类类型 -->
+                            <div class="col-md-6">
+                                <label for="sub_category_type" class="form-label">
+                                    <i class="bi bi-tags me-2"></i>
+                                    子分类类型
+                                </label>
+                                <select class="form-select" id="sub_category_type" name="sub_category_type">
+                                    <option value="">请选择，默认为空</option>
+                                    <!-- 动态加载选项 -->
+                                </select>
+                            </div>
+
+                            <!-- 第二行 -->
+                            <!-- 喉深 -->
+                            <div class="col-md-6">
+                                <label for="throat_depth" class="form-label">
+                                    <i class="bi bi-rulers me-2"></i>
+                                    喉深
+                                </label>
+                                <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如: ~350, 350~600, 600~">
+                            </div>
+                            
+                            <!-- 喉宽 -->
+                            <div class="col-md-6">
+                                <label for="throat_width" class="form-label">
+                                    <i class="bi bi-arrows-expand me-2"></i>
+                                    喉宽
+                                </label>
+                                <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如: ~350, 350~600, 600~">
+                            </div>
+
+                            <!-- 第三行 -->
+                            <!-- 变压器 -->
+                            <div class="col-md-6">
+                                <label for="transformer" class="form-label">
+                                    <i class="bi bi-cpu me-2"></i>
+                                    变压器
+                                </label>
+                                <select class="form-select" id="transformer" name="transformer">
+                                    <option value="">请选择，默认为空</option>
+                                    <option value="ITS85">ITS85（推荐）</option>
+                                    <option value="DB6-100R1">DB6-100R1（推荐）</option>
+                                    <option value="RT552">RT552</option>
+                                    <option value="RT752">RT752</option>
+                                    <option value="RT906">RT906</option>
+                                    <option value="DB6-90-510">DB6-90-510</option>
+                                    <option value="SMF-100">SMF-100</option>
+                                    <option value="MF-100">MF-100</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 加压力 -->
+                            <div class="col-md-6">
+                                <label for="clamping_force" class="form-label">
+                                    <i class="bi bi-lightning me-2"></i>
+                                    加压力
+                                </label>
+                                <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~3500, 3500~5500, 5500~">
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- 子分类类型 -->
-                    <div class="col-md-6">
-                        <label for="sub_category_type" class="form-label">
-                            <i class="bi bi-tags me-2"></i>
-                            子分类类型
-                        </label>
-                        <select class="form-select" id="sub_category_type" name="sub_category_type">
-                            <option value="">请选择，默认为空</option>
-                            <!-- 动态加载选项 -->
-                        </select>
-                    </div>
-                    
-                    <!-- 喉深 -->
-                    <div class="col-md-6">
-                        <label for="throat_depth" class="form-label">
-                            <i class="bi bi-rulers me-2"></i>
-                            喉深
-                        </label>
-                        <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="与电极加压方向垂直的外轮廓值，例如: ~350, 350~600, 600~">
-                    </div>
-                    
-                    <!-- 喉宽 -->
-                    <div class="col-md-6">
-                        <label for="throat_width" class="form-label">
-                            <i class="bi bi-arrows-expand me-2"></i>
-                            喉宽
-                        </label>
-                        <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="与电极加压方向平行的外轮廓值，例如: ~350, 350~600, 600~">
-                    </div>
-                    
-                    <!-- 变压器 -->
-                    <div class="col-md-6">
-                        <label for="transformer" class="form-label">
-                            <i class="bi bi-cpu me-2"></i>
-                            变压器
-                        </label>
-                        <select class="form-select" id="transformer" name="transformer">
-                            <option value="">请选择，默认为空</option>
-                            <option value="ITS85">ITS85（推荐）</option>
-                            <option value="DB6-100R1">DB6-100R1（推荐）</option>
-                            <option value="RT552">RT552</option>
-                            <option value="RT752">RT752</option>
-                            <option value="RT906">RT906</option>
-                            <option value="DB6-90-510">DB6-90-510</option>
-                            <!--
-							<option value="BOSCH">BOSCH</option>
-                            <option value="商科">商科</option>
-							<option value="RT706">RT706</option>
-                            <option value="NI110">NI110</option>
-                            <option value="RT452">RT452</option>
-							<option value="DB6">DB6</option>
-                            <option value="DB6-90">DB6-90</option>
-							-->
-                            <option value="SMF-100">SMF-100</option>
-                            <option value="MF-100">MF-100</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    
-                    <!-- MOTOR厂家 -->
-                    <div class="col-md-6">
-                        <label for="motor_manufacturer" class="form-label">
-                            <i class="bi bi-gear-wide-connected me-2"></i>
-                            MOTOR厂家
-                        </label>
-                        <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
-                            <option value="">请选择，默认为空</option>
-                            <option value="FANUC">FANUC</option>
-                            <option value="KUKA">KUKA</option>
-                            <option value="YASKAWA">YASKAWA</option>
-                            <option value="ABB">ABB</option>
-                            <option value="TOLOMATIC">TOLOMATIC</option>
-                            <option value="多摩川">多摩川</option>
-                            <option value="PANASONIC">PANASONIC</option>
-                            <option value="DIAKONT">DIAKONT</option>
-                            <option value="SEW">SEW</option>
-                            <option value="SANYO">SANYO</option>
-                            <option value="其他">其他</option>
-                        </select>
+
+                    <!-- 右侧一列：图片显示区域 -->
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h5 class="card-title">子分类选项预览图</h5>
+                                <p class="text-muted small mb-2">预览图仅展示窗口样式，不考虑变压器方向与齿轮箱类型</p>
+                                <img id="product_image" src="/static/images/No image available.png" alt="产品预览图" class="img-fluid" style="max-height: 250px;">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -159,14 +156,27 @@
                                     <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如: ~90, 100~190, 210~">
                                 </div>
                                 
-                                <!-- 加压力 -->
-                                <div class="col-md-4">
-                                    <label for="clamping_force" class="form-label">
-                                        <i class="bi bi-lightning me-2"></i>
-                                        加压力
-                                    </label>
-                                    <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~3500, 3500~5500, 5500~">
-                                </div>
+								<!-- MOTOR厂家 -->
+								<div class="col-md-4">
+									<label for="motor_manufacturer" class="form-label">
+										<i class="bi bi-gear-wide-connected me-2"></i>
+										MOTOR厂家
+									</label>
+									<select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+										<option value="">请选择，默认为空</option>
+										<option value="FANUC">FANUC</option>
+										<option value="KUKA">KUKA</option>
+										<option value="YASKAWA">YASKAWA</option>
+										<option value="ABB">ABB</option>
+										<option value="TOLOMATIC">TOLOMATIC</option>
+										<option value="多摩川">多摩川</option>
+										<option value="PANASONIC">PANASONIC</option>
+										<option value="DIAKONT">DIAKONT</option>
+										<option value="SEW">SEW</option>
+										<option value="SANYO">SANYO</option>
+										<option value="其他">其他</option>
+									</select>
+								</div>
                                 
                                 <!-- 重量 -->
                                 <div class="col-md-4">
@@ -355,6 +365,9 @@
             'X2C-V3-X': ['大型', '小型']
         };
         
+        const defaultImagePath = '/static/images/No image available.png';
+        const productImageElement = document.getElementById('product_image');
+
         // 表单重置功能
         document.querySelector('button[type="reset"]').addEventListener('click', function() {
             document.getElementById('searchForm').reset();
@@ -364,6 +377,8 @@
             });
             // 清空子分类类型
             updateSubCategoryOptions('');
+            // 重置图片
+            productImageElement.src = defaultImagePath;
         });
         
         // 分类选择变化时的处理
@@ -371,6 +386,12 @@
             const categorySelect = this;
             const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
             updateSubCategoryOptions(selectedText);
+            updateProductImage(); // 分类变化时也更新图片
+        });
+
+        // 子分类类型选择变化时的处理
+        document.getElementById('sub_category_type').addEventListener('change', function() {
+            updateProductImage();
         });
         
         // 更新子分类类型选项
@@ -389,7 +410,37 @@
                 });
             }
         }
+
+        // 更新产品图片
+        function updateProductImage() {
+            const categorySelect = document.getElementById('category');
+            const subCategorySelect = document.getElementById('sub_category_type');
+
+            const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
+            const selectedSubCategoryText = subCategorySelect.options[subCategorySelect.selectedIndex].text;
+
+            if (selectedCategoryText && selectedSubCategoryText && selectedSubCategoryText !== '请选择，默认为空') {
+                // 构建图片路径
+                const imageName = `${selectedCategoryText}-${selectedSubCategoryText}.png`;
+                const imagePath = `/static/images/${imageName}`;
+                
+                // 尝试加载图片，如果失败则显示默认图片
+                const img = new Image();
+                img.onload = function() {
+                    productImageElement.src = imagePath;
+                };
+                img.onerror = function() {
+                    productImageElement.src = defaultImagePath;
+                };
+                img.src = imagePath; // 设置src触发加载
+            } else {
+                productImageElement.src = defaultImagePath;
+            }
+        }
+
+        // 页面加载时初始化子分类类型和图片
+        updateSubCategoryOptions(document.getElementById('category').options[document.getElementById('category').selectedIndex].text);
+        updateProductImage();
     });
 </script>
 {% endblock %}
-
