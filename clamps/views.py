@@ -139,6 +139,12 @@ def search_results(request):
     electrode_arm_end = query_params.get('electrode_arm_end')
     motor_manufacturer = query_params.get('motor_manufacturer')
     has_balance = query_params.get('has_balance')
+    
+    # 新增的四个字段
+    transformer_placement = query_params.get('transformer_placement')
+    flange_pcd = query_params.get('flange_pcd')
+    bracket_direction = query_params.get('bracket_direction')
+    water_circuit = query_params.get('water_circuit')
 
     queryset = Product.objects.all()
 
@@ -198,7 +204,21 @@ def search_results(request):
     if motor_manufacturer:
         queryset = queryset.filter(motor_manufacturer__icontains=motor_manufacturer)
     if has_balance:
-        queryset = queryset.filter(has_balance=True if has_balance == '有' else False)
+        # 处理中英文版本的has_balance值
+        if has_balance in ['有', 'Yes']:
+            queryset = queryset.filter(has_balance=True)
+        elif has_balance in ['无', 'No']:
+            queryset = queryset.filter(has_balance=False)
+    
+    # 新增的四个字段过滤逻辑
+    if transformer_placement:
+        queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
+    if flange_pcd:
+        queryset = queryset.filter(flange_pcd__icontains=flange_pcd)
+    if bracket_direction:
+        queryset = queryset.filter(bracket_direction__icontains=bracket_direction)
+    if water_circuit:
+        queryset = queryset.filter(water_circuit__icontains=water_circuit)
 
     # 记录搜索日志
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
@@ -234,6 +254,12 @@ def search_results_en(request):
     electrode_arm_end = query_params.get('electrode_arm_end')
     motor_manufacturer = query_params.get('motor_manufacturer')
     has_balance = query_params.get('has_balance')
+    
+    # 新增的四个字段
+    transformer_placement = query_params.get('transformer_placement')
+    flange_pcd = query_params.get('flange_pcd')
+    bracket_direction = query_params.get('bracket_direction')
+    water_circuit = query_params.get('water_circuit')
 
     queryset = Product.objects.all()
 
@@ -291,7 +317,21 @@ def search_results_en(request):
     if motor_manufacturer:
         queryset = queryset.filter(motor_manufacturer__icontains=motor_manufacturer)
     if has_balance:
-        queryset = queryset.filter(has_balance=True if has_balance == '有' else False)
+        # 处理中英文版本的has_balance值
+        if has_balance in ['有', 'Yes']:
+            queryset = queryset.filter(has_balance=True)
+        elif has_balance in ['无', 'No']:
+            queryset = queryset.filter(has_balance=False)
+    
+    # 新增的四个字段过滤逻辑
+    if transformer_placement:
+        queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
+    if flange_pcd:
+        queryset = queryset.filter(flange_pcd__icontains=flange_pcd)
+    if bracket_direction:
+        queryset = queryset.filter(bracket_direction__icontains=bracket_direction)
+    if water_circuit:
+        queryset = queryset.filter(water_circuit__icontains=water_circuit)
 
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=str(query_params))

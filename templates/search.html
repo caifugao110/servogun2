@@ -15,6 +15,7 @@
         
         <div class="search-form fade-in-up">
             <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm">
+                {% csrf_token %}
                 <!-- 主要搜索字段和图片预览 -->
                 <div class="row g-3 mb-4">
                     <!-- 左侧两列：输入字段 -->

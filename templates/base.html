@@ -517,7 +517,7 @@
                     <p class="mb-1">以客户为中心 关怀员工 鼓励创新 纳新去旧</p>
                     <p class="mb-1"><small>Be customer-oriented care employees encourage innovations take in the fresh</small></p>
                     <p class="mb-1">版权所有 © <span id="current-year">1994</span>-<span id="current-year-end"></span> 小原（南京）机电有限公司</p>
-					<p class="mb-0">Released and deployed as version V2.7.1</p>
+					<p class="mb-0" id="release-version">正在获取最新版本...</p>
                 </div>
             </div>
         </div>
@@ -682,6 +682,33 @@
 		// 自动获取当前年份
 		const currentYear = new Date().getFullYear();
 		document.getElementById('current-year-end').textContent = currentYear;
+		
+		// 自动获取项目 https://gitee.com/caifugao110/servogun2 的最新发行版标签
+        document.addEventListener("DOMContentLoaded", function() {
+            const owner = 'caifugao110';
+            const repo = 'servogun2';
+            const apiUrl = `https://gitee.com/api/v5/repos/${owner}/${repo}/releases/latest`;
+            const versionElement = document.getElementById('release-version' );
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.tag_name) {
+                        versionElement.textContent = `Released and deployed as version ${data.tag_name}`;
+                    } else {
+                        versionElement.textContent = '无法获取最新版本号';
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to fetch Gitee release:', error);
+                    versionElement.textContent = '获取版本失败，请检查网络或API';
+                });
+        });
     </script>
     
     {% block extra_js %}{% endblock %}
