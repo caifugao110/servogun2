@@ -44,7 +44,6 @@
                                 <tr>
                                     <th>用户名</th>
                                     <th>用户备注</th>
-                                    <th>邮箱</th>
                                     <th>密码备注</th>
                                     <th>状态</th>
                                     <th>权限</th>
@@ -69,7 +68,6 @@
                                                 --
                                             {% endif %}
                                         </td>
-                                        <td>{{ user.email|default:"--" }}</td>
                                         <td>
                                             {% if user.first_name or user.last_name %}
                                                 {{ user.first_name }} {{ user.last_name }}
@@ -135,7 +133,8 @@
                                         </td>
                                         <td>
                                             <small class="text-muted">
-                                                {{ user.date_joined|date:"Y-m-d H:i" }}
+                                                {{ user.date_joined|date:"Y-m-d H:i" }}<br>
+												创建者: {{ item.created_by }}
                                             </small>
                                         </td>
                                         <td>
@@ -151,47 +150,51 @@
                                                 截止: {{ item.password_expiry_date }}
                                             </small>
                                         </td>
-                                        <td>
-                                            {% if not user.is_superuser %}
-                                                <div class="btn-group btn-group-sm">
-                                                    {% if user.is_active %}
-                                                        <form method="post" style="display: inline;">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="action" value="deactivate">
-                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                                            <button type="submit" class="btn btn-outline-danger btn-sm" 
-                                                                    onclick="return confirm('确定要停用用户 {{ user.username }} 吗？')">
-                                                                <i class="bi bi-x-circle me-1"></i>
-                                                                停用
-                                                            </button>
-                                                        </form>
-                                                    {% else %}
-                                                        <form method="post" style="display: inline;">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="action" value="activate">
-                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                                            <button type="submit" class="btn btn-outline-success btn-sm">
-                                                                <i class="bi bi-check-circle me-1"></i>
-                                                                激活
-                                                            </button>
-                                                        </form>
-                                                    {% endif %}
-                                                    <button type="button" class="btn btn-outline-primary btn-sm" 
-                                                            data-bs-toggle="modal" data-bs-target="#configModal{{ user.id }}">
-                                                        <i class="bi bi-gear me-1"></i>
-                                                        配置
-                                                    </button>
-                                                    <a href="{% url 'clamps:reset_user_password' user.id %}" 
-                                                       class="btn btn-outline-warning btn-sm"
-                                                       onclick="return confirm('确定要重置用户 {{ user.username }} 的密码吗？')">
-                                                        <i class="bi bi-key me-1"></i>
-                                                        重置密码
-                                                    </a>
-                                                </div>
-                                            {% else %}
-                                                <span class="text-muted small">超级管理员</span>
-                                            {% endif %}
-                                        </td>
+										<!-- 操作列 -->
+										<td>
+											{% if not user.is_superuser %}
+											<div class="d-flex align-items-center" style="gap: 0.5rem;">
+												<!-- 停用/激活按钮 -->
+												<form method="post" class="mb-0">
+													{% csrf_token %}
+													{% if user.is_active %}
+														<input type="hidden" name="action" value="deactivate">
+														<input type="hidden" name="user_id" value="{{ user.id }}">
+														<button type="submit" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center"
+																data-bs-toggle="tooltip" title="停用用户"
+																onclick="return confirm('确定要停用用户 {{ user.username }} 吗？')">
+															<i class="bi bi-x-circle"></i>
+														</button>
+													{% else %}
+														<input type="hidden" name="action" value="activate">
+														<input type="hidden" name="user_id" value="{{ user.id }}">
+														<button type="submit" class="btn btn-outline-success btn-sm d-inline-flex align-items-center"
+																data-bs-toggle="tooltip" title="激活用户"
+																onclick="return confirm('确定要激活用户 {{ user.username }} 吗？')">
+															<i class="bi bi-check-circle"></i>
+														</button>
+													{% endif %}
+												</form>
+
+												<!-- 配置按钮 -->
+												<button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
+														data-bs-toggle="modal" data-bs-target="#configModal{{ user.id }}"
+														data-bs-toggle="tooltip" title="配置用户">
+													<i class="bi bi-gear"></i>
+												</button>
+
+												<!-- 重置密码按钮 -->
+												<a href="{% url 'clamps:reset_user_password' user.id %}"
+												   class="btn btn-outline-warning btn-sm d-inline-flex align-items-center"
+												   data-bs-toggle="tooltip" title="重置密码"
+												   onclick="return confirm('确定要重置用户 {{ user.username }} 的密码吗？')">
+													<i class="bi bi-key"></i>
+												</a>
+											</div>
+											{% else %}
+												<span class="text-muted small">超级管理员</span>
+											{% endif %}
+										</td>
                                     </tr>
                                     {% endwith %}
                                 {% endfor %}
@@ -224,16 +227,7 @@
                 <div class="card text-center fade-in-up">
                     <div class="card-body">
                         <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-                        <h4 class="mt-2">
-                            {% with active_count=0 %}
-                                {% for item in users_with_profiles %}
-                                    {% if item.user.is_active %}
-                                        {% with active_count=active_count|add:1 %}{% endwith %}
-                                    {% endif %}
-                                {% endfor %}
-                                {{ active_count }}
-                            {% endwith %}
-                        </h4>
+                        <h4 class="mt-2">{{ active_users_count }}</h4>
                         <p class="text-muted mb-0">活跃用户</p>
                     </div>
                 </div>
@@ -243,16 +237,7 @@
                 <div class="card text-center fade-in-up">
                     <div class="card-body">
                         <i class="bi bi-person-badge text-warning" style="font-size: 2rem;"></i>
-                        <h4 class="mt-2">
-                            {% with staff_count=0 %}
-                                {% for item in users_with_profiles %}
-                                    {% if item.user.is_staff %}
-                                        {% with staff_count=staff_count|add:1 %}{% endwith %}
-                                    {% endif %}
-                                {% endfor %}
-                                {{ staff_count }}
-                            {% endwith %}
-                        </h4>
+                        <h4 class="mt-2">{{ admin_users_count }}</h4>
                         <p class="text-muted mb-0">管理员</p>
                     </div>
                 </div>
@@ -468,13 +453,6 @@
                                     <div class="form-text">用于备注客户名称或其他相关信息</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="userEmail{{ user.id }}" class="form-label">邮箱</label>
-                                    <input type="email" class="form-control" id="userEmail{{ user.id }}" 
-                                           name="email" value="{{ user.email|default:'' }}" 
-                                           placeholder="请输入邮箱地址">
-                                    <div class="form-text">用户的邮箱地址</div>
-                                </div>
-                                <div class="mb-3">
                                     <label for="passwordRemark{{ user.id }}" class="form-label">密码备注</label>
                                     <input type="text" class="form-control" id="passwordRemark{{ user.id }}" 
                                            name="password_remark" value="{{ user.first_name|default:'' }} {{ user.last_name|default:'' }}" 
@@ -570,6 +548,12 @@
 
 {% block extra_js %}
 <script>
+    // 初始化 Bootstrap Tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
     // 确认操作提示
     document.querySelectorAll('form button[type="submit"]').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -601,6 +585,3 @@
     }
 </script>
 {% endblock %}
-
-
-

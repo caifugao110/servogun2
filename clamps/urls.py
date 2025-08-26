@@ -36,6 +36,9 @@ urlpatterns = [
     path('management/export/', views.export_data, name='export_data'),
     path('management/import_csv/', views.import_csv, name='import_csv'),
     path('management/sync_files/', views.sync_files, name='sync_files'),
+    
+    # Gitee API代理
+    path('api/gitee/releases/latest/<str:owner>/<str:repo>/', views.gitee_releases_latest, name='gitee_releases_latest'),
 ]
 
 

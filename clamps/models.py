@@ -452,3 +452,6 @@ class UserProfile(models.Model):
 
 
 
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_users', verbose_name='创建者')
+

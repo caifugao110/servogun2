@@ -748,16 +748,25 @@ def manage_users(request):
     users = User.objects.all().order_by("username")
     users_with_profiles = []
 
+    active_users_count = 0
+    admin_users_count = 0
+
     for user in users:
         profile, created = UserProfile.objects.get_or_create(user=user)
         password_expired = profile.is_password_expired()
         password_expiry_date = profile.get_password_expiry_date()
+
+        if user.is_active:
+            active_users_count += 1
+        if user.is_staff or user.is_superuser:
+            admin_users_count += 1
 
         users_with_profiles.append({
             "user": user,
             "profile": profile,
             "password_expired": password_expired,
             "password_expiry_date": password_expiry_date,
+            "created_by": profile.created_by.username if profile.created_by else "N/A",
         })
 
     password_validity_choices = UserProfile.get_password_validity_choices()
@@ -765,6 +774,8 @@ def manage_users(request):
     context = {
         "users_with_profiles": users_with_profiles,
         "password_validity_choices": password_validity_choices,
+        "active_users_count": active_users_count,
+        "admin_users_count": admin_users_count,
     }
     return render(request, "management/users.html", context)
 
@@ -837,7 +848,8 @@ def add_user(request):
                 user=user, 
                 password_validity_days=5, 
                 password_last_changed=timezone.now(),
-                customer_name=customer_name
+                customer_name=customer_name,
+                created_by=request.user
             )
             
             log_entry = Log(user=request.user, action_type='add_user', ip_address=request.META.get('REMOTE_ADDR'),
@@ -857,11 +869,27 @@ def export_users(request):
     response['Content-Disposition'] = 'attachment; filename="users.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Username', 'Email', 'Is Active', 'Is Staff', 'Is Superuser', 'Date Joined'])
+    writer.writerow(["用户名", "是否激活", "是否员工", "是否超级用户", "注册时间", "客户名称", "密码有效期（天）", "密码最后修改时间", "单次最大下载大小（MB）", "每日最大下载大小（GB）", "每日最大下载文件数", "单次批量下载最大大小（MB）", "创建者"])
 
     users = User.objects.all().order_by('username')
     for user in users:
-        writer.writerow([user.username, user.email, user.is_active, user.is_staff, user.is_superuser, user.date_joined.strftime('%Y-%m-%d %H:%M:%S')])
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        created_by_username = profile.created_by.username if profile.created_by else "N/A"
+        writer.writerow([
+            user.username, 
+            user.is_active,
+            user.is_staff, 
+            user.is_superuser, 
+            user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+            profile.customer_name,
+            profile.password_validity_days,
+            profile.password_last_changed.strftime("%Y-%m-%d %H:%M:%S"),
+            profile.max_single_download_mb,
+            profile.max_daily_download_gb,
+            profile.max_daily_download_count,
+            profile.max_batch_download_mb,
+            created_by_username
+        ])
     return response
 
 @login_required
@@ -1200,3 +1228,67 @@ def sync_files(request):
             msg += ' ...'
     messages.success(request, msg)
     return redirect('clamps:management_dashboard')
+
+
+import requests
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def gitee_releases_latest(request, owner, repo):
+    """
+    Gitee API代理视图，解决前端CORS问题
+    获取指定仓库的最新发行版信息
+    """
+    try:
+        # Gitee API配置
+        gitee_token = 'a09da64c1d9e9c7420a18dfd838890b0'
+        gitee_api_base = 'https://gitee.com/api/v5'
+        
+        # 构建Gitee API URL
+        url = f"{gitee_api_base}/repos/{owner}/{repo}/releases/latest"
+        
+        # 设置请求头，包含访问令牌
+        headers = {
+            'Authorization': f'token {gitee_token}',
+            'User-Agent': 'Django-Gitee-Proxy/1.0'
+        }
+        
+        # 发送请求到Gitee API
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            # 只返回需要的字段，减少数据传输
+            result = {
+                'tag_name': data.get('tag_name'),
+                'name': data.get('name'),
+                'published_at': data.get('published_at'),
+                'html_url': data.get('html_url')
+            }
+            return JsonResponse(result)
+        else:
+            return JsonResponse({
+                'error': f'Gitee API返回错误: {response.status_code}',
+                'message': response.text
+            }, status=response.status_code)
+            
+    except requests.exceptions.Timeout:
+        return JsonResponse({
+            'error': '请求超时',
+            'message': 'Gitee API请求超时，请稍后重试'
+        }, status=408)
+        
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({
+            'error': '网络请求失败',
+            'message': str(e)
+        }, status=500)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': '服务器内部错误',
+            'message': str(e)
+        }, status=500)
+

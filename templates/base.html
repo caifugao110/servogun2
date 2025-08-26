@@ -687,7 +687,8 @@
         document.addEventListener("DOMContentLoaded", function() {
             const owner = 'caifugao110';
             const repo = 'servogun2';
-            const apiUrl = `https://gitee.com/api/v5/repos/${owner}/${repo}/releases/latest`;
+            // 使用Django API代理解决CORS问题
+            const apiUrl = `/api/gitee/releases/latest/${owner}/${repo}/`;
             const versionElement = document.getElementById('release-version' );
 
             fetch(apiUrl)
