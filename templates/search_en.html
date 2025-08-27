@@ -83,15 +83,7 @@
                                 </label>
                                 <select class="form-select" id="transformer" name="transformer">
                                     <option value="">Please select, default is empty</option>
-                                    <option value="ITS85">ITS85 (Recommended)</option>
-                                    <option value="DB6-100R1">DB6-100R1 (Recommended)</option>
-                                    <option value="RT552">RT552</option>
-                                    <option value="RT752">RT752</option>
-                                    <option value="RT906">RT906</option>
-                                    <option value="DB6-90-510">DB6-90-510</option>
-                                    <option value="SMF-100">SMF-100</option>
-                                    <option value="MF-100">MF-100</option>
-                                    <option value="其他">Others</option>
+                                    <!-- Options loaded dynamically -->
                                 </select>
                             </div>
                             
@@ -356,7 +348,7 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Mapping of category to sub-category types
+        // Mapping of category to sub-category types with English labels
         const categorySubTypes = {
             'X2C-C(Recommended)': [
                 { label: 'Large', value: '大型' },
@@ -394,6 +386,53 @@
                 { label: 'Small', value: '小型' }
             ]
         };
+
+        // Mapping of category to transformer types (original values)
+        const categoryTransformerTypes = {
+            'X2C-C(Recommended)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
+            'X2C-V2-C': ['DB6','其他'],
+            'X2C-V3-C': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他'],
+            'X2C-X(Recommended)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
+            'X2C-V2-X': ['DB6','其他'],
+            'X2C-V3-X': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他']
+        };
+        
+        // Formats the transformer type for display in English
+        function formatTransformerDisplayText(type) {
+            if (type === 'ITS85' || type === 'DB6-100R1') {
+                return type + ' (Recommended)';
+            }
+            if (type === 'DB6-90-510' || type === 'DB6' || type === 'DB6-90') {
+                return 'DB6-90';
+            }
+            if (type === '商科') {
+                return 'Shangke';
+            }
+            if (type === '其他') {
+                return 'Others';
+            }
+            return type;
+        }
+
+        // Updates the transformer dropdown options
+        function updateTransformerOptions(categoryName) {
+            const transformerSelect = document.getElementById('transformer');
+            transformerSelect.innerHTML = '<option value="">Please select, default is empty</option>';
+            
+            if (categoryName && categoryTransformerTypes[categoryName]) {
+                categoryTransformerTypes[categoryName].forEach(transformerType => {
+                    const option = document.createElement('option');
+                    
+                    // **CORE LOGIC**
+                    // 1. `option.value` stores the original value for form submission.
+                    option.value = transformerType;
+                    // 2. `option.textContent` stores the formatted English text for display.
+                    option.textContent = formatTransformerDisplayText(transformerType);
+                    
+                    transformerSelect.appendChild(option);
+                });
+            }
+        }
         
         const defaultImagePath = '/static/images/No image available.png';
         const productImageElement = document.getElementById('product_image');
@@ -401,13 +440,11 @@
         // Form reset functionality
         document.querySelector('button[type="reset"]').addEventListener('click', function() {
             document.getElementById('searchForm').reset();
-            // Reset all select elements
             document.querySelectorAll('select').forEach(select => {
                 select.selectedIndex = 0;
             });
-            // Clear sub-category types
             updateSubCategoryOptions('');
-            // Reset image
+            updateTransformerOptions('');
             productImageElement.src = defaultImagePath;
         });
         
@@ -416,7 +453,8 @@
             const categorySelect = this;
             const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
             updateSubCategoryOptions(selectedText);
-            updateProductImage(); // Also update image on category change
+            updateTransformerOptions(selectedText);
+            updateProductImage();
         });
 
         // Handle sub-category type selection change
@@ -424,29 +462,28 @@
             updateProductImage();
         });
         
-        // Update sub-category type options
+        // Update sub-category type options with English labels
         function updateSubCategoryOptions(categoryName) {
             const subCategorySelect = document.getElementById('sub_category_type');
-            
-            // Clear existing options
             subCategorySelect.innerHTML = '<option value="">Please select, default is empty</option>';
             
             if (categoryName && categorySubTypes[categoryName]) {
                 categorySubTypes[categoryName].forEach(item => {
                     const option = document.createElement('option');
-                    option.value = item.value; // Submit the original value
+                    option.value = item.value; // Submit the original Chinese value
                     option.textContent = item.label; // Display the English label
                     subCategorySelect.appendChild(option);
                 });
             }
         }
 
-        // Update product image
+        // Update product image based on selected values
         function updateProductImage() {
             const categorySelect = document.getElementById('category');
             const subCategorySelect = document.getElementById('sub_category_type');
 
             const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
+            // Use .value to get the original Chinese value needed for the image name
             const selectedSubCategoryValue = subCategorySelect.value;
 
             if (selectedCategoryText && selectedSubCategoryValue) {
@@ -454,22 +491,19 @@
                 const imageName = `${selectedCategoryText}-${selectedSubCategoryValue}.png`;
                 const imagePath = `/static/images/${imageName}`;
                 
-                // Try to load the image, fall back to default if it fails
                 const img = new Image();
-                img.onload = function() {
-                    productImageElement.src = imagePath;
-                };
-                img.onerror = function() {
-                    productImageElement.src = defaultImagePath;
-                };
-                img.src = imagePath; // Set src to trigger loading
+                img.onload = () => { productImageElement.src = imagePath; };
+                img.onerror = () => { productImageElement.src = defaultImagePath; };
+                img.src = imagePath;
             } else {
                 productImageElement.src = defaultImagePath;
             }
         }
 
-        // Initialize sub-category types and image on page load
-        updateSubCategoryOptions(document.getElementById('category').options[document.getElementById('category').selectedIndex].text);
+        // Initial setup on page load
+        const initialCategoryText = document.getElementById('category').options[document.getElementById('category').selectedIndex].text;
+        updateSubCategoryOptions(initialCategoryText);
+        updateTransformerOptions(initialCategoryText);
         updateProductImage();
     });
 </script>

@@ -83,15 +83,7 @@
                                 </label>
                                 <select class="form-select" id="transformer" name="transformer">
                                     <option value="">请选择，默认为空</option>
-                                    <option value="ITS85">ITS85（推荐）</option>
-                                    <option value="DB6-100R1">DB6-100R1（推荐）</option>
-                                    <option value="RT552">RT552</option>
-                                    <option value="RT752">RT752</option>
-                                    <option value="RT906">RT906</option>
-                                    <option value="DB6-90-510">DB6-90-510</option>
-                                    <option value="SMF-100">SMF-100</option>
-                                    <option value="MF-100">MF-100</option>
-                                    <option value="其他">其他</option>
+                                    <!-- 动态加载选项 -->
                                 </select>
                             </div>
                             
@@ -365,7 +357,52 @@
             'X2C-V2-X': ['大型', '特殊', '小型', '中型', 'X', 'Y'],
             'X2C-V3-X': ['大型', '小型']
         };
+
+        // 分类与变压器类型的映射
+        const categoryTransformerTypes = {
+            'X2C-C(推荐)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
+            'X2C-V2-C': ['DB6','其他'],
+            'X2C-V3-C': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他'],
+            'X2C-X(推荐)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
+            'X2C-V2-X': ['DB6','其他'],
+            'X2C-V3-X': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他']
+        };
         
+        // 格式化变压器类型显示名称
+        function formatTransformerDisplayText(type) {
+            // 推荐类型添加标识
+            if (type === 'ITS85' || type === 'DB6-100R1') {
+                return type + '(推荐)';
+            }
+            // 统一命名规则
+            if (type === 'DB6-90-510' || type === 'DB6' || type === 'DB6-90') {
+                return 'DB6-90';
+            }
+            return type;
+        }
+
+        // 更新变压器类型选项
+        function updateTransformerOptions(categoryName) {
+            const transformerSelect = document.getElementById('transformer');
+            
+            // 清空现有选项
+            transformerSelect.innerHTML = '<option value="">请选择，默认为空</option>';
+            
+            if (categoryName && categoryTransformerTypes[categoryName]) {
+                categoryTransformerTypes[categoryName].forEach(transformerType => {
+                    const option = document.createElement('option');
+                    
+                    // **核心修改**
+                    // 1. option.value 存储原始值，用于表单提交
+                    option.value = transformerType;
+                    // 2. option.textContent 存储格式化后的显示文本
+                    option.textContent = formatTransformerDisplayText(transformerType);
+                    
+                    transformerSelect.appendChild(option);
+                });
+            }
+        }
+
         const defaultImagePath = '/static/images/No image available.png';
         const productImageElement = document.getElementById('product_image');
 
@@ -376,8 +413,9 @@
             document.querySelectorAll('select').forEach(select => {
                 select.selectedIndex = 0;
             });
-            // 清空子分类类型
+            // 清空子分类类型和变压器类型
             updateSubCategoryOptions('');
+            updateTransformerOptions('');
             // 重置图片
             productImageElement.src = defaultImagePath;
         });
@@ -387,6 +425,7 @@
             const categorySelect = this;
             const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
             updateSubCategoryOptions(selectedText);
+            updateTransformerOptions(selectedText);
             updateProductImage(); // 分类变化时也更新图片
         });
 
@@ -439,8 +478,10 @@
             }
         }
 
-        // 页面加载时初始化子分类类型和图片
-        updateSubCategoryOptions(document.getElementById('category').options[document.getElementById('category').selectedIndex].text);
+        // 页面加载时初始化子分类类型、变压器类型和图片
+        const initialCategoryText = document.getElementById('category').options[document.getElementById('category').selectedIndex].text;
+        updateSubCategoryOptions(initialCategoryText);
+        updateTransformerOptions(initialCategoryText);
         updateProductImage();
     });
 </script>
