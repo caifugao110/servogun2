@@ -1,20 +1,3 @@
-<!--
-  Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
-
-
 {% extends 'base.html' %}
 
 {% block title %}产品搜索 - 小原焊钳选型数据库{% endblock %}
@@ -39,7 +22,6 @@
                     <div class="col-md-8">
                         <div class="row g-3">
                             <!-- 第一行 -->
-                            <!-- 产品分类 -->
                             <div class="col-md-6">
                                 <label for="category" class="form-label">
                                     <i class="bi bi-diagram-3 me-2"></i>
@@ -59,57 +41,32 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            
-                            <!-- 子分类类型 -->
                             <div class="col-md-6">
-                                <label for="sub_category_type" class="form-label">
-                                    <i class="bi bi-tags me-2"></i>
-                                    子分类类型
-                                </label>
+                                <label for="sub_category_type" class="form-label"><i class="bi bi-tags me-2"></i>子分类类型</label>
                                 <select class="form-select" id="sub_category_type" name="sub_category_type">
                                     <option value="">请选择，默认为空</option>
-                                    <!-- 动态加载选项 -->
                                 </select>
                             </div>
 
                             <!-- 第二行 -->
-                            <!-- 喉深 -->
                             <div class="col-md-6">
-                                <label for="throat_depth" class="form-label">
-                                    <i class="bi bi-rulers me-2"></i>
-                                    喉深
-                                </label>
+                                <label for="throat_depth" class="form-label"><i class="bi bi-rulers me-2"></i>喉深</label>
                                 <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如: ~350, 350~600, 600~">
                             </div>
-                            
-                            <!-- 喉宽 -->
                             <div class="col-md-6">
-                                <label for="throat_width" class="form-label">
-                                    <i class="bi bi-arrows-expand me-2"></i>
-                                    喉宽
-                                </label>
+                                <label for="throat_width" class="form-label"><i class="bi bi-arrows-expand me-2"></i>喉宽</label>
                                 <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如: ~350, 350~600, 600~">
                             </div>
 
                             <!-- 第三行 -->
-                            <!-- 变压器 -->
                             <div class="col-md-6">
-                                <label for="transformer" class="form-label">
-                                    <i class="bi bi-cpu me-2"></i>
-                                    变压器
-                                </label>
+                                <label for="transformer" class="form-label"><i class="bi bi-cpu me-2"></i>变压器</label>
                                 <select class="form-select" id="transformer" name="transformer">
                                     <option value="">请选择，默认为空</option>
-                                    <!-- 动态加载选项 -->
                                 </select>
                             </div>
-                            
-                            <!-- 加压力 -->
                             <div class="col-md-6">
-                                <label for="clamping_force" class="form-label">
-                                    <i class="bi bi-lightning me-2"></i>
-                                    加压力
-                                </label>
+                                <label for="clamping_force" class="form-label"><i class="bi bi-lightning me-2"></i>加压力</label>
                                 <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~3500, 3500~5500, 5500~">
                             </div>
                         </div>
@@ -138,71 +95,51 @@
                 <div class="collapse mt-3" id="advancedSearch">
                     <div class="card">
                         <div class="card-body">
-                            <div class="row g-3">
-                                <!-- 图号1(o) - 第一个 -->
-                                <div class="col-md-6">
-                                    <label for="drawing_no_1" class="form-label">
-                                        <i class="bi bi-file-earmark-text me-2"></i>
-                                        图号1(o)
-                                    </label>
+                            <!-- 所有高级字段（静态+动态）都放在这个row里面 -->
+                            <div class="row g-3" id="advanced-fields-container">
+                                <div class="col-md-4">
+                                    <label for="drawing_no_1" class="form-label"><i class="bi bi-file-earmark-text me-2"></i>图号1(o)</label>
                                     <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="焊钳图号，默认为空">
                                 </div>
-                                
-                                <!-- 描述 -->
-                                <div class="col-md-6">
-                                    <label for="description" class="form-label">
-                                        <i class="bi bi-card-text me-2"></i>
-                                        描述
-                                    </label>
+                                <div class="col-md-4">
+                                    <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>描述</label>
                                     <input type="text" class="form-control" id="description" name="description" placeholder="客户描述，默认为空">
                                 </div>
-                                
-                                <!-- 行程 -->
                                 <div class="col-md-4">
-                                    <label for="stroke" class="form-label">
-                                        <i class="bi bi-arrows-move me-2"></i>
-                                        行程
-                                    </label>
+                                    <label for="stroke" class="form-label"><i class="bi bi-arrows-move me-2"></i>行程</label>
                                     <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如: ~90, 100~190, 210~">
                                 </div>
-                                
-								<!-- MOTOR厂家 -->
-								<div class="col-md-4">
-									<label for="motor_manufacturer" class="form-label">
-										<i class="bi bi-gear-wide-connected me-2"></i>
-										MOTOR厂家
-									</label>
-									<select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
-										<option value="">请选择，默认为空</option>
-										<option value="FANUC">FANUC</option>
-										<option value="KUKA">KUKA</option>
-										<option value="YASKAWA">YASKAWA</option>
-										<option value="ABB">ABB</option>
-										<option value="TOLOMATIC">TOLOMATIC</option>
-										<option value="多摩川">多摩川</option>
-										<option value="PANASONIC">PANASONIC</option>
-										<option value="DIAKONT">DIAKONT</option>
-										<option value="SEW">SEW</option>
-										<option value="SANYO">SANYO</option>
-										<option value="其他">其他</option>
-									</select>
-								</div>
-                                
-                                <!-- 重量 -->
                                 <div class="col-md-4">
-                                    <label for="weight" class="form-label">
-                                        <i class="bi bi-box me-2"></i>
-                                        重量
-                                    </label>
-                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="例如: ~90, 90~120, 120~">
+                                    <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR厂家</label>
+                                    <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="FANUC">FANUC</option>
+                                        <option value="KUKA">KUKA</option>
+                                        <option value="YASKAWA">YASKAWA</option>
+                                        <option value="ABB">ABB</option>
+                                        <option value="TOLOMATIC">TOLOMATIC</option>
+                                        <option value="多摩川">多摩川</option>
+                                        <option value="PANASONIC">PANASONIC</option>
+                                        <option value="DIAKONT">DIAKONT</option>
+                                        <option value="SEW">SEW</option>
+                                        <option value="SANYO">SANYO</option>
+                                        <option value="其他">其他</option>
+                                    </select>
                                 </div>
-                                
-                                <!-- 电极臂端部 -->
                                 <div class="col-md-4">
-                                    <label for="electrode_arm_end" class="form-label">
-                                        <i class="bi bi-tools me-2"></i>
-                                        电极臂端部
-                                    </label>
+                                    <label for="transformer_placement" class="form-label"><i class="bi bi-compass me-2"></i>变压器放置方向</label>
+                                    <select class="form-select" id="transformer_placement" name="transformer_placement">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="水平">水平</option>
+                                        <option value="竖直">竖直</option>
+                                        <option value="下置">下置</option>
+                                        <option value="上置">上置</option>
+                                        <option value="右置">右置</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="electrode_arm_end" class="form-label"><i class="bi bi-tools me-2"></i>电极臂端部</label>
                                     <select class="form-select" id="electrode_arm_end" name="electrode_arm_end">
                                         <option value="">请选择，默认为空</option>
                                         <option value="握杆（铝）">握杆（铝）</option>
@@ -220,43 +157,20 @@
                                         <option value="其他">其他</option>
                                     </select>
                                 </div>
-                                
-                                <!-- 有无平衡 -->
                                 <div class="col-md-4">
-                                    <label for="has_balance" class="form-label">
-                                        <i class="bi bi-water me-2"></i>
-                                        有无平衡
-                                    </label>
+                                    <label for="has_balance" class="form-label"><i class="bi bi-water me-2"></i>有无平衡</label>
                                     <select class="form-select" id="has_balance" name="has_balance">
                                         <option value="">请选择，默认为空</option>
                                         <option value="有">有</option>
                                         <option value="无">无</option>
                                     </select>
                                 </div>
-                                
-                                <!-- 变压器放置方向 -->
                                 <div class="col-md-4">
-                                    <label for="transformer_placement" class="form-label">
-                                        <i class="bi bi-compass me-2"></i>
-                                        变压器放置方向
-                                    </label>
-                                    <select class="form-select" id="transformer_placement" name="transformer_placement">
-                                        <option value="">请选择，默认为空</option>
-                                        <option value="水平">水平</option>
-                                        <option value="竖直">竖直</option>
-                                        <option value="下置">下置</option>
-                                        <option value="上置">上置</option>
-                                        <option value="右置">右置</option>
-                                        <option value="其他">其他</option>
-                                    </select>
+                                    <label for="weight" class="form-label"><i class="bi bi-box me-2"></i>重量</label>
+                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="例如: ~90, 90~120, 120~">
                                 </div>
-                                
-                                <!-- 法兰P.C.D -->
                                 <div class="col-md-4">
-                                    <label for="flange_pcd" class="form-label">
-                                        <i class="bi bi-circle me-2"></i>
-                                        法兰P.C.D
-                                    </label>
+                                    <label for="flange_pcd" class="form-label"><i class="bi bi-circle me-2"></i>法兰P.C.D</label>
                                     <select class="form-select" id="flange_pcd" name="flange_pcd">
                                         <option value="">请选择，默认为空</option>
                                         <option value="125">125</option>
@@ -267,13 +181,8 @@
                                         <option value="其他">其他</option>
                                     </select>
                                 </div>
-                                
-                                <!-- 托架方向 -->
                                 <div class="col-md-4">
-                                    <label for="bracket_direction" class="form-label">
-                                        <i class="bi bi-arrow-up-right me-2"></i>
-                                        托架方向
-                                    </label>
+                                    <label for="bracket_direction" class="form-label"><i class="bi bi-arrow-up-right me-2"></i>托架方向</label>
                                     <select class="form-select" id="bracket_direction" name="bracket_direction">
                                         <option value="">请选择，默认为空</option>
                                         <option value="右">右</option>
@@ -285,13 +194,8 @@
                                         <option value="左">左</option>
                                     </select>
                                 </div>
-                                
-                                <!-- 水路 -->
                                 <div class="col-md-4">
-                                    <label for="water_circuit" class="form-label">
-                                        <i class="bi bi-droplet me-2"></i>
-                                        水路
-                                    </label>
+                                    <label for="water_circuit" class="form-label"><i class="bi bi-droplet me-2"></i>水路</label>
                                     <select class="form-select" id="water_circuit" name="water_circuit">
                                         <option value="">请选择，默认为空</option>
                                         <option value="1进1出">1进1出</option>
@@ -303,6 +207,9 @@
                                         <option value="其他">其他</option>
                                     </select>
                                 </div>
+                                
+                                <!-- 动态字段将插入到这里 (关键改动) -->
+                                <div id="dynamic-fields-placeholder" class="contents"></div>
                             </div>
                         </div>
                     </div>
@@ -329,9 +236,7 @@
                     <div class="card-body">
                         <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">搜索提示</h5>
-                        <p class="card-text text-muted">
-                            所有搜索条件都是可选的，留空表示不限制该条件。
-                        </p>
+                        <p class="card-text text-muted">所有搜索条件都是可选的，留空表示不限制该条件。</p>
                     </div>
                 </div>
             </div>
@@ -340,9 +245,7 @@
                     <div class="card-body">
                         <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">精确匹配</h5>
-                        <p class="card-text text-muted">
-                            数字字段支持精确匹配，文本字段支持模糊搜索。
-                        </p>
+                        <p class="card-text text-muted">数字字段支持精确匹配，文本字段支持模糊搜索。</p>
                     </div>
                 </div>
             </div>
@@ -351,9 +254,7 @@
                     <div class="card-body">
                         <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">文件下载</h5>
-                        <p class="card-text text-muted">
-                            搜索结果中可直接下载DWG、STEP和BMP文件。
-                        </p>
+                        <p class="card-text text-muted">搜索结果中可直接下载DWG、STEP和BMP文件。</p>
                     </div>
                 </div>
             </div>
@@ -363,9 +264,14 @@
 {% endblock %}
 
 {% block extra_js %}
+<style>
+    /* 确保占位符本身不影响布局 */
+    .contents {
+        display: contents;
+    }
+</style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 分类对应的子分类类型映射
         const categorySubTypes = {
             'X2C-C(推荐)': ['大型', '特殊', '仙鹤型', '中小型'],
             'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型'],
@@ -375,7 +281,6 @@
             'X2C-V3-X': ['大型', '小型']
         };
 
-        // 分类与变压器类型的映射
         const categoryTransformerTypes = {
             'X2C-C(推荐)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
             'X2C-V2-C': ['DB6','其他'],
@@ -385,79 +290,97 @@
             'X2C-V3-X': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他']
         };
         
-        // 格式化变压器类型显示名称
+        // 缓存DOM元素
+        const dynamicFieldsPlaceholder = document.getElementById('dynamic-fields-placeholder');
+        let currentDynamicFields = [];
+
         function formatTransformerDisplayText(type) {
-            // 推荐类型添加标识
-            if (type === 'ITS85' || type === 'DB6-100R1') {
-                return type + '(推荐)';
-            }
-            // 统一命名规则
-            if (type === 'DB6-90-510' || type === 'DB6' || type === 'DB6-90') {
-                return 'DB6-90';
-            }
+            if (type === 'ITS85' || type === 'DB6-100R1') return type + '(推荐)';
+            if (type === 'DB6-90-510' || type === 'DB6' || type === 'DB6-90') return 'DB6-90';
             return type;
         }
 
-        // 更新变压器类型选项
         function updateTransformerOptions(categoryName) {
             const transformerSelect = document.getElementById('transformer');
-            
-            // 清空现有选项
             transformerSelect.innerHTML = '<option value="">请选择，默认为空</option>';
-            
             if (categoryName && categoryTransformerTypes[categoryName]) {
                 categoryTransformerTypes[categoryName].forEach(transformerType => {
                     const option = document.createElement('option');
-                    
-                    // **核心修改**
-                    // 1. option.value 存储原始值，用于表单提交
                     option.value = transformerType;
-                    // 2. option.textContent 存储格式化后的显示文本
                     option.textContent = formatTransformerDisplayText(transformerType);
-                    
                     transformerSelect.appendChild(option);
                 });
             }
         }
 
+        // 更新动态字段 (关键改动)
+        function updateDynamicFields(categoryName) {
+            // 1. 清除之前添加的动态字段
+            currentDynamicFields.forEach(field => field.remove());
+            currentDynamicFields = [];
+
+            let fieldsToCreate = [];
+            
+            if (categoryName && categoryName.includes('-C')) {
+                fieldsToCreate.push({
+                    id: 'eccentricity',
+                    label: '偏心距离',
+                    icon: 'bi-arrows-angle-contract',
+                    placeholder: '例如: 10~50, 50~'
+                });
+            } else if (categoryName && categoryName.includes('-X')) {
+                fieldsToCreate = [
+                    { id: 'static_arm_front_length', label: '静电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
+                    { id: 'static_arm_front_height', label: '静电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' },
+                    { id: 'moving_arm_front_length', label: '动电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
+                    { id: 'moving_arm_front_height', label: '动电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' }
+                ];
+            }
+
+            // 2. 创建并插入新的动态字段
+            fieldsToCreate.forEach(field => {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'col-md-4';
+                fieldDiv.innerHTML = `
+                    <label for="${field.id}" class="form-label">
+                        <i class="bi ${field.icon} me-2"></i>
+                        ${field.label}
+                    </label>
+                    <input type="text" class="form-control" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}">
+                `;
+                // 将新字段插入到占位符之前，这样它们就会出现在占位符的位置
+                dynamicFieldsPlaceholder.parentNode.insertBefore(fieldDiv, dynamicFieldsPlaceholder);
+                currentDynamicFields.push(fieldDiv); // 保存对新字段的引用，以便后续清除
+            });
+        }
+
         const defaultImagePath = '/static/images/No image available.png';
         const productImageElement = document.getElementById('product_image');
 
-        // 表单重置功能
         document.querySelector('button[type="reset"]').addEventListener('click', function() {
             document.getElementById('searchForm').reset();
-            // 重置所有select元素
-            document.querySelectorAll('select').forEach(select => {
-                select.selectedIndex = 0;
-            });
-            // 清空子分类类型和变压器类型
+            document.querySelectorAll('select').forEach(select => { select.selectedIndex = 0; });
             updateSubCategoryOptions('');
             updateTransformerOptions('');
-            // 重置图片
+            updateDynamicFields('');
             productImageElement.src = defaultImagePath;
         });
         
-        // 分类选择变化时的处理
         document.getElementById('category').addEventListener('change', function() {
-            const categorySelect = this;
-            const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
+            const selectedText = this.options[this.selectedIndex].text;
             updateSubCategoryOptions(selectedText);
             updateTransformerOptions(selectedText);
-            updateProductImage(); // 分类变化时也更新图片
+            updateDynamicFields(selectedText);
+            updateProductImage();
         });
 
-        // 子分类类型选择变化时的处理
         document.getElementById('sub_category_type').addEventListener('change', function() {
             updateProductImage();
         });
         
-        // 更新子分类类型选项
         function updateSubCategoryOptions(categoryName) {
             const subCategorySelect = document.getElementById('sub_category_type');
-            
-            // 清空现有选项
             subCategorySelect.innerHTML = '<option value="">请选择，默认为空</option>';
-            
             if (categoryName && categorySubTypes[categoryName]) {
                 categorySubTypes[categoryName].forEach(subType => {
                     const option = document.createElement('option');
@@ -468,37 +391,29 @@
             }
         }
 
-        // 更新产品图片
         function updateProductImage() {
             const categorySelect = document.getElementById('category');
             const subCategorySelect = document.getElementById('sub_category_type');
-
             const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
             const selectedSubCategoryText = subCategorySelect.options[subCategorySelect.selectedIndex].text;
 
             if (selectedCategoryText && selectedSubCategoryText && selectedSubCategoryText !== '请选择，默认为空') {
-                // 构建图片路径
                 const imageName = `${selectedCategoryText}-${selectedSubCategoryText}.png`;
                 const imagePath = `/static/images/${imageName}`;
-                
-                // 尝试加载图片，如果失败则显示默认图片
                 const img = new Image();
-                img.onload = function() {
-                    productImageElement.src = imagePath;
-                };
-                img.onerror = function() {
-                    productImageElement.src = defaultImagePath;
-                };
-                img.src = imagePath; // 设置src触发加载
+                img.onload = () => { productImageElement.src = imagePath; };
+                img.onerror = () => { productImageElement.src = defaultImagePath; };
+                img.src = imagePath;
             } else {
                 productImageElement.src = defaultImagePath;
             }
         }
 
-        // 页面加载时初始化子分类类型、变压器类型和图片
+        // 初始化
         const initialCategoryText = document.getElementById('category').options[document.getElementById('category').selectedIndex].text;
         updateSubCategoryOptions(initialCategoryText);
         updateTransformerOptions(initialCategoryText);
+        updateDynamicFields(initialCategoryText);
         updateProductImage();
     });
 </script>

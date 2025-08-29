@@ -271,6 +271,49 @@
                                 {{ product.tool_changer|default:"--" }}
                             </div>
                             
+                            <!-- 动态参数区域 -->
+                            {% if product.category.name|stringformat:"s"|slice:"-2:" == "-C" %}
+                                <!-- 偏心参数 -->
+                                <div class="col-12 mt-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="bi bi-arrows-angle-contract me-2"></i>
+                                        偏心参数
+                                    </h6>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>偏心方向：</strong>
+                                    {{ product.eccentricity_direction|default:"--" }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>偏心距离：</strong>
+                                    {% if product.eccentricity %}{{ product.eccentricity }}{% else %}--{% endif %}
+                                </div>
+                            {% elif "-X" in product.category.name %}
+                                <!-- 电极臂参数 -->
+                                <div class="col-12 mt-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="bi bi-arrows-angle-expand me-2"></i>
+                                        电极臂参数
+                                    </h6>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>静电极臂前部长：</strong>
+                                    {% if product.static_arm_front_length %}{{ product.static_arm_front_length }}{% else %}--{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>静电极臂前部高：</strong>
+                                    {% if product.static_arm_front_height %}{{ product.static_arm_front_height }}{% else %}--{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>动电极臂前部长：</strong>
+                                    {% if product.moving_arm_front_length %}{{ product.moving_arm_front_length }}{% else %}--{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>动电极臂前部高：</strong>
+                                    {% if product.moving_arm_front_height %}{{ product.moving_arm_front_height }}{% else %}--{% endif %}
+                                </div>
+                            {% endif %}
+                            
                             <!-- X型分类专用参数 -->
                             {% if product.static_arm_eccentricity or product.moving_arm_eccentricity %}
                                 <div class="col-12 mt-4">
@@ -327,27 +370,13 @@
                             {% endif %}
                             
                             <!-- 其他参数 -->
-                            {% if product.eccentricity or product.grip_extension_length %}
+                            {% if product.eccentricity_to_center or product.guidance_method or product.grip_extension_length %}
                                 <div class="col-12 mt-4">
                                     <h6 class="text-primary mb-3">
                                         <i class="bi bi-plus-circle me-2"></i>
                                         其他参数
                                     </h6>
                                 </div>
-                                
-                                {% if product.eccentricity %}
-                                    <div class="col-md-6 mb-3">
-                                        <strong>偏心距离：</strong>
-                                        {{ product.eccentricity }}
-                                    </div>
-                                {% endif %}
-                                
-                                {% if product.eccentricity_direction %}
-                                    <div class="col-md-6 mb-3">
-                                        <strong>偏心方向：</strong>
-                                        {{ product.eccentricity_direction }}
-                                    </div>
-                                {% endif %}
                                 
                                 {% if product.eccentricity_to_center %}
                                     <div class="col-md-6 mb-3">

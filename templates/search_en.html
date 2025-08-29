@@ -138,9 +138,10 @@
                 <div class="collapse mt-3" id="advancedSearch">
                     <div class="card">
                         <div class="card-body">
-                            <div class="row g-3">
+                            <!-- All advanced fields (static + dynamic) are placed in this row -->
+                            <div class="row g-3" id="advanced-fields-container">
                                 <!-- Drawing No. 1(o) -->
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="drawing_no_1" class="form-label">
                                         <i class="bi bi-file-earmark-text me-2"></i>
                                         Drawing No. 1(o)
@@ -149,7 +150,7 @@
                                 </div>
                                 
                                 <!-- Description -->
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="description" class="form-label">
                                         <i class="bi bi-card-text me-2"></i>
                                         Description
@@ -187,14 +188,22 @@
 										<option value="其他">Others</option>
 									</select>
 								</div>
-                                
-                                <!-- Weight -->
+								
+								<!-- Transformer Placement -->
                                 <div class="col-md-4">
-                                    <label for="weight" class="form-label">
-                                        <i class="bi bi-box me-2"></i>
-                                        Weight
+                                    <label for="transformer_placement" class="form-label">
+                                        <i class="bi bi-compass me-2"></i>
+                                        Transformer Placement
                                     </label>
-                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="e.g.: ~90, 90~120, 120~">
+                                    <select class="form-select" id="transformer_placement" name="transformer_placement">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="水平">Horizontal</option>
+                                        <option value="竖直">Vertical</option>
+                                        <option value="下置">Bottom</option>
+                                        <option value="上置">Top</option>
+                                        <option value="右置">Right</option>
+                                        <option value="其他">Others</option>
+                                    </select>
                                 </div>
                                 
                                 <!-- Electrode Arm End -->
@@ -234,21 +243,13 @@
                                     </select>
                                 </div>
                                 
-                                <!-- Transformer Placement -->
+                                <!-- Weight -->
                                 <div class="col-md-4">
-                                    <label for="transformer_placement" class="form-label">
-                                        <i class="bi bi-compass me-2"></i>
-                                        Transformer Placement
+                                    <label for="weight" class="form-label">
+                                        <i class="bi bi-box me-2"></i>
+                                        Weight
                                     </label>
-                                    <select class="form-select" id="transformer_placement" name="transformer_placement">
-                                        <option value="">Please select, default is empty</option>
-                                        <option value="水平">Horizontal</option>
-                                        <option value="竖直">Vertical</option>
-                                        <option value="下置">Bottom</option>
-                                        <option value="上置">Top</option>
-                                        <option value="右置">Right</option>
-                                        <option value="其他">Others</option>
-                                    </select>
+                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="e.g.: ~90, 90~120, 120~">
                                 </div>
                                 
                                 <!-- Flange P.C.D -->
@@ -303,6 +304,9 @@
                                         <option value="其他">Others</option>
                                     </select>
                                 </div>
+                                
+                                <!-- Dynamic fields will be inserted here (key change) -->
+                                <div id="dynamic-fields-placeholder" class="contents"></div>
                             </div>
                         </div>
                     </div>
@@ -451,6 +455,51 @@
             }
         }
         
+        // Update dynamic fields (key addition)
+        function updateDynamicFields(categoryName) {
+            // 1. Clear previously added dynamic fields
+            currentDynamicFields.forEach(field => field.remove());
+            currentDynamicFields = [];
+
+            let fieldsToCreate = [];
+            
+            if (categoryName && categoryName.includes('-C')) {
+                fieldsToCreate.push({
+                    id: 'eccentricity',
+                    label: 'Eccentricity Distance',
+                    icon: 'bi-arrows-angle-contract',
+                    placeholder: 'e.g.: 10~50, 50~'
+                });
+            } else if (categoryName && categoryName.includes('-X')) {
+                fieldsToCreate = [
+                    { id: 'static_arm_front_length', label: 'Static Arm Front Length', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
+                    { id: 'static_arm_front_height', label: 'Static Arm Front Height', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' },
+                    { id: 'moving_arm_front_length', label: 'Moving Arm Front Length', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
+                    { id: 'moving_arm_front_height', label: 'Moving Arm Front Height', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' }
+                ];
+            }
+
+            // 2. Create and insert new dynamic fields
+            fieldsToCreate.forEach(field => {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'col-md-4';
+                fieldDiv.innerHTML = `
+                    <label for="${field.id}" class="form-label">
+                        <i class="bi ${field.icon} me-2"></i>
+                        ${field.label}
+                    </label>
+                    <input type="text" class="form-control" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}">
+                `;
+                // Insert new fields before the placeholder, so they appear at the placeholder's position
+                dynamicFieldsPlaceholder.parentNode.insertBefore(fieldDiv, dynamicFieldsPlaceholder);
+                currentDynamicFields.push(fieldDiv); // Save reference to new fields for later cleanup
+            });
+        }
+
+        // Dynamic fields management (key addition)
+        let currentDynamicFields = [];
+        const dynamicFieldsPlaceholder = document.getElementById('dynamic-fields-placeholder');
+        
         const defaultImagePath = '/static/images/No image available.png';
         const productImageElement = document.getElementById('product_image');
 
@@ -462,6 +511,7 @@
             });
             updateSubCategoryOptions('');
             updateTransformerOptions('');
+            updateDynamicFields('');
             productImageElement.src = defaultImagePath;
         });
         
@@ -471,6 +521,7 @@
             const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
             updateSubCategoryOptions(selectedText);
             updateTransformerOptions(selectedText);
+            updateDynamicFields(selectedText);
             updateProductImage();
         });
 
@@ -521,6 +572,7 @@
         const initialCategoryText = document.getElementById('category').options[document.getElementById('category').selectedIndex].text;
         updateSubCategoryOptions(initialCategoryText);
         updateTransformerOptions(initialCategoryText);
+        updateDynamicFields(initialCategoryText);
         updateProductImage();
     });
 </script>

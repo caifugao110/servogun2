@@ -226,15 +226,19 @@ def search_results(request):
         elif has_balance in ['无', 'No']:
             queryset = queryset.filter(has_balance=False)
     
-    # 新增的四个字段过滤逻辑
-    if transformer_placement:
-        queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
-    if flange_pcd:
-        queryset = queryset.filter(flange_pcd__icontains=flange_pcd)
-    if bracket_direction:
-        queryset = queryset.filter(bracket_direction__icontains=bracket_direction)
-    if water_circuit:
-        queryset = queryset.filter(water_circuit__icontains=water_circuit)
+    # 处理动态字段
+    dynamic_fields = {}
+    for key, value in query_params.items():
+        if key not in ["category", "description", "drawing_no_1", "sub_category_type",
+                       "stroke", "clamping_force", "weight", "throat_depth", "throat_width",
+                       "transformer", "electrode_arm_end", "motor_manufacturer", "has_balance",
+                       "transformer_placement", "flange_pcd", "bracket_direction", "water_circuit",
+                       "page", "csrfmiddlewaretoken"] and value:
+            dynamic_fields[key] = value
+
+    for field_name, field_value in dynamic_fields.items():
+        # 假设动态字段都是文本类型，进行模糊查询
+        queryset = queryset.filter(**{f'{field_name}__icontains': field_value})
 
     # 记录搜索日志
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
@@ -339,15 +343,19 @@ def search_results_en(request):
         elif has_balance in ['无', 'No']:
             queryset = queryset.filter(has_balance=False)
     
-    # 新增的四个字段过滤逻辑
-    if transformer_placement:
-        queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
-    if flange_pcd:
-        queryset = queryset.filter(flange_pcd__icontains=flange_pcd)
-    if bracket_direction:
-        queryset = queryset.filter(bracket_direction__icontains=bracket_direction)
-    if water_circuit:
-        queryset = queryset.filter(water_circuit__icontains=water_circuit)
+    # 处理动态字段
+    dynamic_fields = {}
+    for key, value in query_params.items():
+        if key not in ["category", "description", "drawing_no_1", "sub_category_type",
+                       "stroke", "clamping_force", "weight", "throat_depth", "throat_width",
+                       "transformer", "electrode_arm_end", "motor_manufacturer", "has_balance",
+                       "transformer_placement", "flange_pcd", "bracket_direction", "water_circuit",
+                       "page", "csrfmiddlewaretoken"] and value:
+            dynamic_fields[key] = value
+
+    for field_name, field_value in dynamic_fields.items():
+        # 假设动态字段都是文本类型，进行模糊查询
+        queryset = queryset.filter(**{f'{field_name}__icontains': field_value})
 
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=str(query_params))
