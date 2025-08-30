@@ -237,8 +237,8 @@ def search_results(request):
             dynamic_fields[key] = value
 
     for field_name, field_value in dynamic_fields.items():
-        # 假设动态字段都是文本类型，进行模糊查询
-        queryset = queryset.filter(**{f'{field_name}__icontains': field_value})
+        # 动态字段支持范围搜索
+        queryset = parse_range_query(field_name, field_value, queryset)
 
     # 记录搜索日志
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
@@ -354,8 +354,8 @@ def search_results_en(request):
             dynamic_fields[key] = value
 
     for field_name, field_value in dynamic_fields.items():
-        # 假设动态字段都是文本类型，进行模糊查询
-        queryset = queryset.filter(**{f'{field_name}__icontains': field_value})
+        # 动态字段支持范围搜索
+        queryset = parse_range_query(field_name, field_value, queryset)
 
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=str(query_params))
