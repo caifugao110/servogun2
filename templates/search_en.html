@@ -210,7 +210,7 @@
                                 <div class="col-md-4">
                                     <label for="electrode_arm_end" class="form-label">
                                         <i class="bi bi-tools me-2"></i>
-                                        Electrode Arm End
+                                        Electrode Arm End(For C-type only)
                                     </label>
                                     <select class="form-select" id="electrode_arm_end" name="electrode_arm_end">
                                         <option value="">Please select, default is empty</option>
@@ -356,7 +356,7 @@
                         <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">File Download</h5>
                         <p class="card-text text-muted">
-                            DWG, STEP, and BMP files can be downloaded directly from the search results.
+                            PDF, STEP, and BMP files can be downloaded directly from the search results.
                         </p>
                     </div>
                 </div>
@@ -466,16 +466,16 @@
             if (categoryName && categoryName.includes('-C')) {
                 fieldsToCreate.push({
                     id: 'eccentricity',
-                    label: 'Eccentricity Distance',
+                    label: 'Eccentricity Distance(For C-type only)',
                     icon: 'bi-arrows-angle-contract',
                     placeholder: 'e.g.: 10~50, 50~'
                 });
             } else if (categoryName && categoryName.includes('-X')) {
                 fieldsToCreate = [
-                    { id: 'static_arm_front_length', label: 'Static Arm Front Length', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
-                    { id: 'static_arm_front_height', label: 'Static Arm Front Height', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' },
-                    { id: 'moving_arm_front_length', label: 'Moving Arm Front Length', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
-                    { id: 'moving_arm_front_height', label: 'Moving Arm Front Height', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' }
+                    { id: 'static_arm_front_length', label: 'Static Arm Front Length(For X-type only)', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
+                    { id: 'static_arm_front_height', label: 'Static Arm Front Height(For X-type only)', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' },
+                    { id: 'moving_arm_front_length', label: 'Moving Arm Front Length(For X-type only)', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
+                    { id: 'moving_arm_front_height', label: 'Moving Arm Front Height(For X-type only)', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' }
                 ];
             }
 

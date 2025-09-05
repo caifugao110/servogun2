@@ -167,7 +167,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">同步media文件夹中的dwg、step和bmp文件到数据库。</p>
+                        <p class="card-text">同步media文件夹中的pdf、step和bmp文件到数据库。</p>
                         <form action="{% url 'clamps:sync_files' %}" method="post">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning">

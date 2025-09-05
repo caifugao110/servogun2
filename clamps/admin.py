@@ -56,7 +56,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('grip_extension_length',)
         }),
         ('文件路径', {
-            'fields': ('dwg_file_path', 'step_file_path', 'bmp_file_path')
+            'fields': ('pdf_file_path', 'step_file_path', 'bmp_file_path')
         }),
     )
 

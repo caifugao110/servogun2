@@ -288,7 +288,7 @@ class Product(models.Model):
     moving_arm_front_height = models.FloatField(null=True, blank=True, verbose_name="动电极臂前部高")
 
     # 文件路径
-    dwg_file_path = models.CharField(max_length=255, null=True, blank=True, verbose_name="DWG文件路径")
+    pdf_file_path = models.CharField(max_length=255, null=True, blank=True, verbose_name="PDF文件路径")
     step_file_path = models.CharField(max_length=255, null=True, blank=True, verbose_name="STEP文件路径")
     bmp_file_path = models.CharField(max_length=255, null=True, blank=True, verbose_name="BMP文件路径")
 

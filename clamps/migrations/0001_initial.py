@@ -104,7 +104,7 @@ class Migration(migrations.Migration):
                 ('static_arm_front_height', models.FloatField(blank=True, null=True, verbose_name='静电极臂前部高')),
                 ('moving_arm_front_length', models.FloatField(blank=True, null=True, verbose_name='动电极臂前部长')),
                 ('moving_arm_front_height', models.FloatField(blank=True, null=True, verbose_name='动电极臂前部高')),
-                ('dwg_file_path', models.CharField(blank=True, max_length=255, null=True, verbose_name='DWG文件路径')),
+                ('pdf_file_path', models.CharField(blank=True, max_length=255, null=True, verbose_name='DWG文件路径')),
                 ('step_file_path', models.CharField(blank=True, max_length=255, null=True, verbose_name='STEP文件路径')),
                 ('bmp_file_path', models.CharField(blank=True, max_length=255, null=True, verbose_name='BMP文件路径')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),

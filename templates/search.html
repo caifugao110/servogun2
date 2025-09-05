@@ -139,7 +139,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="electrode_arm_end" class="form-label"><i class="bi bi-tools me-2"></i>电极臂端部</label>
+                                    <label for="electrode_arm_end" class="form-label"><i class="bi bi-tools me-2"></i>电极臂端部(仅C型)</label>
                                     <select class="form-select" id="electrode_arm_end" name="electrode_arm_end">
                                         <option value="">请选择，默认为空</option>
                                         <option value="握杆（铝）">握杆（铝）</option>
@@ -254,7 +254,7 @@
                     <div class="card-body">
                         <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">文件下载</h5>
-                        <p class="card-text text-muted">搜索结果中可直接下载DWG、STEP和BMP文件。</p>
+                        <p class="card-text text-muted">搜索结果中可直接下载PDF、STEP和BMP文件。</p>
                     </div>
                 </div>
             </div>
@@ -324,16 +324,16 @@
             if (categoryName && categoryName.includes('-C')) {
                 fieldsToCreate.push({
                     id: 'eccentricity',
-                    label: '偏心距离',
+                    label: '偏心距离(仅C型)',
                     icon: 'bi-arrows-angle-contract',
                     placeholder: '例如: 10~50, 50~'
                 });
             } else if (categoryName && categoryName.includes('-X')) {
                 fieldsToCreate = [
-                    { id: 'static_arm_front_length', label: '静电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
-                    { id: 'static_arm_front_height', label: '静电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' },
-                    { id: 'moving_arm_front_length', label: '动电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
-                    { id: 'moving_arm_front_height', label: '动电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' }
+                    { id: 'static_arm_front_length', label: '静电极臂前部长(仅X型)', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
+                    { id: 'static_arm_front_height', label: '静电极臂前部高(仅X型)', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' },
+                    { id: 'moving_arm_front_length', label: '动电极臂前部长(仅X型)', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
+                    { id: 'moving_arm_front_height', label: '动电极臂前部高(仅X型)', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' }
                 ];
             }
 

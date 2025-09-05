@@ -40,7 +40,7 @@
         -webkit-box-decoration-break: clone; /* Webkit前缀 */
     }
 
-    /* 2. <option value="dwg">仅DWG</option>、<option value="step">仅STEP</option>和<option value="both">DWG和STEP</option>三个选项按钮美观一点，不要下拉，要有边框，不要和原背景冲突 */
+    /* 2. <option value="pdf">仅PDF</option>、<option value="step">仅STEP</option>和<option value="both">PDF和STEP</option>三个选项按钮美观一点，不要下拉，要有边框，不要和原背景冲突 */
     .file-type-buttons .btn {
         border-radius: 0.25rem; /* 保持按钮圆角 */
         margin-right: 0.5rem; /* 按钮之间间隔 */
@@ -114,9 +114,9 @@
                         <div class="input-group">
                             <!-- 替换下拉框为按钮组 -->
                             <div class="btn-group file-type-buttons" role="group" aria-label="文件类型选择">
-                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="dwg">仅DWG</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="pdf">仅PDF</button>
                                 <button type="button" class="btn btn-outline-primary btn-sm active" data-file-type="step">仅STEP</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">DWG和STEP</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">PDF和STEP</button>
                             </div>
                             <button id="batchDownloadBtn" class="btn btn-primary btn-sm" disabled>
                                 <i class="bi bi-download me-2"></i>批量下载选中项
@@ -202,12 +202,12 @@
                                                    class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye me-1"></i>详情
                                                 </a>
-                                                {% if product.dwg_file_path %}
-                                                    <a href="{% url 'clamps:download_file' product.id 'dwg' %}" 
+                                                {% if product.pdf_file_path %}
+                                                    <a href="{% url 'clamps:download_file' product.id 'pdf' %}" 
                                                        class="btn btn-outline-success btn-sm delayed-download"
                                                        data-product-id="{{ product.id }}" 
-                                                       data-file-type="dwg">
-                                                        <i class="bi bi-download me-1"></i>DWG
+                                                       data-file-type="pdf">
+                                                        <i class="bi bi-download me-1"></i>PDF
                                                     </a>
                                                 {% endif %}
                                                 {% if product.step_file_path %}
@@ -453,7 +453,7 @@
         });
     });
     
-    // 为DWG和STEP下载按钮添加延迟下载功能 - 增加文件大小检查
+    // 为PDF和STEP下载按钮添加延迟下载功能 - 增加文件大小检查
     document.querySelectorAll('.delayed-download').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();

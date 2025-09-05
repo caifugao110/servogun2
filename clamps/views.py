@@ -162,7 +162,7 @@ def search_results(request):
     bracket_direction = query_params.get('bracket_direction')
     water_circuit = query_params.get('water_circuit')
 
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().order_by('id')
 
     if category_id:
         queryset = queryset.filter(category_id=category_id)
@@ -226,7 +226,16 @@ def search_results(request):
         elif has_balance in ['无', 'No']:
             queryset = queryset.filter(has_balance=False)
     
-    # 处理动态字段
+    if transformer_placement:
+        queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
+    if flange_pcd:
+        queryset = queryset.filter(flange_pcd__icontains=flange_pcd)
+    if bracket_direction:
+        queryset = queryset.filter(bracket_direction__icontains=bracket_direction)
+    if water_circuit:
+        queryset = queryset.filter(water_circuit__icontains=water_circuit)
+
+    # 处理动态字段 (确保 transformer_placement 等已处理的字段不再被动态处理)
     dynamic_fields = {}
     for key, value in query_params.items():
         if key not in ["category", "description", "drawing_no_1", "sub_category_type",
@@ -281,7 +290,7 @@ def search_results_en(request):
     bracket_direction = query_params.get('bracket_direction')
     water_circuit = query_params.get('water_circuit')
 
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().order_by('id')
 
     if category_id:
         queryset = queryset.filter(category_id=category_id)
@@ -343,7 +352,16 @@ def search_results_en(request):
         elif has_balance in ['无', 'No']:
             queryset = queryset.filter(has_balance=False)
     
-    # 处理动态字段
+    if transformer_placement:
+        queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
+    if flange_pcd:
+        queryset = queryset.filter(flange_pcd__icontains=flange_pcd)
+    if bracket_direction:
+        queryset = queryset.filter(bracket_direction__icontains=bracket_direction)
+    if water_circuit:
+        queryset = queryset.filter(water_circuit__icontains=water_circuit)
+
+    # 处理动态字段 (确保 transformer_placement 等已处理的字段不再被动态处理)
     dynamic_fields = {}
     for key, value in query_params.items():
         if key not in ["category", "description", "drawing_no_1", "sub_category_type",
@@ -399,8 +417,8 @@ def check_file_size(request, product_id, file_type):
         product = get_object_or_404(Product, id=product_id)
         file_path = None
         
-        if file_type == 'dwg':
-            file_path = product.dwg_file_path
+        if file_type == 'pdf':
+            file_path = product.pdf_file_path
         elif file_type == 'step':
             file_path = product.step_file_path
         elif file_type == 'bmp':
@@ -456,8 +474,8 @@ def download_file(request, product_id, file_type):
     file_path = None
     original_filename = None
     
-    if file_type == 'dwg':
-        file_path = product.dwg_file_path
+    if file_type == 'pdf':
+        file_path = product.pdf_file_path
     elif file_type == 'step':
         file_path = product.step_file_path
     elif file_type == 'bmp':
@@ -495,14 +513,14 @@ def download_file(request, product_id, file_type):
             # 获取原始文件名（不带路径）
             original_filename = os.path.basename(file_path)
             
-            # 对于bmp, dwg, step文件，进行压缩
-            if file_type in ['bmp', 'dwg', 'step']:
+            # 对于bmp, pdf, step文件，进行压缩
+            if file_type in ['bmp', 'pdf', 'step']:
                 # 创建一个临时的内存文件来存储zip内容
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
                     # 获取不带后缀的文件名，并去除特定后缀
                     base_name, ext = os.path.splitext(original_filename)
-                    if file_type == 'dwg' and base_name.endswith('_DWG'):
+                    if file_type == 'pdf' and base_name.lower().endswith(('_pdf','_pdf')):
                         base_name = base_name
                     elif file_type == 'step' and base_name.endswith('_STEP'):
                         base_name = base_name
@@ -574,17 +592,17 @@ def batch_download_view(request, file_type):
 
             for product in products:
                 file_path = None
-                if file_type == 'dwg':
-                    file_path = product.dwg_file_path
+                if file_type == 'pdf':
+                    file_path = product.pdf_file_path
                 elif file_type == 'step':
                     file_path = product.step_file_path
                 elif file_type == 'bmp':
                     file_path = product.bmp_file_path
                 elif file_type == 'both':
                     # 对于'both'类型，尝试下载DWG和STEP文件
-                    if product.dwg_file_path:
-                        files_to_add.append((os.path.join(settings.MEDIA_ROOT, str(product.dwg_file_path).replace('media/', '')), os.path.basename(str(product.dwg_file_path))))
-                        total_size_mb += os.path.getsize(os.path.join(settings.MEDIA_ROOT, str(product.dwg_file_path).replace('media/', ''))) / (1024 * 1024)
+                    if product.pdf_file_path:
+                        files_to_add.append((os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', '')), os.path.basename(str(product.pdf_file_path))))
+                        total_size_mb += os.path.getsize(os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', ''))) / (1024 * 1024)
                     if product.step_file_path:
                         files_to_add.append((os.path.join(settings.MEDIA_ROOT, str(product.step_file_path).replace('media/', '')), os.path.basename(str(product.step_file_path))))
                         total_size_mb += os.path.getsize(os.path.join(settings.MEDIA_ROOT, str(product.step_file_path).replace('media/', ''))) / (1024 * 1024)
@@ -651,20 +669,20 @@ def check_batch_file_size(request):
 
         for product in products:
             file_path = None
-            if file_type == 'dwg':
-                file_path = product.dwg_file_path
+            if file_type == 'pdf':
+                file_path = product.pdf_file_path
             elif file_type == 'step':
                 file_path = product.step_file_path
             elif file_type == 'bmp':
                 file_path = product.bmp_file_path
             elif file_type == 'both':
                 # 对于'both'类型，检查DWG和STEP文件大小
-                if product.dwg_file_path:
-                    full_dwg_path = os.path.join(settings.MEDIA_ROOT, str(product.dwg_file_path).replace('media/', ''))
+                if product.pdf_file_path:
+                    full_dwg_path = os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', ''))
                     if os.path.exists(full_dwg_path):
                         total_size_mb += os.path.getsize(full_dwg_path) / (1024 * 1024)
                     else:
-                        missing_files.append(os.path.basename(str(product.dwg_file_path)))
+                        missing_files.append(os.path.basename(str(product.pdf_file_path)))
                 if product.step_file_path:
                     full_step_path = os.path.join(settings.MEDIA_ROOT, str(product.step_file_path).replace('media/', ''))
                     if os.path.exists(full_step_path):
@@ -774,6 +792,7 @@ def manage_users(request):
 
     active_users_count = 0
     admin_users_count = 0
+    password_expired_count = 0
 
     for user in users:
         profile, created = UserProfile.objects.get_or_create(user=user)
@@ -784,6 +803,8 @@ def manage_users(request):
             active_users_count += 1
         if user.is_staff or user.is_superuser:
             admin_users_count += 1
+        if password_expired:
+            password_expired_count += 1
 
         users_with_profiles.append({
             "user": user,
@@ -794,12 +815,12 @@ def manage_users(request):
         })
 
     password_validity_choices = UserProfile.get_password_validity_choices()
-
     context = {
         "users_with_profiles": users_with_profiles,
         "password_validity_choices": password_validity_choices,
         "active_users_count": active_users_count,
         "admin_users_count": admin_users_count,
+        "password_expired_count": password_expired_count,
     }
     return render(request, "management/users.html", context)
 
@@ -972,7 +993,7 @@ def export_data(request):
                 'ID', 'Category', 'Description', 'Drawing No 1', 'Sub Category Type',
                 'Stroke', 'Clamping Force', 'Weight', 'Throat Depth', 'Throat Width',
                 'Transformer', 'Electrode Arm End', 'Motor Manufacturer', 'Has Balance',
-                'DWG File Path', 'STEP File Path', 'BMP File Path'
+                'pdf File Path', 'STEP File Path', 'BMP File Path'
             ])
             products = Product.objects.all()
             for product in products:
@@ -991,7 +1012,7 @@ def export_data(request):
                     product.electrode_arm_end,
                     product.motor_manufacturer,
                     product.has_balance,
-                    product.dwg_file_path or '',
+                    product.pdf_file_path or '',
                     product.step_file_path or '',
                     product.bmp_file_path or ''
                 ])
@@ -1149,7 +1170,7 @@ def import_csv(request):
                 'static_arm_front_height': float(row[34]) if row[34].strip() else None,
                 'moving_arm_front_length': float(row[35]) if row[35].strip() else None,
                 'moving_arm_front_height': float(row[36]) if row[36].strip() else None,
-                'dwg_file_path': os.path.join('media', row[37].strip()) if len(row) > 37 and row[37].strip() else '',
+                'pdf_file_path': os.path.join('media', row[37].strip()) if len(row) > 37 and row[37].strip() else '',
                 'step_file_path': os.path.join('media', row[38].strip()) if len(row) > 38 and row[38].strip() else '',
                 'bmp_file_path': os.path.join('media', row[39].strip()) if len(row) > 39 and row[39].strip() else '',
             }
@@ -1200,7 +1221,7 @@ def sync_files(request):
     # 1. 一次性加载所有产品
     products = Product.objects.all().only(
         'id', 'drawing_no_1',
-        'dwg_file_path', 'step_file_path', 'bmp_file_path'
+        'pdf_file_path', 'step_file_path', 'bmp_file_path'
     )
     product_map = {p.drawing_no_1.strip().upper(): p for p in products}
 
@@ -1209,7 +1230,7 @@ def sync_files(request):
 
     # 3. 文件后缀 -> 模型字段
     ext_field = {
-        '.dwg': 'dwg_file_path',
+        '.pdf': 'pdf_file_path',
         '.step': 'step_file_path',
         '.bmp': 'bmp_file_path',
     }
@@ -1224,7 +1245,7 @@ def sync_files(request):
             if ext not in ext_field:
                 continue
 
-            # 去掉后缀 _dwg/_step/_bmp
+            # 去掉后缀 _pdf/_step/_bmp
             clean = name.upper().replace('_DWG', '').replace('_STEP', '').replace('_BMP', '')
             product = product_map.get(clean)
             if not product:

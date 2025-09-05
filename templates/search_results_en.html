@@ -40,7 +40,7 @@
         -webkit-box-decoration-break: clone; /* Webkit prefix */
     }
 
-    /* 2. Make the three option buttons for DWG Only, STEP Only, and DWG and STEP look better, no dropdown, with borders, no conflict with original background */
+    /* 2. Make the three option buttons for pdf Only, STEP Only, and pdf and STEP look better, no dropdown, with borders, no conflict with original background */
     .file-type-buttons .btn {
         border-radius: 0.25rem; /* Keep button rounded corners */
         margin-right: 0.5rem; /* Spacing between buttons */
@@ -114,9 +114,9 @@
                         <div class="input-group">
                             <!-- Replace dropdown with button group -->
                             <div class="btn-group file-type-buttons" role="group" aria-label="File Type Selection">
-                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="dwg">DWG Only</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="pdf">PDF Only</button>
                                 <button type="button" class="btn btn-outline-primary btn-sm active" data-file-type="step">STEP Only</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">DWG and STEP</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">PDF and STEP</button>
                             </div>
                             <button id="batchDownloadBtn" class="btn btn-primary btn-sm" disabled>
                                 <i class="bi bi-download me-2"></i>Batch Download Selected
@@ -192,12 +192,12 @@
                                                    class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye me-1"></i>Details
                                                 </a>
-                                                {% if product.dwg_file_path %}
-                                                    <a href="{% url 'clamps:download_file' product.id 'dwg' %}" 
+                                                {% if product.pdf_file_path %}
+                                                    <a href="{% url 'clamps:download_file' product.id 'pdf' %}" 
                                                        class="btn btn-outline-success btn-sm delayed-download"
                                                        data-product-id="{{ product.id }}" 
-                                                       data-file-type="dwg">
-                                                        <i class="bi bi-download me-1"></i>DWG
+                                                       data-file-type="pdf">
+                                                        <i class="bi bi-download me-1"></i>PDF
                                                     </a>
                                                 {% endif %}
                                                 {% if product.step_file_path %}
@@ -443,7 +443,7 @@
         });
     });
     
-    // Add delayed download functionality for DWG and STEP download buttons - add file size check
+    // Add delayed download functionality for pdf and STEP download buttons - add file size check
     document.querySelectorAll('.delayed-download').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
