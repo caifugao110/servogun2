@@ -590,13 +590,18 @@
             });
         
         // 两行水印绘制函数
-		function addWatermark(context, width, height) {
-			const isChinese = navigator.language.startsWith('zh');
-			const watermarkText = isChinese ? '仅供参考 [OBARA]' : 'For Reference Only [OBARA Welding Gun Selection Database]';
-            const watermarkLines = [
-                watermarkText.split(' [OBARA')[0],
-                '[OBARA' + (watermarkText.includes('Database]') ? ' Welding Gun Selection Database]' : ']')
-            ];			
+function addWatermark(context, width, height) {
+			const isChinese = navigator.language.startsWith("zh");
+			const watermarkBase = isChinese ? "图纸仅供参考[OBARA]" : "For Reference Only[OBARA]";
+			const now = new Date();
+			const dateStr = now.getFullYear() + "-" + (now.getMonth() + 1).toString().padStart(2, "0") + "-" + now.getDate().toString().padStart(2, "0");
+			const timeStr = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0") + ":" + now.getSeconds().toString().padStart(2, "0");
+			const user = "{{ request.user.username }}"; // 获取当前登录用户名
+			
+			const watermarkLines = [
+				watermarkBase,
+				`${user}     ${dateStr} ${timeStr}`
+			];
 			context.save();
 			context.fillStyle = 'rgba(255, 0, 0, 0.5)';
 			context.font = '24px Arial, sans-serif';

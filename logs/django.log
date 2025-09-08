@@ -10682,3 +10682,957 @@ INFO 2025-09-05 13:30:32,277 basehttp 2212 6840 "POST /check_batch_file_size/ HT
 INFO 2025-09-05 13:30:44,355 basehttp 2212 6840 "POST /batch_download/both/ HTTP/1.1" 200 12589866
 INFO 2025-09-05 13:32:42,249 basehttp 2212 6840 "GET /management/ HTTP/1.1" 200 48333
 INFO 2025-09-05 13:32:42,971 basehttp 2212 6840 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:41:41,120 autoreload 11740 19888 Watching for file changes with StatReloader
+WARNING 2025-09-05 13:41:49,844 log 11740 21608 Not Found: /favicon.ico
+WARNING 2025-09-05 13:41:49,844 basehttp 11740 21608 "GET /favicon.ico HTTP/1.1" 404 10376
+INFO 2025-09-05 13:41:51,358 basehttp 11740 21608 "GET /media/SRTC-S2C6991L(250-500).pdf HTTP/1.1" 200 313829
+INFO 2025-09-05 13:42:04,102 basehttp 11740 21608 "GET / HTTP/1.1" 200 35135
+INFO 2025-09-05 13:42:04,603 basehttp 11740 21608 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:42:05,581 basehttp 11740 21608 "GET /login/ HTTP/1.1" 200 35154
+INFO 2025-09-05 13:42:06,050 basehttp 11740 21608 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:42:07,963 basehttp 11740 21608 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-09-05 13:42:07,976 basehttp 11740 21608 "GET / HTTP/1.1" 200 38079
+INFO 2025-09-05 13:42:08,551 basehttp 11740 21608 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:42:12,070 basehttp 11740 21608 "GET /search/ HTTP/1.1" 200 52715
+INFO 2025-09-05 13:42:12,564 basehttp 11740 21608 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:42:17,861 basehttp 11740 21608 "GET /search/results/?csrfmiddlewaretoken=VSUJpooXDjCq2z3ynGJzYmSf0ew7qz5gKYBJLJBbEOlV4HXUMW7ZS6hCKMmYQXen&category=1&sub_category_type=&throat_depth=&throat_width=&transformer=&clamping_force=&drawing_no_1=6931&description=&stroke=&motor_manufacturer=&transformer_placement=&electrode_arm_end=&has_balance=&weight=&flange_pcd=&bracket_direction=&water_circuit=&eccentricity= HTTP/1.1" 200 48380
+INFO 2025-09-05 13:42:18,366 basehttp 11740 21608 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:42:34,890 basehttp 11740 21608 "GET /search/results/?csrfmiddlewaretoken=VSUJpooXDjCq2z3ynGJzYmSf0ew7qz5gKYBJLJBbEOlV4HXUMW7ZS6hCKMmYQXen&category=1&sub_category_type=&throat_depth=&throat_width=&transformer=&clamping_force=&drawing_no_1=6991&description=&stroke=&motor_manufacturer=&transformer_placement=&electrode_arm_end=&has_balance=&weight=&flange_pcd=&bracket_direction=&water_circuit=&eccentricity= HTTP/1.1" 200 55118
+INFO 2025-09-05 13:42:34,950 basehttp 11740 21608 "GET /media/SRTC-S2C6991L(250-500).bmp HTTP/1.1" 200 42
+INFO 2025-09-05 13:42:35,344 basehttp 11740 1668 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:42:36,437 basehttp 11740 1668 "GET /product/2425/ HTTP/1.1" 200 52779
+INFO 2025-09-05 13:42:36,913 basehttp 11740 1668 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:42:37,856 basehttp 11740 1668 "GET /media/SRTC-S2C6991L(250-500).PDF HTTP/1.1" 200 313829
+INFO 2025-09-05 13:42:40,428 basehttp 11740 1668 "GET /product/2425_en/ HTTP/1.1" 200 51591
+INFO 2025-09-05 13:44:42,948 basehttp 11740 1668 "GET /management/ HTTP/1.1" 200 48212
+INFO 2025-09-05 13:44:43,407 basehttp 11740 1668 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:44:54,347 basehttp 11740 1668 "GET /management/logs/ HTTP/1.1" 200 78634
+INFO 2025-09-05 13:44:54,868 basehttp 11740 1668 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:45:25,682 basehttp 11740 1668 "GET /management/ HTTP/1.1" 200 48217
+INFO 2025-09-05 13:45:26,157 basehttp 11740 1668 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:45:26,952 basehttp 11740 1668 "GET /management/users/ HTTP/1.1" 200 90527
+INFO 2025-09-05 13:45:27,515 basehttp 11740 1668 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-05 13:45:39,542 basehttp 11740 1668 "GET /management/users/export/ HTTP/1.1" 200 563
+INFO 2025-09-06 10:21:18,823 autoreload 1136 10300 Watching for file changes with StatReloader
+INFO 2025-09-06 10:22:35,657 basehttp 1136 29156 "GET / HTTP/1.1" 200 38079
+INFO 2025-09-06 10:22:35,701 basehttp 1136 29156 "GET /static/css/bootstrap.min.css HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:35,702 basehttp 1136 19528 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:35,706 basehttp 1136 19528 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:35,708 basehttp 1136 29156 "GET /static/css/all.min.css HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:35,821 basehttp 1136 19528 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:35,821 basehttp 1136 29156 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:35,850 basehttp 1136 19528 "GET /static/icon/Obara_logo.bmp HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:39,872 basehttp 1136 19528 "GET /search/ HTTP/1.1" 200 52715
+INFO 2025-09-06 10:22:39,908 basehttp 1136 19528 "GET /static/images/No%20image%20available.png HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:46,802 basehttp 1136 29156 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:22:55,194 basehttp 1136 29156 "GET /search/results/?csrfmiddlewaretoken=GISu8XZkYcBsZ9HBPer98ZHPQ2U7XdrQvOzuuicyZHkX1hBXeuPz2J6cAAKYnBAX&category=2&sub_category_type=&throat_depth=&throat_width=&transformer=&clamping_force=&drawing_no_1=3942&description=&stroke=&motor_manufacturer=&transformer_placement=&electrode_arm_end=&has_balance=&weight=&flange_pcd=&bracket_direction=&water_circuit=&static_arm_front_length=&static_arm_front_height=&moving_arm_front_length=&moving_arm_front_height= HTTP/1.1" 200 55257
+INFO 2025-09-06 10:22:55,283 basehttp 1136 29156 "GET /media/SRTX-2C3942L.bmp HTTP/1.1" 200 42
+INFO 2025-09-06 10:22:56,481 basehttp 1136 29156 "GET /product/14733/ HTTP/1.1" 200 52344
+INFO 2025-09-06 10:22:56,543 basehttp 1136 29156 "GET /static/images/no-image.png HTTP/1.1" 304 0
+INFO 2025-09-06 10:22:58,041 basehttp 1136 29156 "GET /media/SRTX-2C3942L.PDF HTTP/1.1" 200 385806
+WARNING 2025-09-06 10:23:04,091 log 1136 19528 Request Timeout: /api/gitee/releases/latest/caifugao110/servogun2/
+WARNING 2025-09-06 10:23:04,092 basehttp 1136 19528 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 408 121
+INFO 2025-09-06 10:23:07,696 basehttp 1136 29156 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:23:10,294 basehttp 1136 24244 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:23:13,811 basehttp 1136 29156 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:23:23,502 basehttp 1136 29156 "GET /product/14733/ HTTP/1.1" 200 52221
+INFO 2025-09-06 10:23:23,537 basehttp 1136 29156 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232803
+INFO 2025-09-06 10:23:23,538 basehttp 1136 7080 "GET /static/css/all.min.css HTTP/1.1" 200 102526
+INFO 2025-09-06 10:23:23,548 basehttp 1136 7080 "GET /media/SRTX-2C3942L.bmp HTTP/1.1" 200 42
+INFO 2025-09-06 10:23:23,550 basehttp 1136 24244 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85891
+INFO 2025-09-06 10:23:23,566 basehttp 1136 24244 "GET /static/images/no-image.png HTTP/1.1" 200 3273
+INFO 2025-09-06 10:23:23,584 basehttp 1136 29156 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80421
+INFO 2025-09-06 10:23:23,589 basehttp 1136 24244 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-09-06 10:23:23,605 basehttp 1136 29156 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-09-06 10:23:23,633 basehttp 1136 7080 "GET /static/js/pdf.js HTTP/1.1" 200 500693
+INFO 2025-09-06 10:23:23,658 basehttp 1136 29156 "GET /static/icon/Obara_logo.bmp HTTP/1.1" 200 34104
+INFO 2025-09-06 10:23:27,276 basehttp 1136 7080 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:25:37,239 basehttp 1136 15956 "GET /product/14733/ HTTP/1.1" 302 0
+INFO 2025-09-06 10:25:37,277 basehttp 1136 15956 "GET /login/?next=/product/14733/ HTTP/1.1" 200 35154
+INFO 2025-09-06 10:25:37,318 basehttp 1136 15956 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232803
+INFO 2025-09-06 10:25:37,334 basehttp 1136 15956 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85891
+INFO 2025-09-06 10:25:37,352 basehttp 1136 15956 "GET /static/css/all.min.css HTTP/1.1" 200 102526
+INFO 2025-09-06 10:25:37,390 basehttp 1136 15956 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80421
+INFO 2025-09-06 10:25:37,409 basehttp 1136 15956 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-09-06 10:25:37,427 basehttp 1136 15956 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-09-06 10:25:37,474 basehttp 1136 15012 "GET /static/icon/Obara_logo.bmp HTTP/1.1" 200 34104
+INFO 2025-09-06 10:25:41,180 basehttp 1136 15012 "POST /login/?next=/product/14733/ HTTP/1.1" 302 0
+INFO 2025-09-06 10:25:41,203 basehttp 1136 15012 "GET / HTTP/1.1" 200 38079
+INFO 2025-09-06 10:25:42,592 basehttp 1136 15956 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:25:44,083 basehttp 1136 15956 "GET /product/14733/ HTTP/1.1" 200 52221
+INFO 2025-09-06 10:25:44,113 basehttp 1136 15956 "GET /media/SRTX-2C3942L.bmp HTTP/1.1" 200 42
+INFO 2025-09-06 10:25:44,124 basehttp 1136 15956 "GET /static/images/no-image.png HTTP/1.1" 200 3273
+INFO 2025-09-06 10:25:44,182 basehttp 1136 2968 "GET /static/js/pdf.js HTTP/1.1" 200 500693
+INFO 2025-09-06 10:25:45,322 basehttp 1136 15012 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:25:45,394 basehttp 1136 2968 "GET /static/js/pdf.worker.js HTTP/1.1" 200 1969980
+INFO 2025-09-06 10:25:45,470 basehttp 1136 2968 "GET /media/SRTX-2C3942L.PDF HTTP/1.1" 200 385806
+INFO 2025-09-06 10:25:48,228 basehttp 1136 2968 "GET /product/14733_en/ HTTP/1.1" 200 51005
+INFO 2025-09-06 10:25:52,835 basehttp 1136 15956 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:25:54,665 basehttp 1136 15956 "GET /product/14733/ HTTP/1.1" 200 52221
+INFO 2025-09-06 10:25:57,659 basehttp 1136 15956 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:25:57,717 basehttp 1136 15956 "GET /product/14733_en/ HTTP/1.1" 200 51005
+INFO 2025-09-06 10:43:01,419 basehttp 1136 20372 "GET /product/14733/ HTTP/1.1" 200 52221
+INFO 2025-09-06 10:43:05,837 basehttp 1136 16760 "GET /product/14733/ HTTP/1.1" 200 52221
+INFO 2025-09-06 10:43:05,886 basehttp 1136 26380 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85891
+INFO 2025-09-06 10:43:05,888 basehttp 1136 16760 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232803
+INFO 2025-09-06 10:43:05,904 basehttp 1136 26380 "GET /static/css/all.min.css HTTP/1.1" 200 102526
+INFO 2025-09-06 10:43:05,915 basehttp 1136 26380 "GET /media/SRTX-2C3942L.bmp HTTP/1.1" 200 42
+INFO 2025-09-06 10:43:05,925 basehttp 1136 16760 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80421
+INFO 2025-09-06 10:43:05,934 basehttp 1136 26380 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-09-06 10:43:05,944 basehttp 1136 16760 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-09-06 10:43:05,950 basehttp 1136 16760 "GET /static/images/no-image.png HTTP/1.1" 200 3273
+INFO 2025-09-06 10:43:06,009 basehttp 1136 26380 "GET /static/js/pdf.js HTTP/1.1" 200 500693
+INFO 2025-09-06 10:43:06,036 basehttp 1136 16760 "GET /static/icon/Obara_logo.bmp HTTP/1.1" 200 34104
+INFO 2025-09-06 10:43:10,145 basehttp 1136 16760 "GET /product/14733_en/ HTTP/1.1" 200 51005
+WARNING 2025-09-06 10:43:11,701 log 1136 20372 Request Timeout: /api/gitee/releases/latest/caifugao110/servogun2/
+INFO 2025-09-06 10:43:11,705 basehttp 1136 20372 - Broken pipe from ('127.0.0.1', 49887)
+WARNING 2025-09-06 10:43:16,241 log 1136 26380 Request Timeout: /api/gitee/releases/latest/caifugao110/servogun2/
+WARNING 2025-09-06 10:43:16,243 basehttp 1136 26380 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 408 121
+WARNING 2025-09-06 10:43:26,457 log 1136 16760 Request Timeout: /api/gitee/releases/latest/caifugao110/servogun2/
+WARNING 2025-09-06 10:43:26,460 basehttp 1136 16760 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 408 121
+INFO 2025-09-06 10:43:26,880 basehttp 1136 28088 "GET /product/14733_en/ HTTP/1.1" 302 0
+INFO 2025-09-06 10:43:26,905 basehttp 1136 28088 "GET /login/?next=/product/14733_en/ HTTP/1.1" 200 35154
+INFO 2025-09-06 10:43:26,946 basehttp 1136 28088 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232803
+INFO 2025-09-06 10:43:26,962 basehttp 1136 28088 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85891
+INFO 2025-09-06 10:43:26,979 basehttp 1136 28088 "GET /static/css/all.min.css HTTP/1.1" 200 102526
+INFO 2025-09-06 10:43:27,142 basehttp 1136 24896 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80421
+INFO 2025-09-06 10:43:27,341 basehttp 1136 28088 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-09-06 10:43:27,342 basehttp 1136 24896 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-09-06 10:43:27,374 basehttp 1136 24896 "GET /static/icon/Obara_logo.bmp HTTP/1.1" 200 34104
+INFO 2025-09-06 10:43:29,992 basehttp 1136 11124 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:43:32,446 basehttp 1136 24896 "POST /login/?next=/product/14733_en/ HTTP/1.1" 302 0
+INFO 2025-09-06 10:43:32,474 basehttp 1136 24896 "GET / HTTP/1.1" 200 38080
+INFO 2025-09-06 10:43:35,376 basehttp 1136 24896 "GET /product/14733_en/ HTTP/1.1" 200 51006
+INFO 2025-09-06 10:43:35,407 basehttp 1136 24896 "GET /media/SRTX-2C3942L.bmp HTTP/1.1" 200 42
+INFO 2025-09-06 10:43:35,417 basehttp 1136 24896 "GET /static/images/no-image.png HTTP/1.1" 200 3273
+INFO 2025-09-06 10:43:35,471 basehttp 1136 28088 "GET /static/js/pdf.js HTTP/1.1" 200 500693
+INFO 2025-09-06 10:43:37,373 basehttp 1136 8596 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:43:39,090 basehttp 1136 28088 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:43:39,453 basehttp 1136 28088 "GET /product/14733/ HTTP/1.1" 200 52222
+INFO 2025-09-06 10:43:40,770 basehttp 1136 8596 "GET /static/js/pdf.worker.js HTTP/1.1" 200 1969980
+INFO 2025-09-06 10:43:40,847 basehttp 1136 8596 "GET /media/SRTX-2C3942L.PDF HTTP/1.1" 200 385806
+INFO 2025-09-06 10:43:41,189 basehttp 1136 28088 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 10:43:43,358 basehttp 1136 28088 "GET /product/14733_en/ HTTP/1.1" 200 51006
+INFO 2025-09-06 10:43:46,904 basehttp 1136 28088 "GET /product/14733/ HTTP/1.1" 200 52222
+INFO 2025-09-06 10:43:48,613 basehttp 1136 28088 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+ERROR 2025-09-06 11:00:36,326 log 1136 21848 Internal Server Error: /product/14733/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 401, in product_detail
+    return render(request, 'product_detail.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 567, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 438: 'static', expected 'endblock'. Did you forget to register or load this tag?
+ERROR 2025-09-06 11:00:36,334 basehttp 1136 21848 "GET /product/14733/ HTTP/1.1" 500 200757
+WARNING 2025-09-06 11:00:36,423 log 1136 21848 Not Found: /favicon.ico
+WARNING 2025-09-06 11:00:36,424 basehttp 1136 21848 "GET /favicon.ico HTTP/1.1" 404 10376
+ERROR 2025-09-06 11:05:11,951 log 1136 21848 Internal Server Error: /product/14733/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 401, in product_detail
+    return render(request, 'product_detail.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 519, in parse
+    self.extend_nodelist(nodelist, compiled_result, token)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 540, in extend_nodelist
+    raise self.error(
+    ...<2 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: {% extends 'base.html' %} must be the first tag in 'product_detail.html'.
+ERROR 2025-09-06 11:05:11,955 basehttp 1136 21848 "GET /product/14733/ HTTP/1.1" 500 156290
+INFO 2025-09-06 11:06:52,899 basehttp 1136 21848 "GET /product/14733/ HTTP/1.1" 200 51802
+INFO 2025-09-06 11:06:54,905 basehttp 1136 15484 "GET /media/SRTX-2C3942L.PDF HTTP/1.1" 200 385806
+INFO 2025-09-06 11:06:55,513 basehttp 1136 21848 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 11:06:56,892 basehttp 1136 21848 "GET /product/14733_en/ HTTP/1.1" 200 50631
+INFO 2025-09-06 11:07:01,125 basehttp 1136 21848 "GET /product/14733_en/ HTTP/1.1" 200 50631
+INFO 2025-09-06 11:07:11,678 basehttp 1136 9180 "GET /product/14733_en/ HTTP/1.1" 200 50630
+INFO 2025-09-06 11:07:12,639 basehttp 1136 9180 "GET /media/SRTX-2C3942L.PDF HTTP/1.1" 200 385806
+INFO 2025-09-06 11:07:15,727 basehttp 1136 9180 "GET /product/14733/ HTTP/1.1" 200 51801
+INFO 2025-09-06 11:07:20,507 basehttp 1136 9180 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 11:07:28,992 basehttp 1136 9180 "GET /product/14733/ HTTP/1.1" 200 51801
+INFO 2025-09-06 11:07:29,948 basehttp 1136 27608 "GET /product/14733/ HTTP/1.1" 200 51801
+INFO 2025-09-06 11:07:32,739 basehttp 1136 27608 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 11:07:34,429 basehttp 1136 9180 - Broken pipe from ('127.0.0.1', 50386)
+INFO 2025-09-06 11:07:51,018 autoreload 10572 11488 Watching for file changes with StatReloader
+INFO 2025-09-06 11:08:00,211 basehttp 10572 29684 "GET /management/ HTTP/1.1" 200 48118
+INFO 2025-09-06 11:08:03,402 basehttp 10572 20728 "GET /management/users/ HTTP/1.1" 200 90527
+WARNING 2025-09-06 11:08:10,496 log 10572 29684 Request Timeout: /api/gitee/releases/latest/caifugao110/servogun2/
+WARNING 2025-09-06 11:08:10,497 basehttp 10572 29684 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 408 121
+INFO 2025-09-06 11:08:15,657 basehttp 10572 20728 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 11:08:16,480 basehttp 10572 16796 "GET /product/14733/ HTTP/1.1" 200 51801
+INFO 2025-09-06 11:08:18,704 basehttp 10572 20728 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 11:08:20,514 basehttp 10572 16796 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+ERROR 2025-09-06 11:12:09,005 log 10572 16796 Internal Server Error: /product/14733/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 401, in product_detail
+    return render(request, 'product_detail.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 523, in parse
+    self.unclosed_block_tag(parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 590, in unclosed_block_tag
+    raise self.error(token, msg)
+django.template.exceptions.TemplateSyntaxError: Unclosed tag on line 6: 'block'. Looking for one of: endblock.
+ERROR 2025-09-06 11:12:09,014 basehttp 10572 16796 "GET /product/14733/ HTTP/1.1" 500 190395
+INFO 2025-09-06 11:14:32,840 autoreload 28876 13508 Watching for file changes with StatReloader
+INFO 2025-09-06 11:15:00,939 basehttp 28876 20228 "GET /product/14733_en/ HTTP/1.1" 200 51123
+INFO 2025-09-06 11:15:05,578 basehttp 28876 20228 "GET /product/14733/ HTTP/1.1" 200 52345
+INFO 2025-09-06 11:15:09,109 basehttp 28876 6020 "GET /product/14733_en/ HTTP/1.1" 200 51123
+INFO 2025-09-06 11:15:09,913 basehttp 28876 20228 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 16:59:31,110 autoreload 19880 18716 Watching for file changes with StatReloader
+ERROR 2025-09-06 16:59:39,638 log 19880 17676 Internal Server Error: /product/14733_en/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1035, in find_library
+    return parser.libraries[name]
+           ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'custom_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 409, in product_detail_en
+    return render(request, 'product_detail_en.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1097, in load
+    lib = find_library(parser, name)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1037, in find_library
+    raise TemplateSyntaxError(
+    ...<5 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: 'custom_filters' is not a registered tag library. Must be one of:
+admin_list
+admin_modify
+admin_urls
+cache
+i18n
+l10n
+log
+static
+tz
+ERROR 2025-09-06 16:59:39,646 basehttp 19880 17676 "GET /product/14733_en/ HTTP/1.1" 500 236968
+ERROR 2025-09-06 17:02:13,406 log 19880 17676 Internal Server Error: /product/14733_en/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1035, in find_library
+    return parser.libraries[name]
+           ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'custom_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 409, in product_detail_en
+    return render(request, 'product_detail_en.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1097, in load
+    lib = find_library(parser, name)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1037, in find_library
+    raise TemplateSyntaxError(
+    ...<5 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: 'custom_filters' is not a registered tag library. Must be one of:
+admin_list
+admin_modify
+admin_urls
+cache
+i18n
+l10n
+log
+static
+tz
+ERROR 2025-09-06 17:02:13,410 basehttp 19880 17676 "GET /product/14733_en/ HTTP/1.1" 500 236968
+INFO 2025-09-06 17:02:15,239 basehttp 19880 17676 "GET /product/14733/ HTTP/1.1" 200 52345
+INFO 2025-09-06 17:02:17,444 basehttp 19880 17676 "GET /product/14733/ HTTP/1.1" 200 52345
+INFO 2025-09-06 17:02:20,997 basehttp 19880 17676 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+ERROR 2025-09-06 17:02:23,350 log 19880 17676 Internal Server Error: /product/14733_en/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1035, in find_library
+    return parser.libraries[name]
+           ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'custom_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 409, in product_detail_en
+    return render(request, 'product_detail_en.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1097, in load
+    lib = find_library(parser, name)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1037, in find_library
+    raise TemplateSyntaxError(
+    ...<5 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: 'custom_filters' is not a registered tag library. Must be one of:
+admin_list
+admin_modify
+admin_urls
+cache
+i18n
+l10n
+log
+static
+tz
+ERROR 2025-09-06 17:02:23,355 basehttp 19880 17676 "GET /product/14733_en/ HTTP/1.1" 500 236831
+ERROR 2025-09-06 17:03:15,509 log 19880 21128 Internal Server Error: /product/14733_en/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1035, in find_library
+    return parser.libraries[name]
+           ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'custom_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 409, in product_detail_en
+    return render(request, 'product_detail_en.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1097, in load
+    lib = find_library(parser, name)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1037, in find_library
+    raise TemplateSyntaxError(
+    ...<5 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: 'custom_filters' is not a registered tag library. Must be one of:
+admin_list
+admin_modify
+admin_urls
+cache
+i18n
+l10n
+log
+static
+tz
+ERROR 2025-09-06 17:03:15,513 basehttp 19880 21128 "GET /product/14733_en/ HTTP/1.1" 500 236968
+ERROR 2025-09-06 17:03:16,555 log 19880 21128 Internal Server Error: /product/14733_en/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1035, in find_library
+    return parser.libraries[name]
+           ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'custom_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 409, in product_detail_en
+    return render(request, 'product_detail_en.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1097, in load
+    lib = find_library(parser, name)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1037, in find_library
+    raise TemplateSyntaxError(
+    ...<5 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: 'custom_filters' is not a registered tag library. Must be one of:
+admin_list
+admin_modify
+admin_urls
+cache
+i18n
+l10n
+log
+static
+tz
+ERROR 2025-09-06 17:03:16,559 basehttp 19880 21128 "GET /product/14733_en/ HTTP/1.1" 500 236968
+ERROR 2025-09-06 17:03:50,818 log 19880 21128 Internal Server Error: /product/14733_en/
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1035, in find_library
+    return parser.libraries[name]
+           ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'custom_filters'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "X:\Servo Gun\release\clamps\views.py", line 409, in product_detail_en
+    return render(request, 'product_detail_en.html', {'product': product})
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 299, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1097, in load
+    lib = find_library(parser, name)
+  File "C:\Users\gaoj\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 1037, in find_library
+    raise TemplateSyntaxError(
+    ...<5 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: 'custom_filters' is not a registered tag library. Must be one of:
+admin_list
+admin_modify
+admin_urls
+cache
+i18n
+l10n
+log
+static
+tz
+ERROR 2025-09-06 17:03:50,822 basehttp 19880 21128 "GET /product/14733_en/ HTTP/1.1" 500 236968
+INFO 2025-09-06 17:03:55,915 autoreload 16452 18608 Watching for file changes with StatReloader
+INFO 2025-09-06 17:03:58,803 basehttp 16452 11200 "GET /product/14733_en/ HTTP/1.1" 200 51121
+INFO 2025-09-06 17:04:07,970 basehttp 16452 11200 "GET /product/14733/ HTTP/1.1" 200 52345
+INFO 2025-09-06 17:04:08,729 basehttp 16452 11940 "GET /product/14733_en/ HTTP/1.1" 200 51121
+INFO 2025-09-06 17:04:12,825 basehttp 16452 11940 "GET /product/14733_en/ HTTP/1.1" 200 51121
+INFO 2025-09-06 17:04:12,831 basehttp 16452 11200 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 17:04:12,905 basehttp 16452 11200 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232803
+INFO 2025-09-06 17:04:12,914 basehttp 16452 11940 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85891
+INFO 2025-09-06 17:04:12,928 basehttp 16452 11200 "GET /static/css/all.min.css HTTP/1.1" 200 102526
+INFO 2025-09-06 17:04:12,943 basehttp 16452 11200 "GET /media/SRTX-2C3942L.bmp HTTP/1.1" 200 42
+INFO 2025-09-06 17:04:12,956 basehttp 16452 11940 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80421
+INFO 2025-09-06 17:04:12,962 basehttp 16452 11200 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-09-06 17:04:12,973 basehttp 16452 11940 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-09-06 17:04:12,983 basehttp 16452 11940 "GET /static/images/no-image.png HTTP/1.1" 200 3273
+INFO 2025-09-06 17:04:13,039 basehttp 16452 11200 "GET /static/js/pdf.js HTTP/1.1" 200 500693
+INFO 2025-09-06 17:04:18,707 basehttp 16452 11200 "GET /product/14733/ HTTP/1.1" 200 52345
+INFO 2025-09-06 17:04:19,719 basehttp 16452 11940 "GET /product/14733_en/ HTTP/1.1" 200 51121
+INFO 2025-09-06 17:04:20,395 basehttp 16452 11200 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-06 17:04:20,742 basehttp 16452 11200 "GET /product/14733/ HTTP/1.1" 200 52345
+INFO 2025-09-06 17:04:21,380 basehttp 16452 11940 "GET /product/14733_en/ HTTP/1.1" 200 51121
+INFO 2025-09-06 17:04:25,304 basehttp 16452 11200 - Broken pipe from ('127.0.0.1', 53971)
+INFO 2025-09-06 17:04:33,601 basehttp 16452 11940 "GET /product/14733/ HTTP/1.1" 200 52345
+INFO 2025-09-06 17:04:34,389 basehttp 16452 24456 "GET /product/14733_en/ HTTP/1.1" 200 51121
+INFO 2025-09-08 07:58:32,199 autoreload 11504 24588 Watching for file changes with StatReloader
+INFO 2025-09-08 07:58:39,733 basehttp 11504 17400 "GET / HTTP/1.1" 200 38079
+INFO 2025-09-08 07:58:39,765 basehttp 11504 17400 "GET /static/css/bootstrap.min.css HTTP/1.1" 304 0
+INFO 2025-09-08 07:58:39,769 basehttp 11504 14592 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 304 0
+INFO 2025-09-08 07:58:39,772 basehttp 11504 17400 "GET /static/css/all.min.css HTTP/1.1" 304 0
+INFO 2025-09-08 07:58:39,775 basehttp 11504 14592 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 304 0
+INFO 2025-09-08 07:58:39,873 basehttp 11504 14592 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 0
+INFO 2025-09-08 07:58:39,874 basehttp 11504 17400 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 304 0
+INFO 2025-09-08 07:58:39,903 basehttp 11504 14592 "GET /static/icon/Obara_logo.bmp HTTP/1.1" 304 0
+INFO 2025-09-08 07:58:41,725 basehttp 11504 17400 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 07:59:12,569 basehttp 11504 17400 "GET / HTTP/1.1" 200 38079
+INFO 2025-09-08 07:59:14,016 basehttp 11504 14592 "GET /search/ HTTP/1.1" 200 52715
+INFO 2025-09-08 07:59:14,047 basehttp 11504 14592 "GET /static/images/No%20image%20available.png HTTP/1.1" 304 0
+INFO 2025-09-08 07:59:21,325 basehttp 11504 17400 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 07:59:22,974 basehttp 11504 14592 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 07:59:24,355 basehttp 11504 14592 "GET /search/results/?csrfmiddlewaretoken=9e8fo83NJIBWxx6Ty5r4msVC4B5x8CB2YkPfKtg1KdkrzF0fXlPugckZO9Voy0K9&category=2&sub_category_type=&throat_depth=&throat_width=&transformer=&clamping_force=&drawing_no_1=3942&description=&stroke=&motor_manufacturer=&transformer_placement=&electrode_arm_end=&has_balance=&weight=&flange_pcd=&bracket_direction=&water_circuit=&static_arm_front_length=&static_arm_front_height=&moving_arm_front_length=&moving_arm_front_height= HTTP/1.1" 200 55257
+INFO 2025-09-08 07:59:25,927 basehttp 11504 17400 "GET /product/14733/ HTTP/1.1" 200 52344
+INFO 2025-09-08 07:59:26,001 basehttp 11504 17400 "GET /static/images/no-image.png HTTP/1.1" 304 0
+INFO 2025-09-08 07:59:27,327 basehttp 11504 17400 "GET /media/SRTX-2C3942L.PDF HTTP/1.1" 304 0
+INFO 2025-09-08 07:59:27,881 basehttp 11504 14592 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 07:59:29,451 basehttp 11504 17400 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 07:59:29,491 basehttp 11504 14592 "GET /product/14733_en/ HTTP/1.1" 200 51120
+INFO 2025-09-08 08:00:14,743 basehttp 11504 14592 "GET /product/14733_en/ HTTP/1.1" 200 55883
+INFO 2025-09-08 08:00:14,916 basehttp 11504 14592 "GET /static/js/pdf-lib.min.js HTTP/1.1" 200 525099
+INFO 2025-09-08 08:08:02,171 basehttp 11504 21940 "GET /product/14733_en/ HTTP/1.1" 200 55883
+INFO 2025-09-08 08:08:07,194 basehttp 11504 21940 "GET /product/14733/ HTTP/1.1" 200 57054
+INFO 2025-09-08 08:08:10,567 basehttp 11504 21940 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 08:08:11,154 basehttp 11504 21940 "GET /product/14733_en/ HTTP/1.1" 200 55883
+INFO 2025-09-08 08:08:26,641 basehttp 11504 21940 "GET /product/14733/ HTTP/1.1" 200 57054
+INFO 2025-09-08 08:08:29,420 basehttp 11504 21940 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 08:08:33,705 basehttp 11504 21940 "GET /download/14733/pdf/ HTTP/1.1" 200 385700
+INFO 2025-09-08 08:08:39,797 basehttp 11504 21940 "GET /download/14733/pdf/ HTTP/1.1" 200 385700
+INFO 2025-09-08 08:09:21,365 basehttp 11504 21940 "GET /product/14733/ HTTP/1.1" 200 57054
+INFO 2025-09-08 08:09:24,541 basehttp 11504 21940 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 08:09:40,941 basehttp 11504 21940 "GET /product/14733_en/ HTTP/1.1" 200 55883
+INFO 2025-09-08 08:14:36,326 autoreload 11504 24588 \\192.168.160.2\生产管理部3d\3D 资料\check\check27\Servo Gun\release\clamps\templatetags\custom_filters.py changed, reloading.
+INFO 2025-09-08 08:14:37,472 autoreload 28516 9432 Watching for file changes with StatReloader
+INFO 2025-09-08 08:14:44,375 basehttp 28516 23948 "GET /product/14733_en/ HTTP/1.1" 200 55883
+INFO 2025-09-08 08:15:11,783 basehttp 28516 23948 "GET /product/14733_en/ HTTP/1.1" 200 55883
+INFO 2025-09-08 08:15:11,891 basehttp 28516 25884 "GET /static/css/all.min.css HTTP/1.1" 200 102526
+INFO 2025-09-08 08:15:11,894 basehttp 28516 23948 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232803
+INFO 2025-09-08 08:15:11,900 basehttp 28516 14328 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85891
+INFO 2025-09-08 08:15:11,910 basehttp 28516 23948 "GET /media/SRTX-2C3942L.bmp HTTP/1.1" 200 42
+INFO 2025-09-08 08:15:11,929 basehttp 28516 23948 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-09-08 08:15:11,935 basehttp 28516 25884 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80421
+INFO 2025-09-08 08:15:11,949 basehttp 28516 23948 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-09-08 08:15:11,965 basehttp 28516 23948 "GET /static/images/no-image.png HTTP/1.1" 200 3273
+INFO 2025-09-08 08:15:11,984 basehttp 28516 14328 "GET /static/js/pdf.js HTTP/1.1" 200 500693
+INFO 2025-09-08 08:15:12,052 basehttp 28516 25884 "GET /static/js/pdf-lib.min.js HTTP/1.1" 200 525099
+INFO 2025-09-08 08:15:12,091 basehttp 28516 25884 "GET /static/icon/Obara_logo.bmp HTTP/1.1" 200 34104
+INFO 2025-09-08 08:15:23,942 basehttp 28516 25884 "GET / HTTP/1.1" 200 38079
+INFO 2025-09-08 08:28:04,687 autoreload 11612 11348 Watching for file changes with StatReloader
+INFO 2025-09-08 08:28:18,347 basehttp 11612 14088 "GET /product/14733/ HTTP/1.1" 200 52344
+INFO 2025-09-08 08:28:21,826 basehttp 11612 14088 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 10:57:55,401 autoreload 10204 18356 Watching for file changes with StatReloader
+INFO 2025-09-08 11:02:30,944 basehttp 10204 4064 "GET /product/14733/ HTTP/1.1" 200 52344
+WARNING 2025-09-08 11:02:41,243 log 10204 4064 Request Timeout: /api/gitee/releases/latest/caifugao110/servogun2/
+WARNING 2025-09-08 11:02:41,243 basehttp 10204 4064 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 408 121
+INFO 2025-09-08 11:02:42,507 basehttp 10204 908 "GET /product/14733_en/ HTTP/1.1" 200 51122
+WARNING 2025-09-08 11:02:51,456 log 10204 21516 Request Timeout: /api/gitee/releases/latest/caifugao110/servogun2/
+WARNING 2025-09-08 11:02:51,457 basehttp 10204 21516 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 408 121
+INFO 2025-09-08 11:02:59,937 basehttp 10204 908 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 11:03:09,734 basehttp 10204 908 "GET /product/14733_en/ HTTP/1.1" 200 51122
+WARNING 2025-09-08 11:03:31,842 log 10204 908 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-08 11:03:31,843 basehttp 10204 908 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 10487
+WARNING 2025-09-08 11:03:31,920 basehttp 10204 2476 "GET /static/js/bootstrap.bundle.min.js.map HTTP/1.1" 404 2017
+WARNING 2025-09-08 11:03:31,920 basehttp 10204 908 "GET /static/js/pdf.js.map HTTP/1.1" 404 1966
+WARNING 2025-09-08 11:03:32,248 basehttp 10204 27340 "GET /static/css/bootstrap.min.css.map HTTP/1.1" 404 2002
+WARNING 2025-09-08 11:03:32,357 basehttp 10204 26044 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+INFO 2025-09-08 11:03:34,770 basehttp 10204 24540 "GET /product/14733_en/ HTTP/1.1" 200 51122
+WARNING 2025-09-08 11:03:34,810 log 10204 24540 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-08 11:03:34,811 basehttp 10204 24540 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 10487
+WARNING 2025-09-08 11:03:34,874 basehttp 10204 24540 "GET /static/js/bootstrap.bundle.min.js.map HTTP/1.1" 404 2017
+WARNING 2025-09-08 11:03:34,992 basehttp 10204 10636 "GET /static/js/pdf.js.map HTTP/1.1" 404 1966
+WARNING 2025-09-08 11:03:35,209 basehttp 10204 9632 "GET /static/css/bootstrap.min.css.map HTTP/1.1" 404 2002
+INFO 2025-09-08 11:03:45,850 basehttp 10204 22488 "GET /product/14733_en/ HTTP/1.1" 200 51122
+WARNING 2025-09-08 11:03:45,891 log 10204 22488 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-08 11:03:45,892 basehttp 10204 22488 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 10487
+WARNING 2025-09-08 11:03:45,922 basehttp 10204 22488 "GET /static/css/bootstrap.min.css.map HTTP/1.1" 404 2002
+WARNING 2025-09-08 11:03:45,964 basehttp 10204 18832 "GET /static/js/bootstrap.bundle.min.js.map HTTP/1.1" 404 2017
+WARNING 2025-09-08 11:03:46,006 basehttp 10204 17228 "GET /static/js/pdf.js.map HTTP/1.1" 404 1966
+INFO 2025-09-08 11:06:58,567 basehttp 10204 11964 "GET /product/14733_en/ HTTP/1.1" 200 51440
+WARNING 2025-09-08 11:06:58,591 log 10204 11964 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-08 11:06:58,592 basehttp 10204 11964 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 10487
+WARNING 2025-09-08 11:06:58,630 basehttp 10204 11964 "GET /static/js/bootstrap.bundle.min.js.map HTTP/1.1" 404 2017
+WARNING 2025-09-08 11:06:58,664 basehttp 10204 25628 "GET /static/js/pdf.js.map HTTP/1.1" 404 1966
+WARNING 2025-09-08 11:06:58,687 basehttp 10204 19688 "GET /static/css/bootstrap.min.css.map HTTP/1.1" 404 2002
+WARNING 2025-09-08 11:07:00,575 basehttp 10204 26276 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+WARNING 2025-09-08 11:07:08,069 basehttp 10204 26988 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+WARNING 2025-09-08 11:07:14,801 basehttp 10204 28616 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+INFO 2025-09-08 11:07:21,875 basehttp 10204 11112 "GET /product/14733/ HTTP/1.1" 200 52659
+WARNING 2025-09-08 11:07:21,921 log 10204 11112 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-08 11:07:21,922 basehttp 10204 11112 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 10487
+WARNING 2025-09-08 11:07:21,984 basehttp 10204 11112 "GET /static/js/bootstrap.bundle.min.js.map HTTP/1.1" 404 2017
+WARNING 2025-09-08 11:07:22,304 basehttp 10204 16648 "GET /static/js/pdf.js.map HTTP/1.1" 404 1966
+WARNING 2025-09-08 11:07:22,313 basehttp 10204 11856 "GET /static/css/bootstrap.min.css.map HTTP/1.1" 404 2002
+WARNING 2025-09-08 11:07:23,360 basehttp 10204 12200 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+INFO 2025-09-08 11:07:26,836 basehttp 10204 7376 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 11:07:45,852 basehttp 10204 7376 "GET /product/14733_en/ HTTP/1.1" 200 51440
+INFO 2025-09-08 11:11:03,033 autoreload 18164 796 Watching for file changes with StatReloader
+INFO 2025-09-08 11:11:58,680 basehttp 18164 28328 "GET /product/14733_en/ HTTP/1.1" 200 51334
+WARNING 2025-09-08 11:12:16,896 log 18164 28328 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-08 11:12:16,897 basehttp 18164 28328 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 10487
+WARNING 2025-09-08 11:12:16,966 basehttp 18164 28328 "GET /static/js/bootstrap.bundle.min.js.map HTTP/1.1" 404 2017
+WARNING 2025-09-08 11:12:16,966 basehttp 18164 1620 "GET /static/js/pdf.js.map HTTP/1.1" 404 1966
+WARNING 2025-09-08 11:12:16,974 basehttp 18164 14868 "GET /static/css/bootstrap.min.css.map HTTP/1.1" 404 2002
+WARNING 2025-09-08 11:12:17,422 basehttp 18164 12164 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+WARNING 2025-09-08 11:12:17,688 basehttp 18164 17556 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+WARNING 2025-09-08 11:12:17,732 basehttp 18164 7432 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+WARNING 2025-09-08 11:12:17,998 basehttp 18164 22084 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+INFO 2025-09-08 11:12:18,279 basehttp 18164 16604 "GET /product/14733/ HTTP/1.1" 200 52589
+WARNING 2025-09-08 11:12:18,322 log 18164 16604 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-08 11:12:18,324 basehttp 18164 16604 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 10487
+WARNING 2025-09-08 11:12:18,359 basehttp 18164 16604 "GET /static/js/bootstrap.bundle.min.js.map HTTP/1.1" 404 2017
+WARNING 2025-09-08 11:12:18,729 basehttp 18164 24444 "GET /static/js/pdf.js.map HTTP/1.1" 404 1966
+WARNING 2025-09-08 11:12:18,732 basehttp 18164 23260 "GET /static/css/bootstrap.min.css.map HTTP/1.1" 404 2002
+INFO 2025-09-08 11:12:23,846 basehttp 18164 1740 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+WARNING 2025-09-08 11:12:29,271 basehttp 18164 1740 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+WARNING 2025-09-08 11:12:50,795 log 18164 12708 Not Found: /favicon.ico
+WARNING 2025-09-08 11:12:50,796 basehttp 18164 12708 "GET /favicon.ico HTTP/1.1" 404 10376
+WARNING 2025-09-08 11:13:11,236 basehttp 18164 12708 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+INFO 2025-09-08 11:13:46,225 basehttp 18164 20924 "GET /product/14733_en/ HTTP/1.1" 200 51334
+WARNING 2025-09-08 11:13:46,284 log 18164 20924 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-08 11:13:46,285 basehttp 18164 20924 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 10487
+WARNING 2025-09-08 11:13:46,351 basehttp 18164 20924 "GET /static/css/bootstrap.min.css.map HTTP/1.1" 404 2002
+WARNING 2025-09-08 11:13:46,355 basehttp 18164 21760 "GET /static/js/bootstrap.bundle.min.js.map HTTP/1.1" 404 2017
+WARNING 2025-09-08 11:13:46,697 basehttp 18164 24268 "GET /static/js/pdf.js.map HTTP/1.1" 404 1966
+WARNING 2025-09-08 11:13:47,189 basehttp 18164 17684 "GET /static/js/pdf.worker.js.map HTTP/1.1" 404 1987
+INFO 2025-09-08 11:14:03,207 basehttp 18164 13804 "GET /product/14733_en/ HTTP/1.1" 302 0
+INFO 2025-09-08 11:14:03,235 basehttp 18164 13804 "GET /login/?next=/product/14733_en/ HTTP/1.1" 200 35154
+INFO 2025-09-08 11:14:03,311 basehttp 18164 13804 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232803
+INFO 2025-09-08 11:14:03,340 basehttp 18164 13804 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85891
+INFO 2025-09-08 11:14:03,361 basehttp 18164 13804 "GET /static/css/all.min.css HTTP/1.1" 200 102526
+INFO 2025-09-08 11:14:03,401 basehttp 18164 13804 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80421
+INFO 2025-09-08 11:14:03,407 basehttp 18164 14536 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-09-08 11:14:03,422 basehttp 18164 13804 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-09-08 11:14:03,451 basehttp 18164 13804 "GET /static/icon/Obara_logo.bmp HTTP/1.1" 200 34104
+INFO 2025-09-08 11:14:05,979 basehttp 18164 14536 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 11:14:09,250 basehttp 18164 14536 "POST /login/?next=/product/14733_en/ HTTP/1.1" 302 0
+INFO 2025-09-08 11:14:09,275 basehttp 18164 14536 "GET / HTTP/1.1" 200 37766
+INFO 2025-09-08 11:14:11,833 basehttp 18164 13804 "GET /product/14733_en/ HTTP/1.1" 200 51043
+INFO 2025-09-08 11:14:11,874 basehttp 18164 13804 "GET /media/SRTX-2C3942L.bmp HTTP/1.1" 200 42
+INFO 2025-09-08 11:14:11,886 basehttp 18164 13804 "GET /static/images/no-image.png HTTP/1.1" 200 3273
+INFO 2025-09-08 11:14:11,949 basehttp 18164 8108 "GET /static/js/pdf.js HTTP/1.1" 200 500693
+INFO 2025-09-08 11:14:12,579 basehttp 18164 14536 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 11:14:13,398 basehttp 18164 14536 "GET /static/js/pdf.worker.js HTTP/1.1" 200 1969980
+INFO 2025-09-08 11:14:13,518 basehttp 18164 14536 "GET /media/SRTX-2C3942L.PDF HTTP/1.1" 200 385806
+INFO 2025-09-08 11:14:33,109 basehttp 18164 14536 "GET /product/14733/ HTTP/1.1" 200 52296
+WARNING 2025-09-08 11:14:43,347 log 18164 14536 Request Timeout: /api/gitee/releases/latest/caifugao110/servogun2/
+WARNING 2025-09-08 11:14:43,348 basehttp 18164 14536 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 408 121
+INFO 2025-09-08 11:14:46,914 basehttp 18164 8108 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 11:15:12,770 basehttp 18164 8108 "GET /product/14733_en/ HTTP/1.1" 200 51043
+INFO 2025-09-08 11:16:09,658 basehttp 18164 8108 "GET /product/14733/ HTTP/1.1" 200 52296
+INFO 2025-09-08 11:16:15,555 basehttp 18164 8108 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80
+INFO 2025-09-08 11:16:49,647 basehttp 18164 8108 "GET /product/14733/ HTTP/1.1" 200 52308
+INFO 2025-09-08 11:16:51,320 basehttp 18164 8108 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 80

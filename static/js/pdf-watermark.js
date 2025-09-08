@@ -98,14 +98,13 @@ function addWatermarkToCanvas(context, width, height) {
     const now = new Date();
     const dateStr = now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0') + '-' + now.getDate().toString().padStart(2, '0');
     const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-    const user = '当前用户'; // 假设当前用户名为'当前用户'，实际应用中应从后端获取
+    const user = isChinese ? '当前用户' : 'Current User'; // 假设当前用户名为'当前用户'，实际应用中应从后端获取
     const watermarkText = `${watermarkBase} ${dateStr} ${timeStr} ${user}`;
     
     // 分割水印文本为两行
     const watermarkLines = [
         watermarkBase,
-        `${dateStr}`,
-        `${timeStr} ${user}`
+        `${user}     ${dateStr} ${timeStr}`
     ];
     
     context.save();
