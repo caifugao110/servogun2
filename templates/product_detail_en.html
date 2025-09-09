@@ -16,6 +16,7 @@
 
 
 {% extends 'base_en.html' %}
+{% load translation_filters %}
 
 {% block title %}{{ product.drawing_no_1|default:"Product Details" }} - OBARA Welding Gun Selection Database{% endblock %}
 
@@ -52,9 +53,9 @@
                     </div>
                     <div class="card-body text-center">
                         {% if product.bmp_file_path %}
-                            <img src="/media/{{ product.bmp_file_path }}" 
+                            <img src="{% url 'clamps:protected_media' path=product.bmp_file_path %}" 
                                  class="img-fluid rounded shadow" 
-                                 onclick="previewImage('/media/{{ product.bmp_file_path }}', '{{ product.drawing_no_1 }}')"
+                                 onclick="previewImage("{% url 'clamps:protected_media' path=product.bmp_file_path %}", '{{ product.drawing_no_1 }}')"
                                  style="cursor: pointer; max-height: 300px;"
                                  alt="Product Image"
                                  onerror="this.src='/static/images/no-image.png'">
@@ -123,7 +124,7 @@
                             {% if product.pdf_file_path %}
                                 <div class="mt-3">
                                     <button class="btn btn-outline-secondary w-100" 
-                                            onclick="previewPDF('/media/{{ product.pdf_file_path }}', '{{ product.drawing_no_1 }}')">
+                                            onclick="previewPDF('{% url 'clamps:protected_media' path=product.pdf_file_path %}', '{{ product.drawing_no_1 }}')">
                                         <i class="bi bi-file-earmark-pdf me-2"></i>
                                         Preview PDF File
                                     </button>
@@ -160,7 +161,7 @@
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Sub-category Type:</strong>
-                                {{ product.sub_category_type|default:"--" }}
+                                {{ product.sub_category_type|translate|default:"--" }}
                             </div>
                             
                             <div class="col-12 mb-3">
@@ -208,17 +209,17 @@
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Electrode Arm End:</strong>
-                                {{ product.electrode_arm_end|default:"--" }}
+                                {{ product.electrode_arm_end|translate|default:"--" }}
                             </div>
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Electrode Arm Type:</strong>
-                                {{ product.electrode_arm_type|default:"--" }}
+                                {{ product.electrode_arm_type|translate|default:"--" }}
                             </div>
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Transformer Placement:</strong>
-                                {{ product.transformer_placement|default:"--" }}
+                                {{ product.transformer_placement|translate|default:"--" }}
                             </div>
                             
                             <div class="col-md-6 mb-3">
@@ -228,12 +229,12 @@
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Balance:</strong>
-                                {{ product.has_balance|default:"--" }}
+                                {{ product.has_balance|translate|default:"--" }}
                             </div>
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Water Circuit:</strong>
-                                {{ product.water_circuit|default:"--" }}
+                                {{ product.water_circuit|translate|default:"--" }}
                             </div>
                             
                             <!-- Bracket and Gearbox Parameters -->
@@ -246,7 +247,7 @@
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Bracket Direction:</strong>
-                                {{ product.bracket_direction|default:"--" }}
+                                {{ product.bracket_direction|translate|default:"--" }}
                             </div>
                             
                             <div class="col-md-6 mb-3">
@@ -256,7 +257,7 @@
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Motor Manufacturer:</strong>
-                                {{ product.motor_manufacturer|default:"--" }}
+                                {{ product.motor_manufacturer|translate|default:"--" }}
                             </div>
                             
                             <div class="col-md-6 mb-3">
@@ -266,12 +267,12 @@
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Gearbox Type:</strong>
-                                {{ product.gearbox_type|default:"--" }}
+                                {{ product.gearbox_type|translate|default:"--" }}
                             </div>
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Bracket Material:</strong>
-                                {{ product.bracket_material|default:"--" }}
+                                {{ product.bracket_material|translate|default:"--" }}
                             </div>
                             
                             <div class="col-md-6 mb-3">
@@ -281,7 +282,7 @@
                             
                             <div class="col-md-6 mb-3">
                                 <strong>Tool Changer:</strong>
-                                {{ product.tool_changer|default:"--" }}
+                                {{ product.tool_changer|translate|default:"--" }}
                             </div>
                             
                             <!-- Dynamic Parameters Area -->
@@ -295,7 +296,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Eccentricity Direction:</strong>
-                                    {{ product.eccentricity_direction|default:"--" }}
+                                    {{ product.eccentricity_direction|translate|default:"--" }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Eccentricity Distance:</strong>
@@ -524,9 +525,10 @@
         document.addEventListener('keydown', handleKeyDown);
         
         // 加载PDF（使用本地配置）
+pdfjsLib.GlobalWorkerOptions.workerSrc = "{% static 'js/pdf.worker.js' %}";
         const loadingTask = pdfjsLib.getDocument({
             url: pdfUrl,
-            cMapUrl: "{% static 'js/cmaps/' %}",   // 本地 cmaps 目录
+            cMapUrl: "{% static 'js/cmaps/' %}",   // Local cmaps directory
             cMapPacked: true
         });
         

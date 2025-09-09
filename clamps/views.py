@@ -545,18 +545,14 @@ def download_file(request, product_id, file_type):
                 
                 return response
             else:
-                # 对于其他文件类型，直接提供下载
-                with open(full_file_path, 'rb') as f:
-                    response = HttpResponse(f.read(), content_type='application/octet-stream')
-                    response['Content-Disposition'] = f'attachment; filename="{original_filename}"'
-                    
-                    # 记录下载日志
-                    log_entry = Log(user=request.user, action_type='download', ip_address=request.META.get('REMOTE_ADDR'),
-                                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                                    details=f'Product ID: {product_id}, File Type: {file_type}, File Size: {file_size_mb:.2f} MB')
-                    log_entry.save()
-                    
-                    return response
+                # 对于其他文件类型，重定向到受保护的媒体URL
+                # 记录下载日志
+                log_entry = Log(user=request.user, action_type='download', ip_address=request.META.get('REMOTE_ADDR'),
+                                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                                details=f'Product ID: {product_id}, File Type: {file_type}, File Size: {file_size_mb:.2f} MB')
+                log_entry.save()
+                return redirect('clamps:protected_media', path=relative_path)
+
         else:
             messages.error(request, f"文件 {file_type} 不存在或已损坏")
             referer = request.META.get('HTTP_REFERER')

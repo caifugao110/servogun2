@@ -51,9 +51,9 @@
                     </div>
                     <div class="card-body text-center">
                         {% if product.bmp_file_path %}
-                            <img src="/media/{{ product.bmp_file_path }}" 
+                            <img src="{% url 'clamps:protected_media' path=product.bmp_file_path %}" 
                                  class="img-fluid rounded shadow" 
-                                 onclick="previewImage('/media/{{ product.bmp_file_path }}', '{{ product.drawing_no_1 }}')"
+                                 onclick="previewImage("{% url 'clamps:protected_media' path=product.bmp_file_path %}", '{{ product.drawing_no_1 }}')"
                                  style="cursor: pointer; max-height: 300px;"
                                  alt="产品图片"
                                  onerror="this.src='/static/images/no-image.png'">
@@ -121,7 +121,7 @@
                             {% if product.pdf_file_path %}
                                 <div class="mt-3">
                                     <button class="btn btn-outline-secondary w-100" 
-                                            onclick="previewPDF('/media/{{ product.pdf_file_path }}', '{{ product.drawing_no_1 }}')">
+                                            onclick="previewPDF('{% url 'clamps:protected_media' path=product.pdf_file_path %}', '{{ product.drawing_no_1 }}')">
                                         <i class="bi bi-file-earmark-pdf me-2"></i>
                                         预览 PDF 文件
                                     </button>
