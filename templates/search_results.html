@@ -184,10 +184,9 @@
                                         </td>
                                         <td>
                                             {% if product.bmp_file_path %}
-                                                <img src="{{ MEDIA_URL }}{{ product.bmp_file_path }}" 
+                                             <img src="{% url 'clamps:protected_media' path=product.bmp_file_path %}" 
                                                      class="image-preview" 
-                                                     onclick="previewImage('{{ MEDIA_URL }}{{ product.bmp_file_path }}', '{{ product.drawing_no_1|default:"未知产品" }}')"
-                                                     alt="产品预览图"
+                                                onclick="previewImage('{% url 'clamps:protected_media' path=product.bmp_file_path %}', '{{ product.drawing_no_1|default:"未知产品" }}')"                                      alt="产品预览图"
                                                      style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; border-radius: 4px;"
                                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                                                      title="点击图片放大查看">
