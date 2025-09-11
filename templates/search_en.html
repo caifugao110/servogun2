@@ -206,31 +206,7 @@
                                     </select>
                                 </div>
                                 
-                                <!-- Electrode Arm End -->
-                                <div class="col-md-4">
-                                    <label for="electrode_arm_end" class="form-label">
-                                        <i class="bi bi-tools me-2"></i>
-                                        Electrode Arm End(For C-type only)
-                                    </label>
-                                    <select class="form-select" id="electrode_arm_end" name="electrode_arm_end">
-                                        <option value="">Please select, default is empty</option>
-                                        <option value="握杆（铝）">Grip Rod (Aluminum)</option>
-                                        <option value="TIP BASE（F 型）">TIP BASE (F Type)</option>
-                                        <option value="握杆（SBA）">Grip Rod (SBA)</option>
-                                        <option value="TIP BASE（G 型）">TIP BASE (G Type)</option>
-                                        <option value="GUN HEAD（?36）">GUN HEAD (?36)</option>
-                                        <option value="GUN HEAD（?45）">GUN HEAD (?45)</option>
-                                        <option value="GUN HEAD（?40）">GUN HEAD (?40)</option>
-                                        <option value="GUN HEAD（?50）">GUN HEAD (?50)</option>
-                                        <option value="GUN HEAD（?60）">GUN HEAD (?60)</option>
-                                        <option value="握杆?45（铝）">Grip Rod ?45 (Aluminum)</option>
-                                        <option value="握杆?50（铝）">Grip Rod ?50 (Aluminum)</option>
-                                        <option value="特殊">Special</option>
-                                        <option value="其他">Others</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- Balance -->
+                                <!-- Has Balance -->
                                 <div class="col-md-4">
                                     <label for="has_balance" class="form-label">
                                         <i class="bi bi-water me-2"></i>
@@ -464,18 +440,41 @@
             let fieldsToCreate = [];
             
             if (categoryName && categoryName.includes('-C')) {
-                fieldsToCreate.push({
-                    id: 'eccentricity',
-                    label: 'Eccentricity Distance(For C-type only)',
-                    icon: 'bi-arrows-angle-contract',
-                    placeholder: 'e.g.: 10~50, 50~'
-                });
+                fieldsToCreate.push(
+                    {
+                        id: 'electrode_arm_end',
+                        label: 'Electrode Arm End',
+                        type: 'select',
+                        options: [
+                            { value: '', text: 'Please select, default is empty' },
+                            { value: '握杆（铝）', text: 'Grip Rod (Aluminum)' },
+                            { value: 'TIP BASE（F 型）', text: 'TIP BASE (F Type)' },
+                            { value: '握杆（SBA）', text: 'Grip Rod (SBA)' },
+                            { value: 'TIP BASE（G 型）', text: 'TIP BASE (G Type)' },
+                            { value: 'GUN HEAD（?36）', text: 'GUN HEAD (?36)' },
+                            { value: 'GUN HEAD（?45）', text: 'GUN HEAD (?45)' },
+                            { value: 'GUN HEAD（?40）', text: 'GUN HEAD (?40)' },
+                            { value: 'GUN HEAD（?50）', text: 'GUN HEAD (?50)' },
+                            { value: 'GUN HEAD（?60）', text: 'GUN HEAD (?60)' },
+                            { value: '握杆?45（铝）', text: 'Grip Rod ?45 (Aluminum)' },
+                            { value: '握杆?50（铝）', text: 'Grip Rod ?50 (Aluminum)' },
+                            { value: '特殊', text: 'Special' },
+                            { value: '其他', text: 'Others' }
+                        ]
+                    },
+					{
+                        id: 'eccentricity',
+                        label: 'Eccentricity Distance',
+                        icon: 'bi-arrows-angle-contract',
+                        placeholder: 'e.g.: 10~50, 50~'
+                    }
+                );
             } else if (categoryName && categoryName.includes('-X')) {
                 fieldsToCreate = [
-                    { id: 'static_arm_front_length', label: 'Static Arm Front Length(For X-type only)', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
-                    { id: 'static_arm_front_height', label: 'Static Arm Front Height(For X-type only)', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' },
-                    { id: 'moving_arm_front_length', label: 'Moving Arm Front Length(For X-type only)', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
-                    { id: 'moving_arm_front_height', label: 'Moving Arm Front Height(For X-type only)', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' }
+                    { id: 'static_arm_front_length', label: 'Static Arm Front Length', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
+                    { id: 'static_arm_front_height', label: 'Static Arm Front Height', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' },
+                    { id: 'moving_arm_front_length', label: 'Moving Arm Front Length', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' },
+                    { id: 'moving_arm_front_height', label: 'Moving Arm Front Height', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' }
                 ];
             }
 
@@ -483,13 +482,31 @@
             fieldsToCreate.forEach(field => {
                 const fieldDiv = document.createElement('div');
                 fieldDiv.className = 'col-md-4';
-                fieldDiv.innerHTML = `
-                    <label for="${field.id}" class="form-label">
-                        <i class="bi ${field.icon} me-2"></i>
-                        ${field.label}
-                    </label>
-                    <input type="text" class="form-control" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}">
-                `;
+                
+                if (field.type === 'select') {
+                    let optionsHtml = field.options.map(option => 
+                        `<option value="${option.value}">${option.text}</option>`
+                    ).join('');
+                    
+                    fieldDiv.innerHTML = `
+                        <label for="${field.id}" class="form-label">
+                            <i class="bi ${field.icon || 'bi-tools'} me-2"></i>
+                            ${field.label}
+                        </label>
+                        <select class="form-select" id="${field.id}" name="${field.id}">
+                            ${optionsHtml}
+                        </select>
+                    `;
+                } else {
+                    fieldDiv.innerHTML = `
+                        <label for="${field.id}" class="form-label">
+                            <i class="bi ${field.icon} me-2"></i>
+                            ${field.label}
+                        </label>
+                        <input type="text" class="form-control" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}">
+                    `;
+                }
+                
                 // Insert new fields before the placeholder, so they appear at the placeholder's position
                 dynamicFieldsPlaceholder.parentNode.insertBefore(fieldDiv, dynamicFieldsPlaceholder);
                 currentDynamicFields.push(fieldDiv); // Save reference to new fields for later cleanup

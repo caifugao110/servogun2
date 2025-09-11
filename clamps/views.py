@@ -43,6 +43,80 @@ import chardet
 import tempfile
 import re
 import glob
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.colors import Color
+
+
+def create_watermark(watermark_text, output_path):
+    # 将页面尺寸设置为A4横向
+    pagesize_landscape_a4 = landscape(A4)
+    c = canvas.Canvas(output_path, pagesize=pagesize_landscape_a4)
+
+    # 水印内容拆分为两行
+    # 水印内容拆分为两行
+    # 假设 watermark_text 格式为 "For Reference Only[OBARA] {username} {datetime}"
+    # 第一行："For Reference Only[OBARA]"
+    # 第二行："{username} {datetime}"
+    if '[OBARA]' in watermark_text:
+        prefix, suffix = watermark_text.split('[OBARA]', 1)
+        line1 = prefix.strip() + '[OBARA]'
+        line2 = suffix.strip()
+    else:
+        line1 = watermark_text
+        line2 = ''
+
+    # 调整字体大小和透明度
+    font_size = 18  # 调整字体大小以合理填充纸张，减小
+    c.setFillColor(Color(1, 0, 0, alpha=0.3))  # 红色，颜色改为红色
+    c.setFont("Helvetica-Bold", font_size)
+
+    # 旋转水印
+    c.rotate(30)  # 调整旋转角度
+
+    # 获取页面尺寸
+    page_width, page_height = pagesize_landscape_a4
+
+    # 计算水印的重复间隔和起始位置
+    # 假设每行水印的宽度和高度
+    line1_width = c.stringWidth(line1, "Helvetica-Bold", font_size)
+    line2_width = c.stringWidth(line2, "Helvetica-Bold", font_size)
+    max_line_width = max(line1_width, line2_width)
+    line_height = font_size * 2  # 行高，略大于字体大小
+
+    # 调整循环范围和步长，使水印合理填充整个纸张
+    # 增加水印密度，调整x和y的步长
+    x_step = max_line_width * 1.5 # 调整x方向的步长
+    y_step = line_height * 4.5 # 调整y方向的步长
+
+    # 调整起始位置，确保水印覆盖整个页面
+    start_x = -page_width / 2
+    start_y = -page_height / 2
+
+    for x in range(int(start_x), int(page_width * 1.5), int(x_step)):
+        for y in range(int(start_y), int(page_height * 1.5), int(y_step)):
+            c.drawString(x, y, line1)
+            c.drawString(x, y - line_height, line2) # 第二行在第一行下方
+
+    c.save()
+
+def add_watermark_to_pdf(input_pdf_path, output_pdf_path, watermark_text):
+    watermark_buffer = io.BytesIO()
+    create_watermark(watermark_text, watermark_buffer)
+    watermark_buffer.seek(0)
+    watermark_pdf = PdfReader(watermark_buffer)
+    watermark_page = watermark_pdf.pages[0]
+    reader = PdfReader(input_pdf_path)
+    writer = PdfWriter()
+    for i in range(len(reader.pages)):
+        page = reader.pages[i]
+        page.merge_page(watermark_page)
+        writer.add_page(page)
+    with open(output_pdf_path, "wb") as output_file:
+        writer.write(output_file)
+
 
 from .models import Category, Product, Log, UserProfile
 
@@ -162,7 +236,7 @@ def search_results(request):
     bracket_direction = query_params.get('bracket_direction')
     water_circuit = query_params.get('water_circuit')
 
-    queryset = Product.objects.all().order_by('id')
+    queryset = Product.objects.all().order_by('drawing_no_1')
 
     if category_id:
         queryset = queryset.filter(category_id=category_id)
@@ -290,7 +364,7 @@ def search_results_en(request):
     bracket_direction = query_params.get('bracket_direction')
     water_circuit = query_params.get('water_circuit')
 
-    queryset = Product.objects.all().order_by('id')
+    queryset = Product.objects.all().order_by('drawing_no_1')
 
     if category_id:
         queryset = queryset.filter(category_id=category_id)
@@ -531,7 +605,16 @@ def download_file(request, product_id, file_type):
                         pass
                     
                     # 将文件添加到zip中，使用处理后的文件名
-                    zf.write(full_file_path, arcname=original_filename)
+                    if file_type == 'pdf':
+                        # 生成水印文本
+                        watermark_text = f"For Reference Only[OBARA] {request.user.username} {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+                        temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{original_filename}")
+                        add_watermark_to_pdf(full_file_path, temp_watermarked_pdf_path, watermark_text)
+                        zf.write(temp_watermarked_pdf_path, arcname=original_filename)
+                        os.remove(temp_watermarked_pdf_path) # 清理临时文件
+                    else:
+                        zf.write(full_file_path, arcname=original_filename)
+
                 
                 zip_buffer.seek(0)
                 response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
@@ -630,7 +713,15 @@ def batch_download_view(request, file_type):
                 return redirect(request.META.get('HTTP_REFERER', 'clamps:home'))
 
             for full_path, arcname in files_to_add:
-                zf.write(full_path, arcname=arcname)
+                if file_type == 'pdf' or (file_type == 'both' and arcname.lower().endswith('.pdf')):
+                    watermark_text = f"For Reference Only[OBARA] {request.user.username} {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+                    temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{arcname}")
+                    add_watermark_to_pdf(full_path, temp_watermarked_pdf_path, watermark_text)
+                    zf.write(temp_watermarked_pdf_path, arcname=arcname)
+                    os.remove(temp_watermarked_pdf_path)
+                else:
+                    zf.write(full_path, arcname=arcname)
+
 
         zip_buffer.seek(0)
         response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')

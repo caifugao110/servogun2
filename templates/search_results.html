@@ -209,6 +209,7 @@
                                                         <i class="bi bi-download me-1"></i>PDF
                                                     </a>
                                                 {% endif %}
+
                                                 {% if product.step_file_path %}
                                                     <a href="{% url 'clamps:download_file' product.id 'step' %}" 
                                                        class="btn btn-outline-info btn-sm delayed-download"

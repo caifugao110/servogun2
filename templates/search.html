@@ -139,25 +139,6 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="electrode_arm_end" class="form-label"><i class="bi bi-tools me-2"></i>电极臂端部(仅C型)</label>
-                                    <select class="form-select" id="electrode_arm_end" name="electrode_arm_end">
-                                        <option value="">请选择，默认为空</option>
-                                        <option value="握杆（铝）">握杆（铝）</option>
-                                        <option value="TIP BASE（F 型）">TIP BASE（F 型）</option>
-                                        <option value="握杆（SBA）">握杆（SBA）</option>
-                                        <option value="TIP BASE（G 型）">TIP BASE（G 型）</option>
-                                        <option value="GUN HEAD（?36）">GUN HEAD（?36）</option>
-                                        <option value="GUN HEAD（?45）">GUN HEAD（?45）</option>
-                                        <option value="GUN HEAD（?40）">GUN HEAD（?40）</option>
-                                        <option value="GUN HEAD（?50）">GUN HEAD（?50）</option>
-                                        <option value="GUN HEAD（?60）">GUN HEAD（?60）</option>
-                                        <option value="握杆?45（铝）">握杆?45（铝）</option>
-                                        <option value="握杆?50（铝）">握杆?50（铝）</option>
-                                        <option value="特殊">特殊</option>
-                                        <option value="其他">其他</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
                                     <label for="has_balance" class="form-label"><i class="bi bi-water me-2"></i>有无平衡</label>
                                     <select class="form-select" id="has_balance" name="has_balance">
                                         <option value="">请选择，默认为空</option>
@@ -322,18 +303,41 @@
             let fieldsToCreate = [];
             
             if (categoryName && categoryName.includes('-C')) {
-                fieldsToCreate.push({
-                    id: 'eccentricity',
-                    label: '偏心距离(仅C型)',
-                    icon: 'bi-arrows-angle-contract',
-                    placeholder: '例如: 10~50, 50~'
-                });
+                fieldsToCreate.push(
+                    {
+                        id: 'electrode_arm_end',
+                        label: '电极臂端部',
+                        type: 'select',
+                        options: [
+                            { value: '', text: '请选择，默认为空' },
+                            { value: '握杆（铝）', text: '握杆（铝）' },
+                            { value: 'TIP BASE（F 型）', text: 'TIP BASE（F 型）' },
+                            { value: '握杆（SBA）', text: '握杆（SBA）' },
+                            { value: 'TIP BASE（G 型）', text: 'TIP BASE（G 型）' },
+                            { value: 'GUN HEAD（?36）', text: 'GUN HEAD（?36）' },
+                            { value: 'GUN HEAD（?45）', text: 'GUN HEAD（?45）' },
+                            { value: 'GUN HEAD（?40）', text: 'GUN HEAD（?40）' },
+                            { value: 'GUN HEAD（?50）', text: 'GUN HEAD（?50）' },
+                            { value: 'GUN HEAD（?60）', text: 'GUN HEAD（?60）' },
+                            { value: '握杆?45（铝）', text: '握杆?45（铝）' },
+                            { value: '握杆?50（铝）', text: '握杆?50（铝）' },
+                            { value: '特殊', text: '特殊' },
+                            { value: '其他', text: '其他' }
+                        ]
+                    },
+					{
+                        id: 'eccentricity',
+                        label: '偏心距离',
+                        icon: 'bi-arrows-angle-contract',
+                        placeholder: '例如: 10~50, 50~'
+                    }
+                );
             } else if (categoryName && categoryName.includes('-X')) {
                 fieldsToCreate = [
-                    { id: 'static_arm_front_length', label: '静电极臂前部长(仅X型)', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
-                    { id: 'static_arm_front_height', label: '静电极臂前部高(仅X型)', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' },
-                    { id: 'moving_arm_front_length', label: '动电极臂前部长(仅X型)', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
-                    { id: 'moving_arm_front_height', label: '动电极臂前部高(仅X型)', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' }
+                    { id: 'static_arm_front_length', label: '静电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
+                    { id: 'static_arm_front_height', label: '静电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' },
+                    { id: 'moving_arm_front_length', label: '动电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
+                    { id: 'moving_arm_front_height', label: '动电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' }
                 ];
             }
 
@@ -341,13 +345,31 @@
             fieldsToCreate.forEach(field => {
                 const fieldDiv = document.createElement('div');
                 fieldDiv.className = 'col-md-4';
-                fieldDiv.innerHTML = `
-                    <label for="${field.id}" class="form-label">
-                        <i class="bi ${field.icon} me-2"></i>
-                        ${field.label}
-                    </label>
-                    <input type="text" class="form-control" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}">
-                `;
+                
+                if (field.type === 'select') {
+                    let optionsHtml = field.options.map(option => 
+                        `<option value="${option.value}">${option.text}</option>`
+                    ).join('');
+                    
+                    fieldDiv.innerHTML = `
+                        <label for="${field.id}" class="form-label">
+                            <i class="bi ${field.icon || 'bi-tools'} me-2"></i>
+                            ${field.label}
+                        </label>
+                        <select class="form-select" id="${field.id}" name="${field.id}">
+                            ${optionsHtml}
+                        </select>
+                    `;
+                } else {
+                    fieldDiv.innerHTML = `
+                        <label for="${field.id}" class="form-label">
+                            <i class="bi ${field.icon} me-2"></i>
+                            ${field.label}
+                        </label>
+                        <input type="text" class="form-control" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}">
+                    `;
+                }
+                
                 // 将新字段插入到占位符之前，这样它们就会出现在占位符的位置
                 dynamicFieldsPlaceholder.parentNode.insertBefore(fieldDiv, dynamicFieldsPlaceholder);
                 currentDynamicFields.push(fieldDiv); // 保存对新字段的引用，以便后续清除
