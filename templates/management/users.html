@@ -169,7 +169,7 @@
                                         </td>
 										<!-- 操作列 -->
 										<td>
-											{% if not user.is_superuser %}
+											{% if not user.is_superuser and user != request.user %}
 											<div class="d-flex align-items-center" style="gap: 0.5rem;">
 												<!-- 停用/激活按钮 -->
 												<form method="post" class="mb-0">
@@ -208,8 +208,10 @@
 													<i class="bi bi-key"></i>
 												</a>
 											</div>
-											{% else %}
+											{% elif user.is_superuser %}
 												<span class="text-muted small">超级管理员</span>
+											{% elif user == request.user %}
+												<span class="text-muted small">当前用户</span>
 											{% endif %}
 										</td>
                                     </tr>

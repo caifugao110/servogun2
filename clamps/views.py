@@ -607,7 +607,7 @@ def download_file(request, product_id, file_type):
                     # 将文件添加到zip中，使用处理后的文件名
                     if file_type == 'pdf':
                         # 生成水印文本
-                        watermark_text = f"For Reference Only[OBARA] {request.user.username} {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+                        watermark_text = f"For Reference Only[OBARA] {request.user.username} {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
                         temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{original_filename}")
                         add_watermark_to_pdf(full_file_path, temp_watermarked_pdf_path, watermark_text)
                         zf.write(temp_watermarked_pdf_path, arcname=original_filename)
@@ -714,7 +714,7 @@ def batch_download_view(request, file_type):
 
             for full_path, arcname in files_to_add:
                 if file_type == 'pdf' or (file_type == 'both' and arcname.lower().endswith('.pdf')):
-                    watermark_text = f"For Reference Only[OBARA] {request.user.username} {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+                    watermark_text = f"For Reference Only[OBARA] {request.user.username} {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
                     temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{arcname}")
                     add_watermark_to_pdf(full_path, temp_watermarked_pdf_path, watermark_text)
                     zf.write(temp_watermarked_pdf_path, arcname=arcname)
@@ -873,8 +873,16 @@ def manage_users(request):
                 messages.success(request, f'用户 {user.username} 已停用。')
             return redirect('clamps:manage_users')
 
-    # GET 请求处理
-    users = User.objects.all().order_by("username")
+    # GET 请求处理 - 根据权限过滤用户
+    if request.user.is_superuser:
+        # 超级管理员可以查看所有用户
+        users = User.objects.all().order_by("username")
+    else:
+        # 一般管理员只能查看自己和自己创建的用户
+        users = User.objects.filter(
+            Q(id=request.user.id) | Q(profile__created_by=request.user)
+        ).order_by("username")
+    
     users_with_profiles = []
 
     active_users_count = 0
