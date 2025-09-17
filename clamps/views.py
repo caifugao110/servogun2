@@ -1036,33 +1036,44 @@ def export_users(request):
 @user_passes_test(is_staff_or_superuser)
 def view_logs(request):
     logs = Log.objects.all()
-
     action_type = request.GET.get("action_type")
     username = request.GET.get("username")
     date_from = request.GET.get("date_from")
     date_to = request.GET.get("date_to")
-
+    
     if action_type:
-        logs = logs.filter(action_type=action_type)
+        if action_type == 'download':
+            logs = logs.filter(action_type__in=['download', 'batch_download'])
+        else:
+            logs = logs.filter(action_type=action_type)
+    
     if username:
         logs = logs.filter(user__username__icontains=username)
+    
+    # 修改这里的日期处理逻辑
     if date_from:
-        logs = logs.filter(timestamp__gte=date_from)
+        # 将naive datetime转换为带时区的datetime
+        naive_date = datetime.strptime(date_from, '%Y-%m-%d')
+        aware_date = timezone.make_aware(naive_date)
+        logs = logs.filter(timestamp__gte=aware_date)
+    
     if date_to:
-        logs = logs.filter(timestamp__lte=date_to + " 23:59:59") # Include the whole day
-
+        # 将naive datetime转换为带时区的datetime
+        naive_date = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1) - timedelta(seconds=1)
+        aware_date = timezone.make_aware(naive_date)
+        logs = logs.filter(timestamp__lte=aware_date)
+    
     logs = logs.order_by("-timestamp")
-
     total_count = logs.count()
     login_count = logs.filter(action_type='login').count()
     search_count = logs.filter(action_type='search').count()
-    download_count = logs.filter(action_type='download').count()
+    download_count = logs.filter(action_type__in=['download', 'batch_download']).count()
     view_count = logs.filter(action_type='view').count()
-
+    
     paginator = Paginator(logs, 20)  # 每页显示20条日志
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-
+    
     context = {
         "page_obj": page_obj,
         "total_count": total_count,

@@ -51,7 +51,7 @@
                             <option value="">全部</option>
                             <option value="login" {% if request.GET.action_type == 'login' %}selected{% endif %}>登录</option>
                             <option value="search" {% if request.GET.action_type == 'search' %}selected{% endif %}>搜索</option>
-                            <option value="download" {% if request.GET.action_type == 'download' %}selected{% endif %}>下载</option>
+                            <option value="download" {% if request.GET.action_type == 'download' or request.GET.action_type == 'batch_download' %}selected{% endif %}>下载</option>
                             <option value="view" {% if request.GET.action_type == 'view' %}selected{% endif %}>查看</option>
                             <option value="export_data" {% if request.GET.action_type == 'export_data' %}selected{% endif %}>导出数据</option>
                         </select>
@@ -158,7 +158,7 @@
                                                     <i class="bi bi-search me-1"></i>
                                                     搜索
                                                 </span>
-                                            {% elif log.action_type == 'download' %}
+                                            {% elif log.action_type == 'download' or log.action_type == 'batch_download' %}
                                                 <span class="badge bg-warning">
                                                     <i class="bi bi-download me-1"></i>
                                                     下载
