@@ -145,14 +145,16 @@ def user_login(request):
             user_profile, created = UserProfile.objects.get_or_create(user=user)
             if user_profile.is_password_expired():
                 logout(request)
-                return render(request, 'login.html', {'error': '您的密码已过期，请联系管理员重置。'})
+                messages.error(request, '您的账户密码已过期，请联系您的营业经理进行账号续期。')
+                return render(request, 'login.html')
 
             # 记录登录日志
             log_entry = Log(user=user, action_type='login', ip_address=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT', ''))
             log_entry.save()
             return redirect('clamps:home')
         else:
-            return render(request, 'login.html', {'error': '无效的用户名或密码'})
+            messages.error(request, '无效的用户名或密码，请联系您的营业经理重新获取用户名或进行密码重置。')
+            return render(request, 'login.html')
     return render(request, 'login.html')
 
 def user_login_en(request):
@@ -165,12 +167,14 @@ def user_login_en(request):
             user_profile, created = UserProfile.objects.get_or_create(user=user)
             if user_profile.is_password_expired():
                 logout(request)
-                return render(request, 'login_en.html', {'error': 'Your password has expired, please contact the administrator to reset it.'})
+                messages.error(request, 'Your account password has expired. Please contact your sales manager for account renewal.')
+                return render(request, 'login_en.html')
             log_entry = Log(user=user, action_type='login', ip_address=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT', ''))
             log_entry.save()
             return redirect('clamps:home_en')
         else:
-            return render(request, 'login_en.html', {'error': 'Invalid username or password'})
+            messages.error(request, 'Invalid username or password. Please contact your business manager to obtain a new username or reset your password.')
+            return render(request, 'login_en.html')
     return render(request, 'login_en.html')
 
 
@@ -678,7 +682,7 @@ def batch_download_view(request, file_type):
                 elif file_type == 'bmp':
                     file_path = product.bmp_file_path
                 elif file_type == 'both':
-                    # 对于'both'类型，尝试下载DWG和STEP文件
+                    # 对于'both'类型，尝试下载PDF和STEP文件
                     if product.pdf_file_path:
                         files_to_add.append((os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', '')), os.path.basename(str(product.pdf_file_path))))
                         total_size_mb += os.path.getsize(os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', ''))) / (1024 * 1024)
@@ -725,7 +729,8 @@ def batch_download_view(request, file_type):
 
         zip_buffer.seek(0)
         response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename="batch_download_{file_type}.zip"'
+        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        response['Content-Disposition'] = f'attachment; filename="batch_download_{file_type}_{ts}.zip"'
         
         log_entry = Log(user=request.user, action_type='batch_download', ip_address=request.META.get('REMOTE_ADDR'),
                         user_agent=request.META.get('HTTP_USER_AGENT', ''),
@@ -763,11 +768,11 @@ def check_batch_file_size(request):
             elif file_type == 'bmp':
                 file_path = product.bmp_file_path
             elif file_type == 'both':
-                # 对于'both'类型，检查DWG和STEP文件大小
+                # 对于'both'类型，检查PDF和STEP文件大小
                 if product.pdf_file_path:
-                    full_dwg_path = os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', ''))
-                    if os.path.exists(full_dwg_path):
-                        total_size_mb += os.path.getsize(full_dwg_path) / (1024 * 1024)
+                    full_pdf_path = os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', ''))
+                    if os.path.exists(full_pdf_path):
+                        total_size_mb += os.path.getsize(full_pdf_path) / (1024 * 1024)
                     else:
                         missing_files.append(os.path.basename(str(product.pdf_file_path)))
                 if product.step_file_path:
@@ -1012,18 +1017,27 @@ def export_users(request):
     writer.writerow(["用户名", "是否激活", "是否员工", "是否超级用户", "注册时间", "客户名称", "密码有效期（天）", "密码最后修改时间", "单次最大下载大小（MB）", "每日最大下载大小（GB）", "每日最大下载文件数", "单次批量下载最大大小（MB）", "创建者"])
 
     users = User.objects.all().order_by('username')
+    # 获取项目配置的本地时区
+    local_tz = timezone.get_current_timezone()
+    
     for user in users:
         profile, created = UserProfile.objects.get_or_create(user=user)
         created_by_username = profile.created_by.username if profile.created_by else "N/A"
+        
+        # 转换注册时间为本地时区
+        date_joined_local = user.date_joined.astimezone(local_tz)
+        # 转换密码最后修改时间为本地时区（注意处理可能为None的情况）
+        pwd_changed_local = profile.password_last_changed.astimezone(local_tz) if profile.password_last_changed else None
+        
         writer.writerow([
             user.username, 
             user.is_active,
             user.is_staff, 
             user.is_superuser, 
-            user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+            date_joined_local.strftime("%Y-%m-%d %H:%M:%S"),  # 本地时区时间
             profile.customer_name,
             profile.password_validity_days,
-            profile.password_last_changed.strftime("%Y-%m-%d %H:%M:%S"),
+            pwd_changed_local.strftime("%Y-%m-%d %H:%M:%S") if pwd_changed_local else "N/A",  # 本地时区时间
             profile.max_single_download_mb,
             profile.max_daily_download_gb,
             profile.max_daily_download_count,
@@ -1158,8 +1172,9 @@ def export_data(request):
             writer = csv.writer(response)
             writer.writerow(['Timestamp', 'User', 'Action Type', 'IP Address', 'User Agent', 'Details'])
             for log in logs:
+                local_time = timezone.localtime(log.timestamp)
                 writer.writerow([
-                    log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                    local_time.strftime('%Y-%m-%d %H:%M:%S'),
                     log.user.username if log.user else 'N/A',
                     log.action_type,
                     log.ip_address,
@@ -1352,7 +1367,7 @@ def sync_files(request):
                 continue
 
             # 去掉后缀 _pdf/_step/_bmp
-            clean = name.upper().replace('_DWG', '').replace('_STEP', '').replace('_BMP', '')
+            clean = name.upper().replace('_PDF', '').replace('_STEP', '').replace('_BMP', '')
             product = product_map.get(clean)
             if not product:
                 unmatch += 1

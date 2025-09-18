@@ -506,7 +506,7 @@
                 if (data.can_download) {
                     callback();
                 } else {
-                    showToast(data.message, 'danger');
+                    showToast(`文件大小超过单次下载限制（${data.total_size}）`, 'danger');
                 }
             })
             .catch(error => {
@@ -536,7 +536,7 @@
                 if (data.can_download) {
                     callback();
                 } else {
-                    showToast(data.message, 'danger');
+                    showToast(`文件大小超过单次下载限制（${data.total_size}）`, 'danger');
                 }
             })
             .catch(error => {
@@ -557,8 +557,8 @@
                             </h5>
                         </div>
                         <div class="modal-body">
-                            <div class="alert alert-warning">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
+                            <div class="alert" style="background-color: #e0f7fa; border: 1px solid #b2ebf2; border-radius: 8px; color: #2c3e50; padding: 12px 16px;">
+                                <i class="bi bi-info-circle me-2" style="color: #2c3e50;"></i>
                                 图纸模型数据由于各种原因发生变更后不另行通知，选型数据库无法保证图纸模型数据完全正确，该数据不作为任何参考依据。
                             </div>
                             <div class="text-center">
@@ -619,34 +619,20 @@
     
     function showToast(message, type = 'info') {
         const toastHtml = `
-            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
+            <div class="alert alert-${type} alert-dismissible fade show fade-in-up position-fixed top-0 start-50 translate-middle-x mt-3" role="alert" style="z-index: 9999;">
+                <i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         `;
         
-        let toastContainer = document.querySelector('.toast-container');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-            toastContainer.style.zIndex = '9999';
-            document.body.appendChild(toastContainer);
-        }
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
         
-        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-        const toast = new bootstrap.Toast(toastContainer.lastElementChild);
-        toast.show();
-        
-        // 自动清理toast元素
+        // 自动清理alert元素
         setTimeout(() => {
-            const toastElement = toastContainer.lastElementChild;
-            if (toastElement) {
-                toastElement.remove();
+            const alertElement = document.querySelector('.alert.fade-in-up');
+            if (alertElement) {
+                alertElement.remove();
             }
         }, 5000);
     }

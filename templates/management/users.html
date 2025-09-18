@@ -17,6 +17,8 @@
 
 {% extends 'base.html' %}
 
+{% load tz %}
+
 {% block title %}用户管理 - 小原焊枪选型数据库{% endblock %}
 
 {% block content %}
@@ -156,16 +158,21 @@
                                         </td>
                                         <td>
                                             <small class="text-muted">
-                                                {% if user.last_login %}
-                                                    {{ user.last_login|date:"Y-m-d H:i" }}
-                                                {% else %}
-                                                    从未登录
-                                                {% endif %}
+												{% if user.last_login %}
+													{{ user.last_login|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+												{% else %}
+													从未登录
+												{% endif %}
                                             </small>
                                             <br>
-                                            <small class="text-muted">
-                                                截止: {{ item.password_expiry_date }}
-                                            </small>
+											<small class="text-muted">
+												截止: 
+												{% if item.password_expiry_date == "永久有效" %}
+													{{ item.password_expiry_date }}
+												{% else %}
+													{{ item.password_expiry_date|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+												{% endif %}
+											</small>
                                         </td>
 										<!-- 操作列 -->
 										<td>

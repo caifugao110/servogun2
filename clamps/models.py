@@ -411,11 +411,11 @@ class UserProfile(models.Model):
         return timezone.now() > expiry_date
 
     def get_password_expiry_date(self):
-        """获取密码过期时间，如果永久有效则返回'永久有效'"""
+        """获取密码过期时间（返回datetime对象以便模板转换时区）"""
         if self.password_validity_days == 0:
             return "永久有效"
-        expiry_date = self.password_last_changed + timedelta(days=self.password_validity_days)
-        return expiry_date.strftime("%Y-%m-%d %H:%M:%S")
+        # 返回datetime对象而非字符串，保留时区信息
+        return self.password_last_changed + timedelta(days=self.password_validity_days)
     
     def reset_daily_download_stats(self):
         """重置每日下载统计"""
