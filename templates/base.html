@@ -696,32 +696,46 @@
 		document.getElementById('current-year-end').textContent = currentYear;
 		
 		// 自动获取项目 https://gitee.com/caifugao110/servogun2 的最新发行版标签
-        document.addEventListener("DOMContentLoaded", function() {
-            const owner = 'caifugao110';
-            const repo = 'servogun2';
-            // 使用Django API代理解决CORS问题
-            const apiUrl = `/api/gitee/releases/latest/${owner}/${repo}/`;
-            const versionElement = document.getElementById('release-version' );
+		document.addEventListener("DOMContentLoaded", function() {
+			const owner = 'caifugao110';
+			const repo = 'servogun2';
+			const apiUrl = `/api/gitee/releases/latest/${owner}/${repo}/`;
+			const versionElement = document.getElementById('release-version');
+			const CACHE_KEY = 'latest_release_version';
+			const CACHE_EXPIRE = 3600000; // 1小时（毫秒）
 
-            fetch(apiUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.tag_name) {
-                        versionElement.textContent = `Released and deployed as version ${data.tag_name}`;
-                    } else {
-                        versionElement.textContent = '无法获取最新版本号';
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to fetch Gitee release:', error);
-                    versionElement.textContent = '获取版本失败，请检查网络或API';
-                });
-        });
+			// 检查缓存
+			const cachedData = localStorage.getItem(CACHE_KEY);
+			if (cachedData) {
+				const { version, timestamp } = JSON.parse(cachedData);
+				if (Date.now() - timestamp < CACHE_EXPIRE) {
+					versionElement.textContent = `Released and deployed as version ${version}`;
+					return; // 直接使用缓存，不发起请求
+				}
+			}
+
+			// 缓存过期，发起请求（带超时控制）
+			const timeoutPromise = new Promise((_, reject) => {
+				setTimeout(() => reject(new Error('请求超时')), 5000);
+			});
+
+			Promise.race([fetch(apiUrl), timeoutPromise])
+				.then(response => response.ok ? response.json() : Promise.reject())
+				.then(data => {
+					if (data?.tag_name) {
+						// 存入缓存
+						localStorage.setItem(CACHE_KEY, JSON.stringify({
+							version: data.tag_name,
+							timestamp: Date.now()
+						}));
+						versionElement.textContent = `Released and deployed as version ${data.tag_name}`;
+					}
+				})
+				.catch(error => {
+					console.error('获取版本失败:', error);
+					versionElement.textContent = '获取版本失败';
+				});
+		});
     </script>
     
     {% block extra_js %}{% endblock %}
