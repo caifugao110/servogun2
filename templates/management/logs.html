@@ -35,6 +35,163 @@
             </div>
         </div>
         
+        <!-- 下载数据可视化卡片 -->
+        <div class="card mb-4 fade-in-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    下载数据可视化
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- 时间范围选择器 -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="timeRange" class="form-label">时间范围</label>
+                        <select class="form-select" id="timeRange" onchange="updateDownloadChart()">
+                            <option value="7">最近7天</option>
+                            <option value="30">最近一个月</option>
+                            <option value="90">最近三个月</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="userFilter" class="form-label">用户筛选</label>
+                        <select class="form-select" id="userFilter" onchange="updateDownloadChart()">
+                            <option value="all">全部用户</option>
+                            <!-- 用户选项将通过JavaScript动态填充 -->
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 统计卡片 -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <i class="bi bi-download text-primary" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2" id="totalDownloads">0</h4>
+                                <p class="text-muted mb-0">总下载次数</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <i class="bi bi-file-earmark text-success" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2" id="totalFiles">0</h4>
+                                <p class="text-muted mb-0">总文件数</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <i class="bi bi-hdd text-warning" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2" id="totalSize">0 MB</h4>
+                                <p class="text-muted mb-0">总下载大小</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2" id="activeUsers">0</h4>
+                                <p class="text-muted mb-0">活跃用户数</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 图表容器 -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">下载趋势图</h6>
+                            </div>
+                            <div class="card-body" id="trendChartContainer">
+                                <canvas id="downloadTrendChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card" style="height: 100%;">
+                            <div class="card-header">
+                                <h6 class="mb-0">用户下载分布</h6>
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center" id="distributionChartContainer" style="min-height: 200px;">
+                                <canvas id="userDistributionChart" width="300" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 详细数据表格 -->
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <!-- 用户信息侧边栏 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">用户统计信息</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">活跃用户</span>
+                                        <span class="badge bg-primary" id="sidebarActiveUsers">0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">平均下载量</span>
+                                        <span class="badge bg-info" id="avgDownloads">0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">最高下载用户</span>
+                                        <span class="badge bg-success" id="topUser">-</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">平均文件大小</span>
+                                        <span class="badge bg-warning" id="avgFileSize">0 MB</span>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="text-center">
+                                    <small class="text-muted">数据更新时间</small>
+                                    <div id="lastUpdateTime" class="fw-bold">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">详细下载数据</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="downloadDetailsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>用户名</th>
+                                                <th>下载次数</th>
+                                                <th>文件数量</th>
+                                                <th>总大小 (MB)</th>
+                                                <th>平均文件大小 (MB)</th>
+                                                <th>最后下载时间</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="downloadDetailsBody">
+                                            <!-- 数据将通过JavaScript动态填充 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- 筛选器 -->
         <div class="card mb-4 fade-in-up">
             <div class="card-header">
@@ -322,8 +479,423 @@
 </div>
 {% endblock %}
 
+{% load static %}
+
 {% block extra_js %}
+<!-- Chart.js 库 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // 全局变量
+    let downloadTrendChart = null;
+    let userDistributionChart = null;
+    let downloadData = {};
+    
+    // 模拟数据生成函数
+    function generateMockData(days, user = 'all') {
+        const mockUsers = ['admin', 'user1', 'user2', 'user3', 'user4'];
+        const today = new Date();
+        
+        // 生成趋势数据
+        const trendData = [];
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            trendData.push({
+                date: date.toISOString().split('T')[0],
+                downloads: Math.floor(Math.random() * 50) + 10,
+                size: Math.floor(Math.random() * 100) + 20
+            });
+        }
+        
+        // 生成用户下载数据
+        const downloads = {};
+        const filteredUsers = user === 'all' ? mockUsers : [user];
+        
+        filteredUsers.forEach(username => {
+            const count = Math.floor(Math.random() * 100) + 10;
+            const files = Math.floor(Math.random() * 50) + 5;
+            const size = Math.floor(Math.random() * 500) + 50;
+            
+            downloads[username] = {
+                count: count,
+                files: files,
+                size: size,
+                lastDownload: new Date(today.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleString()
+            };
+        });
+        
+        // 计算汇总数据
+        const summary = {
+            totalDownloads: Object.values(downloads).reduce((sum, user) => sum + user.count, 0),
+            totalFiles: Object.values(downloads).reduce((sum, user) => sum + user.files, 0),
+            totalSize: Object.values(downloads).reduce((sum, user) => sum + user.size, 0),
+            activeUsers: Object.keys(downloads).length
+        };
+        
+        return {
+            trend: trendData,
+            downloads: downloads,
+            summary: summary,
+            users: mockUsers
+        };
+    }
+    
+    // 从API获取下载数据（使用模拟数据）
+    async function fetchDownloadData(days, user = 'all') {
+        try {
+            // 模拟网络延迟
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // 返回模拟数据
+            return generateMockData(parseInt(days), user);
+        } catch (error) {
+            console.error('获取下载数据失败:', error);
+            showToast('获取下载数据失败，请稍后重试', 'danger');
+            return null;
+        }
+    }
+    
+    // 显示加载状态
+    function showLoading() {
+        const loadingHtml = '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">加载中...</span></div><p class="mt-2">正在加载图表数据...</p></div>';
+        
+        const trendContainer = document.getElementById('trendChartContainer');
+        const distributionContainer = document.getElementById('distributionChartContainer');
+        
+        if (trendContainer) {
+            trendContainer.innerHTML = loadingHtml;
+        }
+        if (distributionContainer) {
+            distributionContainer.innerHTML = loadingHtml;
+        }
+    }
+    
+    // 隐藏加载状态
+    function hideLoading() {
+        // 重新创建canvas元素
+        const trendContainer = document.getElementById('trendChartContainer');
+        const distributionContainer = document.getElementById('distributionChartContainer');
+        
+        if (trendContainer) {
+            trendContainer.innerHTML = '<canvas id="downloadTrendChart" width="400" height="200"></canvas>';
+        }
+        if (distributionContainer) {
+            distributionContainer.innerHTML = '<canvas id="userDistributionChart" width="300" height="200"></canvas>';
+        }
+    }
+    
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('页面加载完成，开始初始化...');
+        
+        // 延迟初始化以确保所有资源加载完成
+        setTimeout(() => {
+            initializeUserFilter();
+            updateDownloadChart();
+        }, 500);
+    });
+    
+    // 初始化用户筛选器
+    async function initializeUserFilter() {
+        const userFilter = document.getElementById('userFilter');
+        const timeRange = document.getElementById('timeRange').value;
+        
+        // 获取数据
+        const data = await fetchDownloadData(timeRange);
+        if (!data) return;
+        
+        const users = data.users || [];
+        
+        // 清空现有选项（保留"全部用户"）
+        userFilter.innerHTML = '<option value="all">全部用户</option>';
+        
+        // 添加用户选项
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user;
+            option.textContent = user;
+            userFilter.appendChild(option);
+        });
+    }
+    
+    // 更新下载图表
+    async function updateDownloadChart() {
+        const timeRange = document.getElementById('timeRange').value;
+        const userFilter = document.getElementById('userFilter').value;
+        
+        // 显示加载状态
+        showLoading();
+        
+        try {
+            // 更新用户筛选器
+            if (userFilter === 'all') {
+                await initializeUserFilter();
+            }
+            
+            // 获取数据
+            const data = await fetchDownloadData(timeRange, userFilter);
+            if (!data) return;
+            
+            downloadData = data;
+            
+            // 隐藏加载状态
+            hideLoading();
+            
+            // 等待DOM更新
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // 更新统计卡片
+            updateStatistics(data);
+            
+            // 更新图表
+            updateTrendChart(data.trend);
+            updateDistributionChart(data, userFilter);
+            
+            // 更新详细数据表格
+            updateDetailsTable(data, userFilter);
+        } catch (error) {
+            console.error('更新图表失败:', error);
+            hideLoading();
+        }
+    }
+    
+    // 更新统计卡片
+    function updateStatistics(data) {
+        const summary = data.summary || {};
+        const downloads = data.downloads || {};
+        
+        document.getElementById('totalDownloads').textContent = summary.totalDownloads || 0;
+        document.getElementById('totalFiles').textContent = summary.totalFiles || 0;
+        document.getElementById('totalSize').textContent = (summary.totalSize || 0).toFixed(1) + ' MB';
+        document.getElementById('activeUsers').textContent = summary.activeUsers || 0;
+        
+        // 更新侧边栏用户信息
+        updateSidebarInfo(data);
+    }
+    
+    // 更新侧边栏用户信息
+    function updateSidebarInfo(data) {
+        const summary = data.summary || {};
+        const downloads = data.downloads || {};
+        
+        // 活跃用户数
+        document.getElementById('sidebarActiveUsers').textContent = summary.activeUsers || 0;
+        
+        // 计算平均下载量
+        const totalUsers = Object.keys(downloads).length;
+        const avgDownloads = totalUsers > 0 ? Math.round((summary.totalDownloads || 0) / totalUsers) : 0;
+        document.getElementById('avgDownloads').textContent = avgDownloads;
+        
+        // 找出最高下载用户
+        let topUser = '-';
+        let maxDownloads = 0;
+        Object.keys(downloads).forEach(username => {
+            if (downloads[username].count > maxDownloads) {
+                maxDownloads = downloads[username].count;
+                topUser = username;
+            }
+        });
+        document.getElementById('topUser').textContent = topUser;
+        
+        // 计算平均文件大小
+        const avgFileSize = (summary.totalFiles || 0) > 0 ? 
+            ((summary.totalSize || 0) / (summary.totalFiles || 0)).toFixed(2) : '0.00';
+        document.getElementById('avgFileSize').textContent = avgFileSize + ' MB';
+        
+        // 更新时间
+        const now = new Date();
+        const timeString = now.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        document.getElementById('lastUpdateTime').textContent = timeString;
+    }
+    
+    // 更新趋势图表
+    function updateTrendChart(trendData) {
+        const canvas = document.getElementById('downloadTrendChart');
+        if (!canvas) {
+            console.error('找不到趋势图canvas元素');
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        
+        if (downloadTrendChart) {
+            downloadTrendChart.destroy();
+        }
+        
+        downloadTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: trendData.map(item => item.date),
+                datasets: [{
+                    label: '下载次数',
+                    data: trendData.map(item => item.downloads),
+                    borderColor: '#0066cc',
+                    backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                    tension: 0.4,
+                    yAxisID: 'y'
+                }, {
+                    label: '下载大小 (MB)',
+                    data: trendData.map(item => item.size),
+                    borderColor: '#ff6b35',
+                    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '日期'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: '下载次数'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: '下载大小 (MB)'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                }
+            }
+        });
+    }
+    
+    // 更新分布图表
+    function updateDistributionChart(data, userFilter) {
+        const canvas = document.getElementById('userDistributionChart');
+        if (!canvas) {
+            console.error('找不到分布图canvas元素');
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        
+        if (userDistributionChart) {
+            userDistributionChart.destroy();
+        }
+        
+        let chartData, labels;
+        const downloads = data.downloads || {};
+        
+        if (userFilter === 'all') {
+            labels = Object.keys(downloads);
+            chartData = Object.values(downloads).map(user => user.count);
+        } else {
+            const user = downloads[userFilter];
+            if (user) {
+                labels = ['下载次数', '文件数量'];
+                chartData = [user.count, user.files];
+            } else {
+                labels = [];
+                chartData = [];
+            }
+        }
+        
+        const colors = [
+            '#0066cc', '#ff6b35', '#28a745', '#ffc107', 
+            '#dc3545', '#6f42c1', '#20c997', '#fd7e14'
+        ];
+        
+        userDistributionChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: colors.slice(0, chartData.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 更新详细数据表格
+    function updateDetailsTable(data, userFilter) {
+        const tbody = document.getElementById('downloadDetailsBody');
+        tbody.innerHTML = '';
+        
+        const downloads = data.downloads || {};
+        let users;
+        
+        if (userFilter === 'all') {
+            users = Object.keys(downloads);
+        } else {
+            users = downloads[userFilter] ? [userFilter] : [];
+        }
+        
+        users.forEach(username => {
+            const user = downloads[username];
+            const avgSize = user.files > 0 ? (user.size / user.files).toFixed(2) : '0.00';
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><span class="badge bg-primary">${username}</span></td>
+                <td>${user.count}</td>
+                <td>${user.files}</td>
+                <td>${user.size.toFixed(1)}</td>
+                <td>${avgSize}</td>
+                <td><small class="text-muted">${user.lastDownload}</small></td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+        if (users.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="6" class="text-center text-muted">暂无数据</td>';
+            tbody.appendChild(row);
+        }
+    }
+    
+    // 原有的日志相关功能
     function showFullDetails(logId, details) {
         document.getElementById('detailsContent').innerHTML = '<p><strong>日志ID:</strong> ' + logId + '</p><p><strong>详细信息:</strong></p><pre>' + details + '</pre>';
         const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
@@ -376,4 +948,3 @@
     }
 </script>
 {% endblock %}
-

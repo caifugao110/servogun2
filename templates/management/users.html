@@ -299,7 +299,7 @@
                             </li>
                             <li class="mb-2">
                                 <i class="bi bi-x-circle text-danger me-2"></i>
-                                <strong>停用：</strong>禁止用户登录，但保留账户数据
+                                <strong>停用：</strong>禁止用户登录和使用系统
                             </li>
                         </ul>
                     </div>
@@ -316,7 +316,7 @@
                             </li>
                             <li class="mb-2">
                                 <i class="bi bi-exclamation-triangle text-danger me-2"></i>
-                                <strong>过期：</strong>需要配置延期或者重置密码
+                                <strong>过期：</strong>需要配置密码有效期进行续期
                             </li>
                         </ul>
                     </div>
@@ -342,11 +342,11 @@
                         <ul class="list-unstyled">
                             <li class="mb-2">
                                 <i class="bi bi-lightbulb text-warning me-2"></i>
-                                <strong>批量下载：</strong>建议设置为单次限制的3-5倍
+                                <strong>批量下载：</strong>设置为单次限制的5-10倍
                             </li>
                             <li class="mb-2">
                                 <i class="bi bi-shield-check text-success me-2"></i>
-                                <strong>安全考虑：</strong>根据用户权限合理设置限制
+                                <strong>安全考虑：</strong>根据用户权限合理设置
                             </li>
                         </ul>
                     </div>
@@ -367,28 +367,28 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="{% url 'clamps:add_user' %}">
+            <form method="post" action="{% url 'clamps:add_user' %}" onsubmit="return validatePasswords()">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="username" name="username" required>
-                        <div class="form-text">用户名为英文小写4~10字符长度，不能重复</div>
+                        <div class="form-text">用户名为英文小写4~10字符长度，最好与客户拼音名相关，不能重复</div>
                     </div>
                     <div class="mb-3">
                         <label for="customer_name" class="form-label">客户名称 <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="customer_name" name="customer_name" required>
-                        <div class="form-text">请备注客户名称</div>
+                        <div class="form-text">备注客户名称，方便查找和统计相关客户使用系统的信息情况</div>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">密码 <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                        <div class="form-text">请设置安全的密码</div>
+                        <input type="password" class="form-control" id="password" name="password" required oninput="checkPasswordMatch()">
+                        <div class="form-text">设置安全的密码，最好为在用户名后面加上ochn</div>
                     </div>
 					<div class="mb-3">
                         <label for="password_remark" class="form-label">密码备注 <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="password_remark" name="password_remark" required>
-                        <div class="form-text">请再次输入密码</div>
+                        <input type="text" class="form-control" id="password_remark" name="password_remark" required oninput="checkPasswordMatch()">
+                        <div id="passwordMatchFeedback" class="form-text">再次输入密码，必须和上面的密码一致</div>
                     </div>
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
@@ -474,7 +474,7 @@
                                     <input type="text" class="form-control" id="passwordRemark{{ user.id }}" 
                                            name="password_remark" value="{{ user.first_name|default:'' }} {{ user.last_name|default:'' }}" 
                                            placeholder="请输入密码相关备注">
-                                    <div class="form-text">用于记录密码相关的备注信息</div>
+                                    <div class="form-text">如不记得用户密码禁止输入，此操作不会变更用户密码</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -600,5 +600,41 @@
             window.location.href = "{% url 'clamps:export_users' %}";
         }
     }
+	
+	// 检查密码是否匹配
+	function checkPasswordMatch() {
+		const password = document.getElementById('password').value;
+		const passwordRemark = document.getElementById('password_remark').value;
+		const feedbackElement = document.getElementById('passwordMatchFeedback');
+		
+		if (passwordRemark === '') {
+			// 密码备注为空时显示默认提示
+			feedbackElement.textContent = '再次输入密码，必须和上面的密码一致';
+			feedbackElement.className = 'form-text';
+			return false;
+		} else if (password === passwordRemark) {
+			// 密码匹配时显示成功提示
+			feedbackElement.textContent = '密码一致';
+			feedbackElement.className = 'form-text text-success';
+			return true;
+		} else {
+			// 密码不匹配时显示错误提示
+			feedbackElement.textContent = '密码不一致，请重新输入';
+			feedbackElement.className = 'form-text text-danger';
+			return false;
+		}
+	}
+
+	// 表单提交前验证
+	function validatePasswords() {
+		if (!checkPasswordMatch()) {
+			// 显示错误提示
+			alert('密码不一致，请检查并重新输入');
+			// 聚焦到密码备注字段
+			document.getElementById('password_remark').focus();
+			return false;
+		}
+		return true;
+	}
 </script>
 {% endblock %}

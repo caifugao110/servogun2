@@ -55,6 +55,9 @@ urlpatterns = [
     
     # Gitee API代理
     path('api/gitee/releases/latest/<str:owner>/<str:repo>/', views.gitee_releases_latest, name='gitee_releases_latest'),
+    
+    # 下载数据分析API
+    path('api/download-analytics/', views.download_analytics_api, name='download_analytics_api'),
 ]
 
 

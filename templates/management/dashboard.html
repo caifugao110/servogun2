@@ -88,7 +88,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">管理系统用户账户，包括激活、停用用户等操作。</p>
+                        <p class="card-text">管理系统用户账户，包括新增、配置、激活、停用用户等操作。</p>
                         <a href="{% url 'clamps:manage_users' %}" class="btn btn-primary">
                             <i class="bi bi-arrow-right me-2"></i>
                             进入用户管理
@@ -106,7 +106,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">查看和管理系统操作日志，监控用户活动。</p>
+                        <p class="card-text">查看和管理系统操作日志，监控用户活动和系统运行情况。</p>
                         <a href="{% url 'clamps:view_logs' %}" class="btn btn-success">
                             <i class="bi bi-arrow-right me-2"></i>
                             查看日志
@@ -125,7 +125,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">导出产品数据和日志数据为CSV文件。</p>
+                        <p class="card-text">导出所有产品数据和全部日志数据。</p>
                         <a href="{% url 'clamps:export_data' %}" class="btn btn-info">
                             <i class="bi bi-arrow-right me-2"></i>
                             数据导出
@@ -146,7 +146,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">通过CSV文件批量导入或更新产品数据。</p>
+                        <p class="card-text">通过CSV文件导入功能批量创建或更新产品数据。</p>
                         <a href="{% url 'clamps:import_csv' %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-right me-2"></i>
                             导入数据
@@ -167,7 +167,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">同步media文件夹中的pdf、step和bmp文件到数据库。</p>
+                        <p class="card-text">同步media文件夹中的pdf、step和bmp文件路径到数据库。</p>
                         <form action="{% url 'clamps:sync_files' %}" method="post">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning">
@@ -188,7 +188,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">访问Django原生管理后台，进行数据维护。</p>
+                        <p class="card-text">Django原生管理后台，进行数据维护和用户授权操作。</p>
                         <a href="/admin/" target="_blank" class="btn btn-warning">
                             <i class="bi bi-box-arrow-up-right me-2"></i>
                             打开管理后台

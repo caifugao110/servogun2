@@ -1458,3 +1458,148 @@ def gitee_releases_latest(request, owner, repo):
             'message': str(e)
         }, status=500)
 
+
+
+# 导入下载数据分析相关函数
+import re
+from datetime import datetime, timedelta
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def download_analytics_api(request):
+    """
+    提供下载数据分析的API接口
+    """
+    # 获取参数
+    days = int(request.GET.get('days', 7))  # 默认7天
+    user_filter = request.GET.get('user', 'all')  # 默认全部用户
+    
+    # 计算时间范围
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=days)
+    
+    # 基础查询：下载相关的日志
+    base_query = Log.objects.filter(
+        action_type__in=['download', 'batch_download'],
+        timestamp__gte=start_date,
+        timestamp__lte=end_date
+    )
+    
+    # 用户筛选
+    if user_filter != 'all':
+        base_query = base_query.filter(user__username=user_filter)
+    
+    # 获取所有下载日志
+    download_logs = base_query.order_by('timestamp')
+    
+    # 解析下载数据
+    user_stats = {}
+    daily_stats = {}
+    
+    for log in download_logs:
+        username = log.user.username if log.user else '匿名用户'
+        log_date = log.timestamp.date().isoformat()
+        
+        # 初始化用户统计
+        if username not in user_stats:
+            user_stats[username] = {
+                'count': 0,
+                'files': 0,
+                'size': 0.0,
+                'lastDownload': log.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            }
+        
+        # 初始化日期统计
+        if log_date not in daily_stats:
+            daily_stats[log_date] = {
+                'downloads': 0,
+                'size': 0.0
+            }
+        
+        # 解析details字段获取文件信息
+        size_mb = parse_download_size(log.details)
+        file_count = parse_file_count(log.details)
+        
+        # 更新用户统计
+        user_stats[username]['count'] += 1
+        user_stats[username]['files'] += file_count
+        user_stats[username]['size'] += size_mb
+        user_stats[username]['lastDownload'] = log.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 更新日期统计
+        daily_stats[log_date]['downloads'] += 1
+        daily_stats[log_date]['size'] += size_mb
+    
+    # 生成趋势数据
+    trend_data = []
+    current_date = start_date.date()
+    while current_date <= end_date.date():
+        date_str = current_date.isoformat()
+        trend_data.append({
+            'date': date_str,
+            'downloads': daily_stats.get(date_str, {}).get('downloads', 0),
+            'size': round(daily_stats.get(date_str, {}).get('size', 0.0), 1)
+        })
+        current_date += timedelta(days=1)
+    
+    # 获取活跃用户列表
+    active_users = list(user_stats.keys())
+    
+    # 计算总计数据
+    total_downloads = sum(stats['count'] for stats in user_stats.values())
+    total_files = sum(stats['files'] for stats in user_stats.values())
+    total_size = sum(stats['size'] for stats in user_stats.values())
+    active_user_count = len(active_users)
+    
+    return JsonResponse({
+        'users': active_users,
+        'downloads': user_stats,
+        'trend': trend_data,
+        'summary': {
+            'totalDownloads': total_downloads,
+            'totalFiles': total_files,
+            'totalSize': round(total_size, 1),
+            'activeUsers': active_user_count
+        }
+    })
+
+
+def parse_download_size(details):
+    """
+    从details字段解析下载文件大小（MB）
+    """
+    if not details:
+        return 0.0
+    
+    # 匹配 "Total Size: XX.XX MB" 或 "File Size: XX.XX MB"
+    size_pattern = r'(?:Total Size|File Size):\s*([\d.]+)\s*MB'
+    match = re.search(size_pattern, details)
+    
+    if match:
+        return float(match.group(1))
+    
+    return 0.0
+
+
+def parse_file_count(details):
+    """
+    从details字段解析文件数量
+    """
+    if not details:
+        return 0
+    
+    # 对于批量下载，计算Product IDs的数量
+    if 'Product IDs:' in details:
+        ids_pattern = r'Product IDs:\s*([\d,\s]+)'
+        match = re.search(ids_pattern, details)
+        if match:
+            ids_str = match.group(1)
+            # 计算逗号分隔的ID数量
+            ids = [id.strip() for id in ids_str.split(',') if id.strip()]
+            return len(ids)
+    
+    # 对于单个下载，返回1
+    if 'Product ID:' in details:
+        return 1
+    
+    return 0
