@@ -1497,7 +1497,22 @@ def download_analytics_api(request):
     daily_stats = {}
     
     for log in download_logs:
-        username = log.user.username if log.user else '匿名用户'
+        username = '匿名用户'
+        if log.user:
+            try:
+                # 尝试获取 UserProfile 中的 customer_name
+                user_profile = log.user.profile
+                if user_profile.customer_name:
+                    username = user_profile.customer_name
+                else:
+                    # 如果 customer_name 为空，则使用 User 的 username
+                    username = log.user.username
+            except UserProfile.DoesNotExist:
+                # 如果没有 UserProfile，则使用 User 的 username
+                username = log.user.username
+            # 如果 User 的 username 也为空（理论上不会），则保持 '匿名用户'
+            if not username:
+                username = '匿名用户'
         log_date = log.timestamp.date().isoformat()
         
         # 初始化用户统计
