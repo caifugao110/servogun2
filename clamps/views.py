@@ -611,7 +611,7 @@ def download_file(request, product_id, file_type):
                     # 将文件添加到zip中，使用处理后的文件名
                     if file_type == 'pdf':
                         # 生成水印文本
-                        watermark_text = f"For Reference Only[OBARA] {request.user.username} {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                        watermark_text = f"For Reference Only[OBARA] {request.user.username} {timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M:%S')}"
                         temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{original_filename}")
                         add_watermark_to_pdf(full_file_path, temp_watermarked_pdf_path, watermark_text)
                         zf.write(temp_watermarked_pdf_path, arcname=original_filename)
@@ -718,7 +718,7 @@ def batch_download_view(request, file_type):
 
             for full_path, arcname in files_to_add:
                 if file_type == 'pdf' or (file_type == 'both' and arcname.lower().endswith('.pdf')):
-                    watermark_text = f"For Reference Only[OBARA] {request.user.username} {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                    watermark_text = f"For Reference Only[OBARA] {request.user.username} {timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M:%S')}"
                     temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{arcname}")
                     add_watermark_to_pdf(full_path, temp_watermarked_pdf_path, watermark_text)
                     zf.write(temp_watermarked_pdf_path, arcname=arcname)
@@ -729,7 +729,7 @@ def batch_download_view(request, file_type):
 
         zip_buffer.seek(0)
         response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        ts = timezone.localtime(timezone.now()).strftime('%Y%m%d_%H%M%S')
         response['Content-Disposition'] = f'attachment; filename="batch_download_{file_type}_{ts}.zip"'
         
         log_entry = Log(user=request.user, action_type='batch_download', ip_address=request.META.get('REMOTE_ADDR'),
@@ -1539,7 +1539,7 @@ def download_analytics_api(request):
         user_stats[username]['count'] += 1
         user_stats[username]['files'] += file_count
         user_stats[username]['size'] += size_mb
-        user_stats[username]['lastDownload'] = log.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        user_stats[username]['lastDownload'] = timezone.localtime(log.timestamp).strftime('%Y-%m-%d %H:%M:%S')
         
         # 更新日期统计
         daily_stats[log_date]['downloads'] += 1

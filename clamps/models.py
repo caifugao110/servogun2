@@ -421,12 +421,12 @@ class UserProfile(models.Model):
         """重置每日下载统计"""
         self.daily_download_size_mb = 0
         self.daily_download_count = 0
-        self.last_download_date = timezone.now().date()
+        self.last_download_date = timezone.localtime(timezone.now()).date()
         self.save()
     
     def can_download_file(self, file_size_mb, is_batch=False):
         """检查是否可以下载指定大小的文件"""
-        today = timezone.now().date()
+        today = timezone.localtime(timezone.now()).date()
         
         # 如果是新的一天，重置统计
         if self.last_download_date != today:
@@ -454,7 +454,7 @@ class UserProfile(models.Model):
     
     def record_download(self, file_size_mb):
         """记录下载行为"""
-        today = timezone.now().date()
+        today = timezone.localtime(timezone.now()).date()
         
         # 如果是新的一天，重置统计
         if self.last_download_date != today:
