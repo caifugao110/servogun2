@@ -867,6 +867,32 @@ def manage_users(request):
             messages.success(request, f'用户 {user.username} 已激活。')
             return redirect('clamps:manage_users')
 
+        elif action == 'set_password':
+            user_id = request.POST.get('user_id')
+            new_password = request.POST.get('new_password')
+            password_remark = request.POST.get('password_remark')
+            
+            if not new_password or not password_remark:
+                messages.error(request, '新密码和密码备注不能为空。')
+                return redirect('clamps:manage_users')
+            
+            user = get_object_or_404(User, id=user_id)
+            user.set_password(new_password)
+            user.first_name = password_remark  # 将密码备注存储到first_name字段
+            user.save()
+            
+            # 更新密码修改时间
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            user_profile.password_last_changed = timezone.now()
+            user_profile.save()
+            
+            log_entry = Log(user=request.user, action_type='set_user_password', ip_address=request.META.get('REMOTE_ADDR'),
+                            user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'User {user.username} password set manually')
+            log_entry.save()
+            
+            messages.success(request, f'用户 {user.username} 的密码已成功设置。')
+            return redirect('clamps:manage_users')
+
         elif action == 'deactivate':
             user_id = request.POST.get('user_id')
             user = get_object_or_404(User, id=user_id)
@@ -1110,31 +1136,71 @@ def export_data(request):
             response['Content-Disposition'] = 'attachment; filename="products.csv"'
             writer = csv.writer(response)
             writer.writerow([
-                'ID', 'Category', 'Description', 'Drawing No 1', 'Sub Category Type',
-                'Stroke', 'Clamping Force', 'Weight', 'Throat Depth', 'Throat Width',
-                'Transformer', 'Electrode Arm End', 'Motor Manufacturer', 'Has Balance',
-                'pdf File Path', 'STEP File Path', 'BMP File Path'
+                'ID', 'description', 'drawing_no_1', 'sub_category_type', 'stroke',
+                'electrode_arm_end', 'clamping_force', 'electrode_arm_type',
+                'transformer', 'weight', 'transformer_placement', 'flange_pcd',
+                'bracket_direction', 'bracket_angle', 'motor_manufacturer',
+                'bracket_count', 'gearbox_type', 'bracket_material',
+                'gearbox_stroke', 'tool_changer', 'throat_depth', 'has_balance',
+                'throat_width', 'water_circuit', 'grip_extension_length',
+                'eccentricity', 'eccentricity_direction', 'eccentricity_to_center',
+                'guidance_method', 'static_arm_eccentricity',
+                'static_electrode_arm_end', 'moving_arm_eccentricity',
+                'moving_electrode_arm_end', 'pivot_to_drive_center_dist',
+                'static_arm_front_length', 'static_arm_front_height',
+                'moving_arm_front_length', 'moving_arm_front_height',
+                'pdf_file_path', 'step_file_path', 'bmp_file_path'
             ])
             products = Product.objects.all()
             for product in products:
+                def yes_no(v):
+                    return '有' if v else '无'
+                def clean_path(path):
+                    if not path:
+                        return ''
+                    return str(path).replace('media/', '', 1)
                 writer.writerow([
                     product.id,
-                    product.category.name if product.category else '',
-                    product.description,
-                    product.drawing_no_1,
-                    product.sub_category_type,
-                    product.stroke,
-                    product.clamping_force,
-                    product.weight,
-                    product.throat_depth,
-                    product.throat_width,
-                    product.transformer,
-                    product.electrode_arm_end,
-                    product.motor_manufacturer,
-                    product.has_balance,
-                    product.pdf_file_path or '',
-                    product.step_file_path or '',
-                    product.bmp_file_path or ''
+                    product.description or '',
+                    product.drawing_no_1 or '',
+                    product.sub_category_type or '',
+                    product.stroke if product.stroke is not None else '',
+                    product.electrode_arm_end or '',
+                    product.clamping_force if product.clamping_force is not None else '',
+                    product.electrode_arm_type or '',
+                    product.transformer or '',
+                    product.weight if product.weight is not None else '',
+                    product.transformer_placement or '',
+                    product.flange_pcd or '',
+                    product.bracket_direction or '',
+                    product.bracket_angle if product.bracket_angle is not None else '',
+                    product.motor_manufacturer or '',
+                    product.bracket_count if product.bracket_count is not None else '',
+                    product.gearbox_type or '',
+                    product.bracket_material or '',
+                    product.gearbox_stroke or '',
+                    product.tool_changer or '',
+                    product.throat_depth if product.throat_depth is not None else '',
+                    yes_no(product.has_balance),
+                    product.throat_width if product.throat_width is not None else '',
+                    product.water_circuit or '',
+                    product.grip_extension_length if product.grip_extension_length is not None else '',
+                    product.eccentricity if product.eccentricity is not None else '',
+                    product.eccentricity_direction or '',
+                    product.eccentricity_to_center or '',
+                    product.guidance_method or '',
+                    product.static_arm_eccentricity if product.static_arm_eccentricity is not None else '',
+                    product.static_electrode_arm_end or '',
+                    product.moving_arm_eccentricity if product.moving_arm_eccentricity is not None else '',
+                    product.moving_electrode_arm_end or '',
+                    product.pivot_to_drive_center_dist if product.pivot_to_drive_center_dist is not None else '',
+                    product.static_arm_front_length if product.static_arm_front_length is not None else '',
+                    product.static_arm_front_height if product.static_arm_front_height is not None else '',
+                    product.moving_arm_front_length if product.moving_arm_front_length is not None else '',
+                    product.moving_arm_front_height if product.moving_arm_front_height is not None else '',
+                    clean_path(product.pdf_file_path),
+                    clean_path(product.step_file_path),
+                    clean_path(product.bmp_file_path)
                 ])
 
             Log.objects.create(

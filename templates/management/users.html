@@ -208,12 +208,11 @@
 												</button>
 
 												<!-- 重置密码按钮 -->
-												<a href="{% url 'clamps:reset_user_password' user.id %}"
-												   class="btn btn-outline-warning btn-sm d-inline-flex align-items-center"
-												   data-bs-toggle="tooltip" title="重置密码"
-												   onclick="return confirm('确定要重置用户 {{ user.username }} 的密码吗？')">
+												<button type="button" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center"
+														data-bs-toggle="modal" data-bs-target="#setPasswordModal{{ user.id }}"
+														data-bs-toggle="tooltip" title="重置密码">
 													<i class="bi bi-key"></i>
-												</a>
+												</button>
 											</div>
 											{% elif user.is_superuser %}
 												<span class="text-muted small">超级管理员</span>
@@ -561,6 +560,55 @@
     </div>
     {% endwith %}
 {% endfor %}
+
+<!-- 重置密码模态框 -->
+{% for item in users_with_profiles %}
+    {% with user=item.user profile=item.profile %}
+    <div class="modal fade" id="setPasswordModal{{ user.id }}" tabindex="-1" aria-labelledby="setPasswordModalLabel{{ user.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="setPasswordModalLabel{{ user.id }}">
+                        <i class="bi bi-key me-2"></i>
+                        重置密码：{{ user.username }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" onsubmit="return validateSetPassword({{ user.id }})">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="set_password">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newPassword{{ user.id }}" class="form-label">新密码 <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="newPassword{{ user.id }}" name="new_password" required 
+                                   oninput="checkSetPasswordMatch({{ user.id }})">
+                            <div class="form-text">设置安全的密码，最好为在用户名后面加上ochn</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="passwordRemarkSet{{ user.id }}" class="form-label">密码备注 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="passwordRemarkSet{{ user.id }}" name="password_remark" required 
+                                   oninput="checkSetPasswordMatch({{ user.id }})">
+                            <div id="passwordSetMatchFeedback{{ user.id }}" class="form-text">再次输入密码，必须和上面的密码一致</div>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>注意：</strong>设置新密码后，用户需要使用新密码登录，密码备注将自动变更与新密码保持一致。
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check me-1"></i>
+                            设置密码
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+{% endfor %}
 {% endblock %}
 
 {% block extra_js %}
@@ -634,6 +682,49 @@
 			document.getElementById('password_remark').focus();
 			return false;
 		}
+		return true;
+	}
+
+	// 检查设置密码是否匹配（与新增用户逻辑一致）
+	function checkSetPasswordMatch(userId) {
+		const password = document.getElementById('newPassword' + userId).value;
+		const passwordRemark = document.getElementById('passwordRemarkSet' + userId).value;
+		const feedbackElement = document.getElementById('passwordSetMatchFeedback' + userId);
+		
+		if (passwordRemark === '') {
+			// 密码备注为空时显示默认提示
+			feedbackElement.textContent = '再次输入密码，必须和上面的密码一致';
+			feedbackElement.className = 'form-text';
+			return false;
+		} else if (password === passwordRemark) {
+			// 密码匹配时显示成功提示
+			feedbackElement.textContent = '密码一致';
+			feedbackElement.className = 'form-text text-success';
+			return true;
+		} else {
+			// 密码不匹配时显示错误提示
+			feedbackElement.textContent = '密码不一致，请重新输入';
+			feedbackElement.className = 'form-text text-danger';
+			return false;
+		}
+	}
+
+	// 设置密码表单提交前验证
+	function validateSetPassword(userId) {
+		if (!checkSetPasswordMatch(userId)) {
+			// 显示错误提示
+			alert('密码不一致，请检查并重新输入');
+			// 聚焦到密码备注字段
+			document.getElementById('passwordRemarkSet' + userId).focus();
+			return false;
+		}
+		
+		// 确认设置密码
+		const username = document.querySelector('#setPasswordModal' + userId + ' .modal-title').textContent.split('：')[1].trim(); // 使用 trim() 去除前后空白字符
+		if (!confirm('确定要为用户 ' + username + ' 设置新密码吗？')) {
+			return false;
+		}
+		
 		return true;
 	}
 </script>
