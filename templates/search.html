@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}产品搜索 - 小原焊钳选型数据库{% endblock %}
+{% block title %}产品搜索 - 小原焊枪选型数据库{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -30,7 +30,7 @@
                                         <i class="bi bi-question-circle"></i>
                                     </a>
                                 </label>
-                                <select class="form-select" id="category" name="category" required>
+                                <select class="form-select" id="category" name="category">
                                     <option value="">请选择，必选项</option>
                                     {% for category in categories %}
                                         {% if category.name in 'X2C-C,X2C-X' %}
@@ -97,10 +97,14 @@
                         <div class="card-body">
                             <!-- 所有高级字段（静态+动态）都放在这个row里面 -->
                             <div class="row g-3" id="advanced-fields-container">
-                                <div class="col-md-4">
-                                    <label for="drawing_no_1" class="form-label"><i class="bi bi-file-earmark-text me-2"></i>图号1(o)</label>
-                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="焊钳图号，默认为空">
-                                </div>
+								<div class="col-md-4">
+									<label for="drawing_no_1" class="form-label">
+										<i class="bi bi-file-earmark-text me-2"></i>
+										图号1(o)
+									</label>
+									<input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
+										   placeholder="焊枪图号，默认为空">
+								</div>
                                 <div class="col-md-4">
                                     <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>描述</label>
                                     <input type="text" class="form-control" id="description" name="description" placeholder="客户描述，默认为空">
@@ -198,7 +202,7 @@
                 
                 <!-- 搜索按钮 -->
                 <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <button type="submit" class="btn btn-primary btn-lg px-5" id="searchSubmitBtn">
                         <i class="bi bi-search me-2"></i>
                         开始搜索
                     </button>
@@ -212,7 +216,16 @@
         
         <!-- 搜索提示 -->
         <div class="row mt-5">
-            <div class="col-md-4">
+		    <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-robot text-primary" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">AI智能搜索</h5>
+                        <p class="card-text text-muted">使用自然语言描述需求，AI自动匹配合适的焊枪产品。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
@@ -221,7 +234,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
@@ -230,12 +243,12 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">文件下载</h5>
-                        <p class="card-text text-muted">搜索结果中可直接下载PDF、STEP和BMP文件。</p>
+                        <p class="card-text text-muted">搜索结果中可直接下载PDF、STEP和ZIP文件。</p>
                     </div>
                 </div>
             </div>
@@ -390,10 +403,17 @@
         
         document.getElementById('category').addEventListener('change', function() {
             const selectedText = this.options[this.selectedIndex].text;
-            updateSubCategoryOptions(selectedText);
-            updateTransformerOptions(selectedText);
-            updateDynamicFields(selectedText);
-            updateProductImage();
+            if (selectedText && selectedText !== '请选择，可为空') {
+                updateSubCategoryOptions(selectedText);
+                updateTransformerOptions(selectedText);
+                updateDynamicFields(selectedText);
+                updateProductImage();
+            } else {
+                updateSubCategoryOptions('');
+                updateTransformerOptions('');
+                updateDynamicFields('');
+                productImageElement.src = defaultImagePath;
+            }
         });
 
         document.getElementById('sub_category_type').addEventListener('change', function() {
@@ -432,11 +452,35 @@
         }
 
         // 初始化
-        const initialCategoryText = document.getElementById('category').options[document.getElementById('category').selectedIndex].text;
-        updateSubCategoryOptions(initialCategoryText);
-        updateTransformerOptions(initialCategoryText);
-        updateDynamicFields(initialCategoryText);
-        updateProductImage();
+        const initialCategorySelect = document.getElementById("category");
+        const initialCategoryText = initialCategorySelect.options[initialCategorySelect.selectedIndex].text;
+        if (initialCategoryText && initialCategoryText !== '请选择，必选项') {
+            updateSubCategoryOptions(initialCategoryText);
+            updateTransformerOptions(initialCategoryText);
+            updateDynamicFields(initialCategoryText);
+            updateProductImage();
+        } else {
+            updateSubCategoryOptions('');
+            updateTransformerOptions('');
+            updateDynamicFields('');
+            productImageElement.src = defaultImagePath;
+        }
+        // 页面加载完成后，如果尚未选择分类，则聚焦
+        if (!document.getElementById('category').value) {
+            document.getElementById('category').focus();
+        }
+
+        // 表单提交验证
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            const categoryValue = document.getElementById('category').value;
+            const drawingNo1Value = document.getElementById('drawing_no_1').value.trim();
+
+            if (!categoryValue && !drawingNo1Value) {
+                event.preventDefault(); // 阻止表单提交
+                alert('产品分类为必选项，请选择！');
+                location.reload(); // 页面刷新
+            }
+        });
     });
 </script>
 {% endblock %}

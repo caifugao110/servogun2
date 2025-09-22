@@ -48,7 +48,7 @@
                                         <i class="bi bi-question-circle"></i>
                                     </a>
                                 </label>
-                                <select class="form-select" id="category" name="category" required>
+                                <select class="form-select" id="category" name="category">
                                     <option value="">Please select, required option</option>
                                     {% for category in categories %}
                                         {% if category.name in 'X2C-C,X2C-X' %}
@@ -141,13 +141,14 @@
                             <!-- All advanced fields (static + dynamic) are placed in this row -->
                             <div class="row g-3" id="advanced-fields-container">
                                 <!-- Drawing No. 1(o) -->
-                                <div class="col-md-4">
-                                    <label for="drawing_no_1" class="form-label">
-                                        <i class="bi bi-file-earmark-text me-2"></i>
-                                        Drawing No. 1(o)
-                                    </label>
-                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="Weld gun drawing number, default is empty">
-                                </div>
+								<div class="col-md-4">
+									<label for="drawing_no_1" class="form-label">
+										<i class="bi bi-file-earmark-text me-2"></i>
+										Drawing No. 1(o)
+									</label>
+									<input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
+										   placeholder="Weld gun drawing number, default is empty">
+								</div>
                                 
                                 <!-- Description -->
                                 <div class="col-md-4">
@@ -290,10 +291,9 @@
                 
                 <!-- Search Buttons -->
                 <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                      <button type="submit" class="btn btn-primary btn-lg px-5" id="searchSubmitBtn">
                         <i class="bi bi-search me-2"></i>
-                        Start Search
-                    </button>
+                        Search
                     <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3">
                         <i class="bi bi-arrow-clockwise me-2"></i>
                         Reset Criteria
@@ -304,7 +304,16 @@
         
         <!-- Search Tips -->
         <div class="row mt-5">
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-robot text-primary" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">AI Smart Search</h5>
+                        <p class="card-text text-muted">Use natural language to describe your needs, AI automatically matches suitable welding gun products.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
@@ -315,7 +324,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
@@ -326,13 +335,13 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
                         <h5 class="card-title mt-3">File Download</h5>
                         <p class="card-text text-muted">
-                            PDF, STEP, and BMP files can be downloaded directly from the search results.
+                            PDF, STEP, and ZIP files can be downloaded directly from the search results.
                         </p>
                     </div>
                 </div>
@@ -536,10 +545,17 @@
         document.getElementById('category').addEventListener('change', function() {
             const categorySelect = this;
             const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
-            updateSubCategoryOptions(selectedText);
-            updateTransformerOptions(selectedText);
-            updateDynamicFields(selectedText);
-            updateProductImage();
+            if (selectedText && selectedText !== 'Please select, optional') {
+                updateSubCategoryOptions(selectedText);
+                updateTransformerOptions(selectedText);
+                updateDynamicFields(selectedText);
+                updateProductImage();
+            } else {
+                updateSubCategoryOptions('');
+                updateTransformerOptions('');
+                updateDynamicFields('');
+                productImageElement.src = defaultImagePath;
+            }
         });
 
         // Handle sub-category type selection change
@@ -586,11 +602,33 @@
         }
 
         // Initial setup on page load
-        const initialCategoryText = document.getElementById('category').options[document.getElementById('category').selectedIndex].text;
-        updateSubCategoryOptions(initialCategoryText);
-        updateTransformerOptions(initialCategoryText);
-        updateDynamicFields(initialCategoryText);
-        updateProductImage();
+        const initialCategorySelect = document.getElementById("category");
+        const initialCategoryText = initialCategorySelect.options[initialCategorySelect.selectedIndex].text;
+        if (initialCategoryText && initialCategoryText !== 'Please select, required option') {
+            updateSubCategoryOptions(initialCategoryText);
+            updateTransformerOptions(initialCategoryText);
+            updateDynamicFields(initialCategoryText);
+            updateProductImage();
+        } else {
+            updateSubCategoryOptions('');
+            updateTransformerOptions('');
+            updateDynamicFields('');
+            productImageElement.src = defaultImagePath;
+        }
+        if (!document.getElementById('category').value) {
+            document.getElementById('category').focus();
+        }
+
+        // Form submission validation
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            const categoryValue = document.getElementById('category').value;
+            const drawingNo1Value = document.getElementById('drawing_no_1').value.trim();
+            if (!categoryValue && !drawingNo1Value) {
+                event.preventDefault(); // Prevent form submission
+                alert('Product category is required, please select one!');
+                location.reload(); 
+            }
+        });
     });
 </script>
 {% endblock %}

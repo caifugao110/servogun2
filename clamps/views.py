@@ -247,7 +247,14 @@ def search_results(request):
     if description:
         queryset = queryset.filter(description__icontains=description)
     if drawing_no_1:
-        queryset = queryset.filter(drawing_no_1__icontains=drawing_no_1)
+        drawing_numbers = [num.strip() for num in drawing_no_1.split(',') if num.strip()]
+        if drawing_numbers:
+            # 创建Q对象用于OR查询
+            from django.db.models import Q
+            drawing_q = Q()
+            for num in drawing_numbers:
+                drawing_q |= Q(drawing_no_1__icontains=num)
+            queryset = queryset.filter(drawing_q)
     if sub_category_type:
         queryset = queryset.filter(sub_category_type__icontains=sub_category_type)
 
@@ -375,7 +382,14 @@ def search_results_en(request):
     if description:
         queryset = queryset.filter(description__icontains=description)
     if drawing_no_1:
-        queryset = queryset.filter(drawing_no_1__icontains=drawing_no_1)
+        drawing_numbers = [num.strip() for num in drawing_no_1.split(',') if num.strip()]
+        if drawing_numbers:
+            # 创建Q对象用于OR查询
+            from django.db.models import Q
+            drawing_q = Q()
+            for num in drawing_numbers:
+                drawing_q |= Q(drawing_no_1__icontains=num)
+            queryset = queryset.filter(drawing_q)
     if sub_category_type:
         queryset = queryset.filter(sub_category_type__icontains=sub_category_type)
 
