@@ -1544,11 +1544,22 @@ def gitee_releases_latest(request, owner, repo):
 import re
 from datetime import datetime, timedelta
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import JsonResponse
+from django.utils import timezone
+from datetime import timedelta
+from .models import Log, UserProfile
+
+def is_staff_or_superuser(user):
+    """检查用户是否为 staff 或 superuser"""
+    return user.is_staff or user.is_superuser
+
 @login_required
 @user_passes_test(is_staff_or_superuser)
 def download_analytics_api(request):
     """
     提供下载数据分析的API接口
+    已修改：删除匿名用户统计，不允许有空用户名
     """
     # 获取参数
     days = int(request.GET.get('days', 7))  # 默认7天
@@ -1559,10 +1570,12 @@ def download_analytics_api(request):
     start_date = end_date - timedelta(days=days)
     
     # 基础查询：下载相关的日志
+    # 只查询有用户关联的日志（排除匿名用户）
     base_query = Log.objects.filter(
         action_type__in=['download', 'batch_download'],
         timestamp__gte=start_date,
-        timestamp__lte=end_date
+        timestamp__lte=end_date,
+        user__isnull=False  # 排除匿名用户
     )
     
     # 用户筛选
@@ -1577,22 +1590,14 @@ def download_analytics_api(request):
     daily_stats = {}
     
     for log in download_logs:
-        username = '匿名用户'
-        if log.user:
-            try:
-                # 尝试获取 UserProfile 中的 customer_name
-                user_profile = log.user.profile
-                if user_profile.customer_name:
-                    username = user_profile.customer_name
-                else:
-                    # 如果 customer_name 为空，则使用 User 的 username
-                    username = log.user.username
-            except UserProfile.DoesNotExist:
-                # 如果没有 UserProfile，则使用 User 的 username
-                username = log.user.username
-            # 如果 User 的 username 也为空（理论上不会），则保持 '匿名用户'
-            if not username:
-                username = '匿名用户'
+        username = None
+        
+        username = log.user.username.strip()
+        
+        # 过滤掉空用户名
+        if not username:
+            continue
+        
         log_date = log.timestamp.date().isoformat()
         
         # 初始化用户统计
@@ -1657,6 +1662,25 @@ def download_analytics_api(request):
             'activeUsers': active_user_count
         }
     })
+
+def parse_download_size(details):
+    """解析下载大小（假设details是包含size信息的字典）"""
+    try:
+        if isinstance(details, dict) and 'size' in details:
+            size_bytes = details.get('size', 0)
+            return round(size_bytes / (1024 * 1024), 1)  # 转换为MB
+    except Exception:
+        pass
+    return 0.0
+
+def parse_file_count(details):
+    """解析文件数量（假设details是包含file_count信息的字典）"""
+    try:
+        if isinstance(details, dict):
+            return details.get('file_count', 1)
+    except Exception:
+        pass
+    return 1
 
 
 def parse_download_size(details):
