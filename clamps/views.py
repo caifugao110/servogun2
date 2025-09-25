@@ -1722,3 +1722,44 @@ def parse_file_count(details):
         return 1
     
     return 0
+
+
+
+@csrf_exempt
+def ai_search_api(request):
+    """AI智能搜索API接口"""
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'error': '仅支持POST请求'
+        })
+    
+    try:
+        import json
+        from .coze_service import query_coze
+        
+        # 解析请求数据
+        data = json.loads(request.body)
+        query_text = data.get('query', '').strip()
+        
+        if not query_text:
+            return JsonResponse({
+                'success': False,
+                'error': '查询内容不能为空'
+            })
+        
+        # 调用Coze API
+        result = query_coze(query_text)
+        
+        return JsonResponse(result)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': '请求数据格式错误'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'服务器内部错误: {str(e)}'
+        })

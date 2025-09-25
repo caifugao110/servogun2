@@ -13,9 +13,65 @@
             <p class="lead text-muted">请选择分类并填写搜索条件</p>
         </div>
         
-        <div class="search-form fade-in-up">
-            <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm">
-                {% csrf_token %}
+        <!-- AI智能搜索卡片 -->
+        <div class="card mb-4 fade-in-up" style="border: 2px solid #007bff;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-robot me-2"></i>
+                    AI智能搜索(测试功能，欢迎试用，结果仅供参考)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-9">
+                        <label for="ai_query" class="form-label">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            请用自然语言描述您的焊枪需求，AI将为您智能匹配合适的产品图号
+                        </label>
+                        <textarea class="form-control" id="ai_query" rows="1" style="resize: none;" 
+                                placeholder="例如：喉深 300 左右，喉宽 450 左右，85 变压器，压力 4500 左右的 C 枪"></textarea>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100" id="ai_search_btn">
+                            <i class="bi bi-magic me-2"></i>
+                            AI智能搜索
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- AI搜索结果显示区域 -->
+                <div id="ai_search_result" class="mt-3" style="display: none;">
+                    <div class="alert alert-info">
+                        <div id="ai_result_content"></div>
+                        <div id="ai_result_actions" class="mt-2" style="display: none;">
+                            <button type="button" class="btn btn-success" id="search_these_numbers">
+                                <i class="bi bi-search me-2"></i>
+                                搜索这些图号
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 加载状态 -->
+                <div id="ai_search_loading" class="mt-3 text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">正在搜索...</span>
+                    </div>
+                    <p class="mt-2 text-muted">AI正在分析您的需求，请稍候...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4 fade-in-up" style="border: 2px solid #28a745;">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-funnel me-2"></i>
+                    常规搜索
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm">
+                    {% csrf_token %}
                 <!-- 主要搜索字段和图片预览 -->
                 <div class="row g-3 mb-4">
                     <!-- 左侧两列：输入字段 -->
@@ -211,7 +267,8 @@
                         重置条件
                     </button>
                 </div>
-            </form>
+                </form>
+            </div>
         </div>
         
         <!-- 搜索提示 -->
@@ -469,6 +526,77 @@
         if (!document.getElementById('category').value) {
             document.getElementById('category').focus();
         }
+
+        // AI搜索功能
+        document.getElementById('ai_search_btn').addEventListener('click', function() {
+            const query = document.getElementById('ai_query').value.trim();
+            if (!query) {
+                alert('请输入您的需求描述');
+                return;
+            }
+            
+            // 显示加载状态
+            document.getElementById('ai_search_loading').style.display = 'block';
+            document.getElementById('ai_search_result').style.display = 'none';
+            
+            // 发送AJAX请求
+            fetch('/api/ai_search/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    query: query
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 隐藏加载状态
+                document.getElementById('ai_search_loading').style.display = 'none';
+                
+                if (data.success) {
+                    // 显示结果
+                    const resultContent = document.getElementById('ai_result_content');
+                    const resultActions = document.getElementById('ai_result_actions');
+                    
+                    if (data.data === '未找到符合要求的焊枪') {
+                        resultContent.innerHTML = '<strong>搜索结果：</strong>' + data.data + '<br><small class="text-muted">建议您调整搜索条件后重试</small>';
+                        resultActions.style.display = 'none';
+                    } else {
+                        resultContent.innerHTML = '<strong>找到以下图号：</strong><br>' + data.data;
+                        resultActions.style.display = 'block';
+                        
+                        // 存储图号数据供后续使用
+                        document.getElementById('search_these_numbers').setAttribute('data-numbers', data.data);
+                    }
+                    
+                    document.getElementById('ai_search_result').style.display = 'block';
+                } else {
+                    alert('搜索失败：' + data.error);
+                }
+            })
+            .catch(error => {
+                document.getElementById('ai_search_loading').style.display = 'none';
+                alert('网络错误，请稍后重试');
+                console.error('Error:', error);
+            });
+        });
+        
+        // "搜索这些图号"按钮功能
+        document.getElementById('search_these_numbers').addEventListener('click', function() {
+            const numbers = this.getAttribute('data-numbers');
+            if (numbers) {
+                // 清空所有搜索条件
+                document.getElementById('searchForm').reset();
+                
+                // 将图号填入图号1字段
+                document.getElementById('drawing_no_1').value = numbers;
+                
+                // 提交表单
+                document.getElementById('searchForm').submit();
+            }
+        });
 
         // 表单提交验证
         document.getElementById('searchForm').addEventListener('submit', function(event) {

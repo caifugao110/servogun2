@@ -30,9 +30,65 @@
             <p class="lead text-muted">Please select a category and fill in the search criteria</p>
         </div>
         
-        <div class="search-form fade-in-up">
-            <form method="get" action="{% url 'clamps:search_results_en' %}" id="searchForm">
-                {% csrf_token %}
+        <!-- AI Smart Search Card -->
+        <div class="card mb-4 fade-in-up" style="border: 2px solid #007bff;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-robot me-2"></i>
+                    AI Smart Search(Testing function, welcome to try, the results are for reference only)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-9">
+                        <label for="ai_query" class="form-label">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            Please describe your welding gun requirements in natural language, AI will intelligently match suitable product numbers
+                        </label>
+                        <textarea class="form-control" id="ai_query" rows="1" style="resize: none;" 
+                                placeholder="e.g.: Throat depth around 300, throat width around 450, 85 transformer, pressure around 4500 C gun"></textarea>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100" id="ai_search_btn">
+                            <i class="bi bi-magic me-2"></i>
+                            AI Smart Search
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- AI Search Result Display Area -->
+                <div id="ai_search_result" class="mt-3" style="display: none;">
+                    <div class="alert alert-info">
+                        <div id="ai_result_content"></div>
+                        <div id="ai_result_actions" class="mt-2" style="display: none;">
+                            <button type="button" class="btn btn-success" id="search_these_numbers">
+                                <i class="bi bi-search me-2"></i>
+                                Search These Numbers
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Loading Status -->
+                <div id="ai_search_loading" class="mt-3 text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Searching...</span>
+                    </div>
+                    <p class="mt-2 text-muted">AI is analyzing your requirements, please wait...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4 fade-in-up" style="border: 2px solid #28a745;">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-funnel me-2"></i>
+                    Regular Search
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{% url 'clamps:search_results_en' %}" id="searchForm">
+                    {% csrf_token %}
                 <!-- Main search fields and image preview -->
                 <div class="row g-3 mb-4">
                     <!-- Left two columns: input fields -->
@@ -300,7 +356,8 @@
                         Reset Criteria
                     </button>
                 </div>
-            </form>
+                </form>
+            </div>
         </div>
         
         <!-- Search Tips -->
@@ -619,6 +676,77 @@
         if (!document.getElementById('category').value) {
             document.getElementById('category').focus();
         }
+
+        // AI Search functionality
+        document.getElementById('ai_search_btn').addEventListener('click', function() {
+            const query = document.getElementById('ai_query').value.trim();
+            if (!query) {
+                alert('Please enter your requirement description');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('ai_search_loading').style.display = 'block';
+            document.getElementById('ai_search_result').style.display = 'none';
+            
+            // Send AJAX request
+            fetch('/api/ai_search/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    query: query
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading state
+                document.getElementById('ai_search_loading').style.display = 'none';
+                
+                if (data.success) {
+                    // Display results
+                    const resultContent = document.getElementById('ai_result_content');
+                    const resultActions = document.getElementById('ai_result_actions');
+                    
+                    if (data.data === '未找到符合要求的焊枪') {
+                        resultContent.innerHTML = '<strong>Search Result:</strong> No suitable welding gun found<br><small class="text-muted">Please adjust your search criteria and try again</small>';
+                        resultActions.style.display = 'none';
+                    } else {
+                        resultContent.innerHTML = '<strong>Found the following part numbers:</strong><br>' + data.data;
+                        resultActions.style.display = 'block';
+                        
+                        // Store part number data for later use
+                        document.getElementById('search_these_numbers').setAttribute('data-numbers', data.data);
+                    }
+                    
+                    document.getElementById('ai_search_result').style.display = 'block';
+                } else {
+                    alert('Search failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                document.getElementById('ai_search_loading').style.display = 'none';
+                alert('Network error, please try again later');
+                console.error('Error:', error);
+            });
+        });
+        
+        // "Search These Numbers" button functionality
+        document.getElementById('search_these_numbers').addEventListener('click', function() {
+            const numbers = this.getAttribute('data-numbers');
+            if (numbers) {
+                // Clear all search conditions
+                document.getElementById('searchForm').reset();
+                
+                // Fill part numbers into drawing_no_1 field
+                document.getElementById('drawing_no_1').value = numbers;
+                
+                // Submit form
+                document.getElementById('searchForm').submit();
+            }
+        });
 
         // Form submission validation
         document.getElementById('searchForm').addEventListener('submit', function(event) {

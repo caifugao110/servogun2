@@ -57,15 +57,13 @@ urlpatterns = [
     path('api/gitee/releases/latest/<str:owner>/<str:repo>/', views.gitee_releases_latest, name='gitee_releases_latest'),
     
     # 下载数据分析API
-    path('api/download-analytics/', views.download_analytics_api, name='download_analytics_api'),
+    path("api/download-analytics/", views.download_analytics_api, name="download_analytics_api"),
+    # AI智能搜索API
+    path("api/ai_search/", views.ai_search_api, name="ai_search_api"),
 ]
-
-
 
 from . import media_views
 
 urlpatterns += [
     re_path(r'^protected_media/(?P<path>.*)$', media_views.protected_media, name='protected_media'),
 ]
-
-
