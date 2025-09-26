@@ -30,7 +30,8 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
+from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.contrib import messages
@@ -1763,3 +1764,32 @@ def ai_search_api(request):
             'success': False,
             'error': f'服务器内部错误: {str(e)}'
         })
+
+
+
+@login_required
+def get_user_profile_data(request):
+    """获取用户配置数据，用于前端显示"""
+    user_profile = request.user.profile
+    password_expiry_date = user_profile.get_password_expiry_date()
+    if password_expiry_date == "永久有效":
+        password_expiry_display = "永久有效"
+    else:
+        password_expiry_display = timezone.localtime(password_expiry_date).strftime("%Y-%m-%d %H:%M:%S")
+
+    data = {
+        "customer_name": user_profile.customer_name if user_profile.customer_name else "N/A",
+        "password_validity_days": user_profile.password_validity_days,
+        "password_last_changed": timezone.localtime(user_profile.password_last_changed).strftime("%Y-%m-%d %H:%M:%S"),
+        "password_expiry_date": password_expiry_display,
+        "max_single_download_mb": user_profile.max_single_download_mb,
+        "max_daily_download_gb": user_profile.max_daily_download_gb,
+        "max_daily_download_count": user_profile.max_daily_download_count,
+        "max_batch_download_mb": user_profile.max_batch_download_mb,
+        "daily_download_size_mb": user_profile.daily_download_size_mb,
+        "daily_download_count": user_profile.daily_download_count,
+        "last_download_date": user_profile.last_download_date.strftime("%Y-%m-%d") if user_profile.last_download_date else "N/A",
+    }
+    return JsonResponse(data)
+
+

@@ -66,4 +66,8 @@ from . import media_views
 
 urlpatterns += [
     re_path(r'^protected_media/(?P<path>.*)$', media_views.protected_media, name='protected_media'),
+    path("api/user_profile_data/", views.get_user_profile_data, name="get_user_profile_data"),
 ]
+
+
+
