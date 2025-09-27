@@ -185,9 +185,27 @@
         }, false);
     })();
 
-    // 登录按钮启用/禁用逻辑
-    document.getElementById('agreementCheck').addEventListener('change', function() {
-        document.getElementById('loginButton').disabled = !this.checked;
-    });
+    // 加强的登录按钮启用/禁用逻辑
+    function validateForm() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const agreementCheck = document.getElementById('agreementCheck').checked;
+        const loginButton = document.getElementById('loginButton');
+        
+        // 只有当用户名、密码都不为空且勾选了协议时，才启用登录按钮
+        if (username && password && agreementCheck) {
+            loginButton.disabled = false;
+        } else {
+            loginButton.disabled = true;
+        }
+    }
+
+    // 监听所有相关字段的变化
+    document.getElementById('username').addEventListener('input', validateForm);
+    document.getElementById('password').addEventListener('input', validateForm);
+    document.getElementById('agreementCheck').addEventListener('change', validateForm);
+    
+    // 页面加载时初始化验证状态
+    document.addEventListener('DOMContentLoaded', validateForm);
 </script>
 {% endblock %}

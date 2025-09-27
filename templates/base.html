@@ -568,12 +568,10 @@
                                     <i class="bi bi-person-badge me-2"></i>个人信息
                                 </div>
                                 <div class="card-body">
-                                    <div class="info-item">
+									<div class="info-item">
 										<i class="bi bi-person me-2"></i>
 										<span class="label">创建者：</span>
-										<span id="created-by">
-											{% if user.userprofile.created_by %}{{ user.userprofile.created_by.username }}{% else %}未知{% endif %}
-										</span>
+										<span id="created-by">加载中...</span>
 									</div>
                                     <div class="info-item">
                                         <i class="bi bi-clock me-2"></i>
@@ -871,44 +869,56 @@
             let userProfileData = null;
 
             if (userInfoButton && userInfoCard) {
-                // 点击按钮切换卡片显示/隐藏
-                userInfoButton.addEventListener('click', function(event) {
+                // 鼠标悬停显示卡片
+                userInfoButton.addEventListener('mouseenter', function(event) {
                     event.preventDefault(); // 阻止默认跳转行为
-                    if (!userProfileData) {
-                        fetchUserProfileData();
-                    }
-                    userInfoCard.classList.toggle('show');
+                    // 每次悬停都重新获取最新数据
+                    fetchUserProfileData();
+                    userInfoCard.classList.add('show');
                 });
 
-                // 点击卡片外部隐藏卡片
-                document.addEventListener('click', function(event) {
-                    if (!userInfoCard.contains(event.target) && !userInfoButton.contains(event.target)) {
-                        userInfoCard.classList.remove('show');
-                    }
+                // 鼠标离开按钮时延迟隐藏卡片
+                userInfoButton.addEventListener('mouseleave', function(event) {
+                    setTimeout(function() {
+                        if (!userInfoCard.matches(':hover') && !userInfoButton.matches(':hover')) {
+                            userInfoCard.classList.remove('show');
+                        }
+                    }, 100);
                 });
 
-                // 阻止卡片内部点击事件冒泡，防止点击卡片内容时隐藏卡片
-                userInfoCard.addEventListener('click', function(event) {
-                    event.stopPropagation();
+                // 鼠标进入卡片时保持显示
+                userInfoCard.addEventListener('mouseenter', function(event) {
+                    userInfoCard.classList.add('show');
                 });
 
-                fetch('/api/user_profile_data/')
-                    .then(response => response.json())
-                    .then(data => {
-                        userProfileData = data;
-                        updateUserInfoCard(data);
-                    })
-                    .catch(error => {
-                        console.error('获取用户信息失败:', error);
-                        updateUserInfoCard({
-                            created_by: "获取失败",
-                            password_expiry_date: "获取失败",
-                            max_daily_download_gb: "N/A",
-                            max_daily_download_count: "N/A",
-                            daily_download_count: "N/A",
-                            daily_download_size_mb: "N/A"
+                // 鼠标离开卡片时隐藏
+                userInfoCard.addEventListener('mouseleave', function(event) {
+                    userInfoCard.classList.remove('show');
+                });
+
+                // 定义获取用户数据的函数
+                function fetchUserProfileData() {
+                    fetch('/api/user_profile_data/')
+                        .then(response => response.json())
+                        .then(data => {
+                            userProfileData = data;
+                            updateUserInfoCard(data);
+                        })
+                        .catch(error => {
+                            console.error('获取用户信息失败:', error);
+                            updateUserInfoCard({
+                                created_by: "获取失败",
+                                password_expiry_date: "获取失败",
+                                max_daily_download_gb: "N/A",
+                                max_daily_download_count: "N/A",
+                                daily_download_count: "N/A",
+                                daily_download_size_mb: "N/A"
+                            });
                         });
-                    });
+                }
+
+                // 初始化时获取一次数据（可选，因为现在每次悬停都会获取）
+                fetchUserProfileData();
             }
 
             // 更新用户信息卡片内容

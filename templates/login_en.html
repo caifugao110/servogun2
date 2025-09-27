@@ -178,10 +178,28 @@
         }, false);
     })();
 
-    // Login button enable/disable logic
-    document.getElementById('agreementCheck').addEventListener('change', function() {
-        document.getElementById('loginButton').disabled = !this.checked;
-    });
+    // Enhanced login button enable/disable logic
+    function validateForm() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const agreementCheck = document.getElementById('agreementCheck').checked;
+        const loginButton = document.getElementById('loginButton');
+        
+        // Only enable login button when username, password are not empty and agreement is checked
+        if (username && password && agreementCheck) {
+            loginButton.disabled = false;
+        } else {
+            loginButton.disabled = true;
+        }
+    }
+
+    // Listen to all relevant field changes
+    document.getElementById('username').addEventListener('input', validateForm);
+    document.getElementById('password').addEventListener('input', validateForm);
+    document.getElementById('agreementCheck').addEventListener('change', validateForm);
+    
+    // Initialize validation state when page loads
+    document.addEventListener('DOMContentLoaded', validateForm);
 </script>
 {% endblock %}
 

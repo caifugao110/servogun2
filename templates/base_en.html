@@ -429,6 +429,87 @@
 			background-color: #343a40;
 			color: #f8f9fa;
 		}
+
+        /* User info card styles */
+        .user-info-card {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            z-index: 1050;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        [data-bs-theme="dark"] .user-info-card {
+            background: #2c3034;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-info-card.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-info-card .card-header {
+            background: linear-gradient(135deg, var(--primary-color), #0052a3);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+        }
+
+        .user-info-card .card-body {
+            padding: 1.25rem;
+        }
+
+        .user-info-card .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .user-info-card .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .user-info-card .info-item i {
+            color: var(--primary-color);
+            width: 16px;
+            flex-shrink: 0;
+        }
+
+        .user-info-card .label {
+            font-weight: 600;
+            color: var(--text-dark);
+            min-width: 90px;
+            flex-shrink: 0;
+        }
+
+        .user-info-card .info-item span:last-child {
+            color: var(--text-light);
+            flex: 1;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .user-info-card {
+                width: 280px;
+                right: -20px;
+            }
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -476,15 +557,48 @@
                         </button>
                     </li>
                     {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <li class="nav-item position-relative">
+                            <a class="nav-link" href="#" id="user-info-button">
                                 <i class="bi bi-person-circle me-1"></i>{{ user.username }}
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'clamps:logout_en' %}">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                </a></li>
-                            </ul>
+                            <!-- User info card -->
+                            <div id="user-info-card" class="user-info-card">
+                                <div class="card-header">
+                                    <i class="bi bi-person-badge me-2"></i>User Information
+                                </div>
+                                <div class="card-body">
+                                    <div class="info-item">
+                                        <i class="bi bi-person me-2"></i>
+                                        <span class="label">Created by:</span>
+                                        <span id="created-by">Loading...</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <span class="label">Password Expiry:</span>
+                                        <span id="password-expiry">Loading...</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="bi bi-download me-2"></i>
+                                        <span class="label">Download Limit:</span>
+                                        <span id="download-limit">Loading...</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="bi bi-file-earmark me-2"></i>
+                                        <span class="label">Today Downloaded:</span>
+                                        <span id="daily-downloads">Loading...</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="bi bi-hdd me-2"></i>
+                                        <span class="label">Today Download Size:</span>
+                                        <span id="daily-download-size">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'clamps:logout' %}">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </a>
                         </li>
                     {% else %}
                         <li class="nav-item">
@@ -707,6 +821,82 @@
 		// Automatically obtain the current year
 		const currentYear = new Date().getFullYear();
 		document.getElementById('current-year-end').textContent = currentYear;
+
+        // User info card functionality
+        document.addEventListener("DOMContentLoaded", function() {
+            const userInfoButton = document.getElementById('user-info-button');
+            const userInfoCard = document.getElementById('user-info-card');
+            let userProfileData = null;
+
+            if (userInfoButton && userInfoCard) {
+                // Mouse hover to show card
+                userInfoButton.addEventListener('mouseenter', function(event) {
+                    event.preventDefault(); // Prevent default link behavior
+                    // Fetch latest data on each hover
+                    fetchUserProfileData();
+                    userInfoCard.classList.add('show');
+                });
+
+                // Mouse leave button with delay to hide card
+                userInfoButton.addEventListener('mouseleave', function(event) {
+                    setTimeout(function() {
+                        if (!userInfoCard.matches(':hover') && !userInfoButton.matches(':hover')) {
+                            userInfoCard.classList.remove('show');
+                        }
+                    }, 100);
+                });
+
+                // Mouse enter card to keep showing
+                userInfoCard.addEventListener('mouseenter', function(event) {
+                    userInfoCard.classList.add('show');
+                });
+
+                // Mouse leave card to hide
+                userInfoCard.addEventListener('mouseleave', function(event) {
+                    userInfoCard.classList.remove('show');
+                });
+
+                // Define function to fetch user data
+                function fetchUserProfileData() {
+                    fetch('/api/user_profile_data/')
+                        .then(response => response.json())
+                        .then(data => {
+                            userProfileData = data;
+                            updateUserInfoCard(data);
+                        })
+                        .catch(error => {
+                            console.error('Failed to get user info:', error);
+                            updateUserInfoCard({
+                                created_by: "Failed to load",
+                                password_expiry_date: "Failed to load",
+                                max_daily_download_gb: "N/A",
+                                max_daily_download_count: "N/A",
+                                daily_download_count: "N/A",
+                                daily_download_size_mb: "N/A"
+                            });
+                        });
+                }
+
+                // Initialize data fetch (optional, since we fetch on each hover now)
+                fetchUserProfileData();
+            }
+
+            // Update user info card content
+            function updateUserInfoCard(data) {
+                document.getElementById('created-by').textContent = data.created_by || "N/A";
+                
+                // Handle password expiry time, show appropriate text if permanent
+                let passwordExpiryText = data.password_expiry_date || "N/A";
+                if (passwordExpiryText === "永久有效" || passwordExpiryText === "Permanent") {
+                    passwordExpiryText = "Permanent";
+                }
+                document.getElementById('password-expiry').textContent = passwordExpiryText;
+                
+                document.getElementById('download-limit').textContent = `${data.max_daily_download_gb}GB/${data.max_daily_download_count} files/day`;
+                document.getElementById('daily-downloads').textContent = `${data.daily_download_count} files`;
+                document.getElementById('daily-download-size').textContent = `${(data.daily_download_size_mb / 1024).toFixed(2)}GB`;
+            }
+        });
     </script>
     
     {% block extra_js %}{% endblock %}

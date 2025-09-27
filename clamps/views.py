@@ -1779,6 +1779,7 @@ def get_user_profile_data(request):
 
     data = {
         "customer_name": user_profile.customer_name if user_profile.customer_name else "N/A",
+        "created_by": user_profile.created_by.username if user_profile.created_by else "未知",
         "password_validity_days": user_profile.password_validity_days,
         "password_last_changed": timezone.localtime(user_profile.password_last_changed).strftime("%Y-%m-%d %H:%M:%S"),
         "password_expiry_date": password_expiry_display,
@@ -1792,4 +1793,12 @@ def get_user_profile_data(request):
     }
     return JsonResponse(data)
 
+
+
+
+
+@login_required
+@user_passes_test(is_superuser)
+def analytics_view(request):
+    return render(request, 'management/analytics.html')
 

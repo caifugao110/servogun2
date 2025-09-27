@@ -58,6 +58,7 @@ urlpatterns = [
     
     # 下载数据分析API
     path("api/download-analytics/", views.download_analytics_api, name="download_analytics_api"),
+    path("management/analytics/", views.analytics_view, name="analytics"),
     # AI智能搜索API
     path("api/ai_search/", views.ai_search_api, name="ai_search_api"),
 ]

@@ -120,6 +120,26 @@
                 <div class="card h-100 fade-in-up">
                     <div class="card-header">
                         <h5 class="mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>
+                            数据分析
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">查看下载数据可视化分析，包括趋势图表和用户下载统计信息。</p>
+                        <a href="{% url 'clamps:analytics' %}" class="btn btn-warning">
+                            <i class="bi bi-arrow-right me-2"></i>
+                            进入数据分析
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if request.user.is_superuser %}
+            <div class="col-md-6">
+                <div class="card h-100 fade-in-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
                             <i class="bi bi-download me-2"></i>
                             数据导出
                         </h5>
@@ -189,7 +209,7 @@
                     </div>
                     <div class="card-body">
                         <p class="card-text">Django原生管理后台，进行数据维护和用户授权操作。</p>
-                        <a href="/admin/" target="_blank" class="btn btn-warning">
+                        <a href="/admin/" target="_blank" class="btn btn-danger">
                             <i class="bi bi-box-arrow-up-right me-2"></i>
                             打开管理后台
                         </a>
