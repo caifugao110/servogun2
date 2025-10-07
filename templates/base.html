@@ -560,7 +560,7 @@
                     {% if user.is_authenticated %}
                         <li class="nav-item position-relative">
                             <a class="nav-link" href="#" id="user-info-button">
-                                <i class="bi bi-person-circle me-1"></i>{{ user.username }}
+                                <i class="bi bi-person-badge text-primary me-1"></i>{{ user.username }}
                             </a>
                             <!-- 用户信息卡片 -->
                             <div id="user-info-card" class="user-info-card">
@@ -569,7 +569,7 @@
                                 </div>
                                 <div class="card-body">
 									<div class="info-item">
-										<i class="bi bi-person me-2"></i>
+										<i class="bi bi-shield-check me-2"></i>
 										<span class="label">创建者：</span>
 										<span id="created-by">加载中...</span>
 									</div>
@@ -598,13 +598,13 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'clamps:logout' %}">
-                                <i class="bi bi-box-arrow-right me-1"></i>退出登录
+                                <i class="bi bi-box-arrow-in-right text-danger me-1"></i>退出登录
                             </a>
                         </li>
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'clamps:login' %}">
-                                <i class="bi bi-box-arrow-in-right me-1"></i>登录
+                                <i class="bi bi-box-arrow-in-right text-success me-1"></i>登录
                             </a>
                         </li>
                     {% endif %}
@@ -898,7 +898,7 @@
 
                 // 定义获取用户数据的函数
                 function fetchUserProfileData() {
-                    fetch('/api/user_profile_data/')
+                    fetch('/api/user_profile_data/?days=1')
                         .then(response => response.json())
                         .then(data => {
                             userProfileData = data;

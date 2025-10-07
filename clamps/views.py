@@ -121,6 +121,46 @@ def add_watermark_to_pdf(input_pdf_path, output_pdf_path, watermark_text):
 
 from .models import Category, Product, Log, UserProfile
 
+def parse_download_size(details):
+    """
+    从details字段解析下载文件大小（MB）
+    """
+    if not details:
+        return 0.0
+    
+    # 匹配 "Total Size: XX.XX MB" 或 "File Size: XX.XX MB"
+    size_pattern = r'(?:Total Size|File Size):\s*([\d.]+)\s*MB'
+    match = re.search(size_pattern, details)
+    
+    if match:
+        return float(match.group(1))
+    
+    return 0.0
+
+
+def parse_file_count(details):
+    """
+    从details字段解析文件数量
+    """
+    if not details:
+        return 0
+    
+    # 对于批量下载，计算Product IDs的数量
+    if 'Product IDs:' in details:
+        ids_pattern = r'Product IDs:\s*([\d,\s]+)'
+        match = re.search(ids_pattern, details)
+        if match:
+            ids_str = match.group(1)
+            # 计算逗号分隔的ID数量
+            ids = [id.strip() for id in ids_str.split(',') if id.strip()]
+            return len(ids)
+    
+    # 对于单个下载，返回1
+    if 'Product ID:' in details:
+        return 1
+    
+    return 0
+
 def is_superuser(user):
     return user.is_superuser
 
@@ -1777,9 +1817,25 @@ def get_user_profile_data(request):
     else:
         password_expiry_display = timezone.localtime(password_expiry_date).strftime("%Y-%m-%d %H:%M:%S")
 
+    # 获取今日下载数据
+    today = timezone.localdate()
+    start_of_day = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+    end_of_day = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+
+    today_downloads = Log.objects.filter(
+        user=request.user,
+        action_type__in=["download", "batch_download"],
+        timestamp__range=(start_of_day, end_of_day)
+    )
+
+    daily_download_count = today_downloads.count()
+    daily_download_size_mb = 0.0
+    for log_entry in today_downloads:
+        daily_download_size_mb += parse_download_size(log_entry.details)
+
     data = {
         "customer_name": user_profile.customer_name if user_profile.customer_name else "N/A",
-        "created_by": user_profile.created_by.username if user_profile.created_by else "未知",
+        "created_by": user_profile.created_by.username if user_profile.created_by else "N/A",
         "password_validity_days": user_profile.password_validity_days,
         "password_last_changed": timezone.localtime(user_profile.password_last_changed).strftime("%Y-%m-%d %H:%M:%S"),
         "password_expiry_date": password_expiry_display,
@@ -1787,8 +1843,8 @@ def get_user_profile_data(request):
         "max_daily_download_gb": user_profile.max_daily_download_gb,
         "max_daily_download_count": user_profile.max_daily_download_count,
         "max_batch_download_mb": user_profile.max_batch_download_mb,
-        "daily_download_size_mb": user_profile.daily_download_size_mb,
-        "daily_download_count": user_profile.daily_download_count,
+        "daily_download_size_mb": round(daily_download_size_mb, 2),
+        "daily_download_count": daily_download_count,
         "last_download_date": user_profile.last_download_date.strftime("%Y-%m-%d") if user_profile.last_download_date else "N/A",
     }
     return JsonResponse(data)
