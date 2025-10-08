@@ -532,13 +532,13 @@
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'clamps:search_en' %}">
-                            <i class="bi bi-search me-1"></i>Product Search
+                            <i class="bi bi-search text-success me-1"></i>Product Search
                             </a>
                         </li>
                         {% if user.is_staff %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'clamps:management_dashboard' %}">
-                                    <i class="bi bi-gear me-1"></i>Management
+                                    <i class="bi bi-gear text-success me-1"></i>Management
                                 </a>
                             </li>
                         {% endif %}

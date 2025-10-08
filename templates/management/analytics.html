@@ -307,7 +307,7 @@
     });
 
     // 初始化用户筛选器
-    async function initializeUserFilter(data) {
+    async function initializeUserFilter(data, selectedUser = 'all') {
         const userFilter = document.getElementById('userFilter');
         
         if (!data || !data.users) {
@@ -325,6 +325,9 @@
             const option = document.createElement('option');
             option.value = user;
             option.textContent = user;
+            if (user === selectedUser) {
+                option.selected = true;
+            }
             userFilter.appendChild(option);
         });
     }
@@ -366,7 +369,8 @@
             await new Promise(resolve => setTimeout(resolve, 100));
             
             // 更新用户筛选器
-            await initializeUserFilter(data);
+            // 更新用户筛选器并保持当前选中状态
+            await initializeUserFilter(data, userFilter);
             
             // 更新统计卡片
             updateStatistics(data);

@@ -636,12 +636,29 @@ def download_file(request, product_id, file_type):
             can_download, message = user_profile.can_download_file(file_size_mb)
             if not can_download:
                 messages.error(request, f"下载失败：{message}")
-                # 修改：下载失败后返回来源页面，如果是从搜索结果页面来的则返回搜索结果页面
+                
                 referer = request.META.get('HTTP_REFERER')
-                if referer and 'search_results' in referer:
-                    return redirect(referer)
-                else:
-                    return redirect('clamps:product_detail', product_id=product_id)
+                current_site = request.get_host()  # 用于域名校验
+
+                if referer:
+                    from urllib.parse import urlparse
+                    parsed_referer = urlparse(referer)
+                    
+                    # 确保是同站来源，防止开放重定向
+                    if parsed_referer.netloc == current_site:
+                        path = parsed_referer.path  # 例如: /product/123_en/
+
+                        # 判断是否来自搜索结果页
+                        if 'search_results' in path:
+                            return redirect(referer)
+                        
+                        # 判断是否来自英文产品详情页，匹配 /product/数字_en/ 模式
+                        import re
+                        if re.match(r'^/product/\d+_en/$', path):
+                            return redirect(referer)
+
+                # 默认返回中文产品详情页
+                return redirect('clamps:product_detail', product_id=product_id)
             
             # 获取原始文件名（不带路径）
             original_filename = os.path.basename(file_path)
