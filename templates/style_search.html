@@ -1,0 +1,174 @@
+<!--
+  Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+
+{% extends 'base.html' %}
+
+{% block title %}式样搜索 - 小原焊枪选型数据库{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
+            <h1 class="display-6 fw-bold">
+                <i class="bi bi-search me-2"></i>
+                式样搜索
+            </h1>
+            <div>
+                <a href="{% url 'clamps:home' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-house me-2"></i>
+                    返回首页
+                </a>
+            </div>
+        </div>
+        
+        <!-- 式样搜索配置信息 -->
+        <div class="card fade-in-up mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    搜索配置信息
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <strong>AI智能搜索：</strong>
+                        {% if style_link.ai_disabled %}
+                            <span class="badge bg-danger">已禁用</span>
+                        {% else %}
+                            <span class="badge bg-success">已启用</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>创建者：</strong> {{ style_link.created_by.username }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>创建时间：</strong> {{ style_link.created_at|date:"Y-m-d H:i" }}
+                    </div>
+                    {% if style_link.expires_at %}
+                    <div class="col-md-4">
+                        <strong>有效期至：</strong> {{ style_link.expires_at|date:"Y-m-d H:i" }}
+                    </div>
+                    {% endif %}
+                    <div class="col-md-4">
+                        <strong>点击次数：</strong> {{ style_link.click_count }}{% if style_link.max_clicks > 0 %}/{{ style_link.max_clicks }}{% endif %}
+                    </div>
+                    {% if search_config.required_chars %}
+                    <div class="col-md-4">
+                        <strong>必须包含字符：</strong> <code>{{ search_config.required_chars }}</code>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 搜索表单 -->
+        <div class="card fade-in-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-filter me-2"></i>
+                    焊枪搜索
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'clamps:style_search' style_link.unique_id %}">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <!-- 基本搜索字段 -->
+                        <div class="col-md-4">
+                            <label for="drawing_no_1" class="form-label">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                图号1
+                            </label>
+                            <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="请输入图号" 
+                                   {% if 'drawing_no_1' in search_config.disabled_fields %}disabled{% endif %}>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="clamping_force" class="form-label">
+                                <i class="bi bi-lightning me-2"></i>
+                                加压力
+                            </label>
+                            <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如：~3500, 3500~5500, 5500~" 
+                                   {% if 'clamping_force' in search_config.disabled_fields %}disabled{% endif %}>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="stroke" class="form-label">
+                                <i class="bi bi-arrows-move me-2"></i>
+                                行程
+                            </label>
+                            <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如：~90, 100~190, 210~" 
+                                   {% if 'stroke' in search_config.disabled_fields %}disabled{% endif %}>
+                        </div>
+                        
+                        <!-- 高级搜索字段 -->
+                        <div class="col-md-4">
+                            <label for="description" class="form-label">
+                                <i class="bi bi-card-text me-2"></i>
+                                描述
+                            </label>
+                            <input type="text" class="form-control" id="description" name="description" placeholder="客户描述" 
+                                   {% if 'description' in search_config.disabled_fields %}disabled{% endif %}>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="motor_manufacturer" class="form-label">
+                                <i class="bi bi-gear-wide-connected me-2"></i>
+                                MOTOR厂家
+                            </label>
+                            <select class="form-select" id="motor_manufacturer" name="motor_manufacturer" 
+                                    {% if 'motor_manufacturer' in search_config.disabled_fields %}disabled{% endif %}>
+                                <option value="">请选择</option>
+                                <option value="FANUC">FANUC</option>
+                                <option value="KUKA">KUKA</option>
+                                <option value="YASKAWA">YASKAWA</option>
+                                <option value="ABB">ABB</option>
+                                <option value="TOLOMATIC">TOLOMATIC</option>
+                                <option value="多摩川">多摩川</option>
+                                <option value="PANASONIC">PANASONIC</option>
+                                <option value="DIAKONT">DIAKONT</option>
+                                <option value="SEW">SEW</option>
+                                <option value="SANYO">SANYO</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="weight" class="form-label">
+                                <i class="bi bi-balance-scale me-2"></i>
+                                重量
+                            </label>
+                            <input type="text" class="form-control" id="weight" name="weight" placeholder="例如：~100, 100~200, 200~" 
+                                   {% if 'weight' in search_config.disabled_fields %}disabled{% endif %}>
+                        </div>
+                    </div>
+                    
+                    <!-- 搜索按钮 -->
+                    <div class="mt-4 text-center">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-2"></i>
+                            开始搜索
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

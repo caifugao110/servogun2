@@ -123,7 +123,7 @@ def add_watermark_to_pdf(input_pdf_path, output_pdf_path, watermark_text):
 
 
 
-from .models import Category, Log, UserProfile
+from .models import Category, Log, UserProfile, StyleLink
 
 
 def is_superuser(user):
@@ -1408,6 +1408,149 @@ def sync_files(request):
     messages.success(request, msg)
     return redirect('clamps:management_dashboard')
 
+
+# 式样管理相关视图
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def create_style_link(request):
+    """创建新式样链接"""
+    if request.method == 'POST':
+        # 生成唯一标识符
+        unique_id = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16))
+        
+        # 获取表单数据
+        name = request.POST.get('name', '').strip()
+        ai_disabled = request.POST.get('ai_disabled') == 'on'
+        expires_days = request.POST.get('expires_days', '0')
+        max_clicks = request.POST.get('max_clicks', '0')
+        
+        # 处理有效期
+        expires_at = None
+        if expires_days and int(expires_days) > 0:
+            expires_at = timezone.now() + timedelta(days=int(expires_days))
+        
+        # 处理搜索配置
+        # 获取启用的字段
+        enabled_fields = request.POST.getlist('enabled_fields[]')
+        
+        # 处理固定字段
+        fixed_fields = {}
+        for key in request.POST:
+            if key.startswith('fixed_fields['):
+                # 提取字段名
+                field_name = key[len('fixed_fields['):-1]
+                value = request.POST[key]
+                if value:
+                    fixed_fields[field_name] = value
+        
+        search_config = {
+            'enabled_fields': enabled_fields,
+            'disabled_fields': [],  # 现在通过enabled_fields的反选来确定禁用字段
+            'fixed_fields': fixed_fields,
+            'required_chars': request.POST.get('required_chars', '').strip()
+        }
+        
+        # 创建式样链接
+        style_link = StyleLink.objects.create(
+            unique_id=unique_id,
+            name=name,
+            ai_disabled=ai_disabled,
+            expires_at=expires_at,
+            max_clicks=int(max_clicks),
+            search_config=search_config,
+            created_by=request.user
+        )
+        
+        messages.success(request, '式样链接创建成功！')
+        return redirect('clamps:my_style_links')
+    
+    # GET请求，显示创建表单
+    return render(request, 'management/create_style_link.html')
+
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def my_style_links(request):
+    """管理我的式样链接"""
+    # 根据权限获取链接列表
+    if request.user.is_superuser:
+        # 超级管理员可以查看所有链接
+        style_links = StyleLink.objects.all()
+    else:
+        # 一般管理员只能查看自己创建的链接
+        style_links = StyleLink.objects.filter(created_by=request.user)
+    
+    # 处理删除请求
+    if request.method == 'POST' and 'delete' in request.POST:
+        link_id = request.POST.get('link_id')
+        style_link = get_object_or_404(StyleLink, id=link_id)
+        # 检查权限
+        if request.user.is_superuser or style_link.created_by == request.user:
+            style_link.delete()
+            messages.success(request, '式样链接已删除！')
+        else:
+            messages.error(request, '您没有权限删除此链接！')
+        return redirect('clamps:my_style_links')
+    
+    # 处理更新请求
+    if request.method == 'POST' and 'update' in request.POST:
+        link_id = request.POST.get('link_id')
+        style_link = get_object_or_404(StyleLink, id=link_id)
+        # 检查权限
+        if request.user.is_superuser or style_link.created_by == request.user:
+            name = request.POST.get('name', '').strip()
+            expires_days = request.POST.get('expires_days', '0')
+            max_clicks = request.POST.get('max_clicks', '0')
+            is_active = request.POST.get('is_active') == 'on'
+            
+            # 更新链接信息
+            style_link.name = name
+            style_link.is_active = is_active
+            style_link.max_clicks = int(max_clicks)
+            
+            # 更新有效期
+            if expires_days and int(expires_days) > 0:
+                style_link.expires_at = timezone.now() + timedelta(days=int(expires_days))
+            else:
+                style_link.expires_at = None
+            
+            style_link.save()
+            messages.success(request, '式样链接已更新！')
+        else:
+            messages.error(request, '您没有权限更新此链接！')
+        return redirect('clamps:my_style_links')
+    
+    context = {
+        'style_links': style_links
+    }
+    return render(request, 'management/my_style_links.html')
+
+
+@login_required
+def style_search(request, unique_id):
+    """处理式样链接的搜索请求"""
+    # 获取式样链接
+    style_link = get_object_or_404(StyleLink, unique_id=unique_id)
+    
+    # 检查链接是否可用
+    if not style_link.can_be_clicked():
+        messages.error(request, '该式样链接已不可用！')
+        return redirect('clamps:home')
+    
+    # 增加点击次数
+    style_link.increment_click()
+    
+    # 处理搜索请求
+    if request.method == 'POST':
+        # 这里可以根据style_link.search_config来处理搜索逻辑
+        # 暂时重定向到普通搜索结果页面
+        return redirect('clamps:search_results')
+    
+    context = {
+        'style_link': style_link,
+        'search_config': style_link.search_config
+    }
+    return render(request, 'style_search.html', context)
 
 
 import requests

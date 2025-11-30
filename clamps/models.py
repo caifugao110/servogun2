@@ -444,6 +444,9 @@ class UserProfile(models.Model):
         null=True, blank=True, verbose_name="最后下载日期"
     )
     
+    # 添加创建者字段
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_users', verbose_name='创建者')
+    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     
@@ -531,7 +534,63 @@ class UserProfile(models.Model):
         self.save()
 
 
-
-
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_users', verbose_name='创建者')
+class StyleLink(models.Model):
+    """式样链接模型，用于生成和管理特定的搜索链接"""
+    
+    # 链接标识和配置
+    unique_id = models.CharField(max_length=32, unique=True, verbose_name="唯一标识符", help_text="用于生成链接的唯一标识")
+    search_config = models.JSONField(default=dict, verbose_name="搜索配置", help_text="JSON格式，存储搜索选项的配置")
+    ai_disabled = models.BooleanField(default=True, verbose_name="AI智能搜索禁用", help_text="是否禁用AI智能搜索")
+    
+    # 链接管理
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name="备注名称", help_text="链接的备注名称")
+    expires_at = models.DateTimeField(null=True, blank=True, verbose_name="有效期", help_text="链接过期时间，为空表示永久有效")
+    click_count = models.IntegerField(default=0, verbose_name="点击次数", help_text="当前点击次数")
+    max_clicks = models.IntegerField(default=0, verbose_name="最大点击次数", help_text="设置为0表示无限制")
+    
+    # 状态
+    is_active = models.BooleanField(default=True, verbose_name="是否激活")
+    
+    # 关联信息
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="style_links", verbose_name="创建者")
+    
+    # 时间信息
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    
+    class Meta:
+        verbose_name = "式样链接"
+        verbose_name_plural = "式样链接"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.name or self.unique_id} - {self.created_by.username}"
+    
+    def is_expired(self):
+        """检查链接是否已过期"""
+        if not self.expires_at:
+            return False
+        return timezone.now() > self.expires_at
+    
+    def can_be_clicked(self):
+        """检查链接是否可以被点击"""
+        if not self.is_active:
+            return False
+        if self.is_expired():
+            return False
+        if self.max_clicks > 0 and self.click_count >= self.max_clicks:
+            return False
+        return True
+    
+    def increment_click(self):
+        """增加点击次数"""
+        self.click_count += 1
+        self.save()
+    
+    def get_full_url(self, request=None):
+        """获取完整的链接URL"""
+        from django.urls import reverse
+        if request:
+            return request.build_absolute_uri(reverse('clamps:style_search', args=[self.unique_id]))
+        return f"/style-search/{self.unique_id}/"
 
