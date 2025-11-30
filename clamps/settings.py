@@ -159,11 +159,15 @@ LOGOUT_REDIRECT_URL = '/'
 SESSION_COOKIE_AGE = 3600 * 24 * 7  # 7天
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
-# 缓存设置（用于限制搜索频率）
+# 缓存设置（用于限制搜索频率和提高性能）
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000,
+            'CULL_FREQUENCY': 3
+        }
     }
 }
 
@@ -222,7 +226,4 @@ LOGGING = {
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
 
-# Coze API 配置
-COZE_BOT_ID = "7551581399242522659"
-COZE_API_TOKEN = "pat_d5qyMKhw2qzTEeUV2xoYbrA9GbezLlFX0tl77uNHO5HlpRD6u7qzRASGHWMnDw3A"
-COZE_USER_ID = "coze_api_test_user"
+

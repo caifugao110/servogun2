@@ -298,6 +298,15 @@ class Product(models.Model):
     class Meta:
         verbose_name = "焊钳产品"
         verbose_name_plural = "焊钳产品"
+        indexes = [
+            models.Index(fields=['drawing_no_1']),
+            models.Index(fields=['category']),
+            models.Index(fields=['sub_category_type']),
+            models.Index(fields=['transformer']),
+            models.Index(fields=['motor_manufacturer']),
+            models.Index(fields=['has_balance']),
+            models.Index(fields=['water_circuit']),
+        ]
 
     def __str__(self):
         return f"{self.drawing_no_1 or '未知图号'} - {self.description or '无描述'}"

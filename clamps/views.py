@@ -51,12 +51,12 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.colors import Color
 
 
+
 def create_watermark(watermark_text, output_path):
     # 将页面尺寸设置为A4横向
     pagesize_landscape_a4 = landscape(A4)
     c = canvas.Canvas(output_path, pagesize=pagesize_landscape_a4)
 
-    # 水印内容拆分为两行
     # 水印内容拆分为两行
     # 假设 watermark_text 格式为 "For Reference Only[OBARA] {username} {datetime}"
     # 第一行："For Reference Only[OBARA]"
@@ -103,6 +103,7 @@ def create_watermark(watermark_text, output_path):
 
     c.save()
 
+
 def add_watermark_to_pdf(input_pdf_path, output_pdf_path, watermark_text):
     watermark_buffer = io.BytesIO()
     create_watermark(watermark_text, watermark_buffer)
@@ -119,60 +120,26 @@ def add_watermark_to_pdf(input_pdf_path, output_pdf_path, watermark_text):
         writer.write(output_file)
 
 
+
 from .models import Category, Product, Log, UserProfile
 
-def parse_download_size(details):
-    """
-    从details字段解析下载文件大小（MB）
-    """
-    if not details:
-        return 0.0
-    
-    # 匹配 "Total Size: XX.XX MB" 或 "File Size: XX.XX MB"
-    size_pattern = r'(?:Total Size|File Size):\s*([\d.]+)\s*MB'
-    match = re.search(size_pattern, details)
-    
-    if match:
-        return float(match.group(1))
-    
-    return 0.0
-
-
-def parse_file_count(details):
-    """
-    从details字段解析文件数量
-    """
-    if not details:
-        return 0
-    
-    # 对于批量下载，计算Product IDs的数量
-    if 'Product IDs:' in details:
-        ids_pattern = r'Product IDs:\s*([\d,\s]+)'
-        match = re.search(ids_pattern, details)
-        if match:
-            ids_str = match.group(1)
-            # 计算逗号分隔的ID数量
-            ids = [id.strip() for id in ids_str.split(',') if id.strip()]
-            return len(ids)
-    
-    # 对于单个下载，返回1
-    if 'Product ID:' in details:
-        return 1
-    
-    return 0
 
 def is_superuser(user):
     return user.is_superuser
+
 
 def is_staff_or_superuser(user):
     return user.is_staff or user.is_superuser
 
 
+
 def home(request):
     return render(request, 'home.html')
 
+
 def home_en(request):
     return render(request, 'home_en.html')
+
 
 
 def user_login(request):
@@ -198,6 +165,7 @@ def user_login(request):
             return render(request, 'login.html')
     return render(request, 'login.html')
 
+
 def user_login_en(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -219,10 +187,12 @@ def user_login_en(request):
     return render(request, 'login_en.html')
 
 
+
 def generate_random_password(length=12):
     characters = string.ascii_letters + string.digits + string.punctuation
     password = ''.join(secrets.choice(characters) for i in range(length))
     return password
+
 
 @login_required
 def user_logout(request):
@@ -244,6 +214,7 @@ def user_logout_en(request):
     return redirect('clamps:login_en') # 重定向到英文登录页面
 
 
+
 @login_required
 def search(request):
     categories = Category.objects.all()
@@ -255,8 +226,9 @@ def search_en(request):
     return render(request, 'search_en.html', {'categories': categories})
 
 
+
 @login_required
-def search_results(request):
+def search_results_base(request, template_name):
     query_params = request.GET.copy()
     category_id = query_params.get('category')
     description = query_params.get('description')
@@ -389,139 +361,16 @@ def search_results(request):
         'total_results': paginator.count,
         'query_params': query_params,
     }
-    return render(request, 'search_results.html', context)
+    return render(request, template_name, context)
+
+@login_required
+def search_results(request):
+    return search_results_base(request, 'search_results.html')
 
 @login_required
 def search_results_en(request):
-    query_params = request.GET.copy()
-    category_id = query_params.get('category')
-    description = query_params.get('description')
-    drawing_no_1 = query_params.get('drawing_no_1')
-    sub_category_type = query_params.get('sub_category_type')
+    return search_results_base(request, 'search_results_en.html')
 
-    stroke = query_params.get('stroke')
-    clamping_force = query_params.get('clamping_force')
-    weight = query_params.get('weight')
-    throat_depth = query_params.get('throat_depth')
-    throat_width = query_params.get('throat_width')
-
-    transformer = query_params.get('transformer')
-    electrode_arm_end = query_params.get('electrode_arm_end')
-    motor_manufacturer = query_params.get('motor_manufacturer')
-    has_balance = query_params.get('has_balance')
-    
-    # 新增的四个字段
-    transformer_placement = query_params.get('transformer_placement')
-    flange_pcd = query_params.get('flange_pcd')
-    bracket_direction = query_params.get('bracket_direction')
-    water_circuit = query_params.get('water_circuit')
-
-    queryset = Product.objects.all().order_by('drawing_no_1')
-
-    if category_id:
-        queryset = queryset.filter(category_id=category_id)
-    if description:
-        queryset = queryset.filter(description__icontains=description)
-    if drawing_no_1:
-        drawing_numbers = [num.strip() for num in drawing_no_1.split(',') if num.strip()]
-        if drawing_numbers:
-            # 创建Q对象用于OR查询
-            from django.db.models import Q
-            drawing_q = Q()
-            for num in drawing_numbers:
-                drawing_q |= Q(drawing_no_1__icontains=num)
-            queryset = queryset.filter(drawing_q)
-    if sub_category_type:
-        queryset = queryset.filter(sub_category_type__icontains=sub_category_type)
-
-    def parse_range_query(field_name, query_string, current_queryset):
-        if query_string:
-            query_string = query_string.strip()
-            if '~' in query_string:
-                parts = query_string.split('~')
-                min_val_str = parts[0].strip()
-                max_val_str = parts[1].strip()
-
-                q_objects = Q()
-                if min_val_str:
-                    try:
-                        min_val = float(min_val_str)
-                        q_objects &= Q(**{f'{field_name}__gte': min_val})
-                    except ValueError:
-                        pass
-                if max_val_str:
-                    try:
-                        max_val = float(max_val_str)
-                        q_objects &= Q(**{f'{field_name}__lte': max_val})
-                    except ValueError:
-                        pass
-                
-                if q_objects:
-                    current_queryset = current_queryset.filter(q_objects)
-            else:
-                try:
-                    exact_val = float(query_string)
-                    current_queryset = current_queryset.filter(**{field_name: exact_val})
-                except ValueError:
-                    pass
-        return current_queryset
-
-    queryset = parse_range_query('stroke', stroke, queryset)
-    queryset = parse_range_query('clamping_force', clamping_force, queryset)
-    queryset = parse_range_query('weight', weight, queryset)
-    queryset = parse_range_query('throat_depth', throat_depth, queryset)
-    queryset = parse_range_query('throat_width', throat_width, queryset)
-
-    if transformer:
-        queryset = queryset.filter(transformer__icontains=transformer)
-    if electrode_arm_end:
-        queryset = queryset.filter(electrode_arm_end__icontains=electrode_arm_end)
-    if motor_manufacturer:
-        queryset = queryset.filter(motor_manufacturer__icontains=motor_manufacturer)
-    if has_balance:
-        # 处理中英文版本的has_balance值
-        if has_balance in ['有', 'Yes']:
-            queryset = queryset.filter(has_balance=True)
-        elif has_balance in ['无', 'No']:
-            queryset = queryset.filter(has_balance=False)
-    
-    if transformer_placement:
-        queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
-    if flange_pcd:
-        queryset = queryset.filter(flange_pcd__icontains=flange_pcd)
-    if bracket_direction:
-        queryset = queryset.filter(bracket_direction__icontains=bracket_direction)
-    if water_circuit:
-        queryset = queryset.filter(water_circuit__icontains=water_circuit)
-
-    # 处理动态字段 (确保 transformer_placement 等已处理的字段不再被动态处理)
-    dynamic_fields = {}
-    for key, value in query_params.items():
-        if key not in ["category", "description", "drawing_no_1", "sub_category_type",
-                       "stroke", "clamping_force", "weight", "throat_depth", "throat_width",
-                       "transformer", "electrode_arm_end", "motor_manufacturer", "has_balance",
-                       "transformer_placement", "flange_pcd", "bracket_direction", "water_circuit",
-                       "page", "csrfmiddlewaretoken"] and value:
-            dynamic_fields[key] = value
-
-    for field_name, field_value in dynamic_fields.items():
-        # 动态字段支持范围搜索
-        queryset = parse_range_query(field_name, field_value, queryset)
-
-    log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=str(query_params))
-    log_entry.save()
-
-    paginator = Paginator(queryset, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'page_obj': page_obj,
-        'total_results': paginator.count,
-        'query_params': query_params,
-    }
-    return render(request, 'search_results_en.html', context)
 
 
 @login_required
@@ -540,6 +389,7 @@ def product_detail_en(request, product_id):
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id} (English)')
     log_entry.save()
     return render(request, 'product_detail_en.html', {'product': product})
+
 
 
 # 新增：检查文件大小的API端点
@@ -599,6 +449,7 @@ def check_file_size(request, product_id, file_type):
             'can_download': False,
             'message': f'检查文件时发生错误: {str(e)}'
         })
+
 
 
 @login_required
@@ -728,6 +579,7 @@ def download_file(request, product_id, file_type):
             return redirect('clamps:product_detail', product_id=product_id)
 
 
+
 @login_required
 def batch_download_view(request, file_type):
     if request.method == 'POST':
@@ -814,6 +666,7 @@ def batch_download_view(request, file_type):
     return redirect(request.META.get('HTTP_REFERER', 'clamps:home'))
 
 
+
 @login_required
 def check_batch_file_size(request):
     if request.method == 'POST':
@@ -883,6 +736,7 @@ def check_batch_file_size(request):
         }
         return JsonResponse(response_data)
     return JsonResponse({'can_download': False, 'message': '无效的请求方法。'})
+
 
 
 @login_required
@@ -1158,17 +1012,13 @@ def view_logs(request):
             logs = logs.filter(action_type__in=['download', 'batch_download'])
         else:
             logs = logs.filter(action_type=action_type)
-    
     if username:
         logs = logs.filter(user__username__icontains=username)
-    
-    # 修改这里的日期处理逻辑
     if date_from:
         # 将naive datetime转换为带时区的datetime
         naive_date = datetime.strptime(date_from, '%Y-%m-%d')
         aware_date = timezone.make_aware(naive_date)
         logs = logs.filter(timestamp__gte=aware_date)
-    
     if date_to:
         # 将naive datetime转换为带时区的datetime
         naive_date = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1) - timedelta(seconds=1)
@@ -1333,7 +1183,6 @@ def export_data(request):
 
 @login_required
 @user_passes_test(is_staff_or_superuser)
-@csrf_exempt
 def import_csv(request):
     if request.method == 'POST' and request.FILES.get('csv_file'):
         csv_file = request.FILES['csv_file']
@@ -1527,11 +1376,12 @@ def sync_files(request):
     # 6. 提示
     msg = f'同步完成：更新 {updated} 条记录。'
     if unmatch:
-        msg += f' 未匹配 {unmatch} 个文件：{", ".join(unmatched_files[:5])}'
+        msg += f' 未匹配 {unmatch} 个文件：{', '.join(unmatched_files[:5])}'
         if len(unmatched_files) > 5:
             msg += ' ...'
     messages.success(request, msg)
     return redirect('clamps:management_dashboard')
+
 
 
 import requests
@@ -1598,6 +1448,7 @@ def gitee_releases_latest(request, owner, repo):
 
 
 
+
 # 导入下载数据分析相关函数
 import re
 from datetime import datetime, timedelta
@@ -1607,10 +1458,6 @@ from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
 from .models import Log, UserProfile
-
-def is_staff_or_superuser(user):
-    """检查用户是否为 staff 或 superuser"""
-    return user.is_staff or user.is_superuser
 
 @login_required
 @user_passes_test(is_staff_or_superuser)
@@ -1721,64 +1568,25 @@ def download_analytics_api(request):
         }
     })
 
-def parse_download_size(details):
-    """解析下载大小（假设details是包含size信息的字典）"""
-    try:
-        if isinstance(details, dict) and 'size' in details:
-            size_bytes = details.get('size', 0)
-            return round(size_bytes / (1024 * 1024), 1)  # 转换为MB
-    except Exception:
-        pass
-    return 0.0
-
-def parse_file_count(details):
-    """解析文件数量（假设details是包含file_count信息的字典）"""
-    try:
-        if isinstance(details, dict):
-            return details.get('file_count', 1)
-    except Exception:
-        pass
-    return 1
-
 
 def parse_download_size(details):
-    """
-    从details字段解析下载文件大小（MB）
-    """
-    if not details:
-        return 0.0
-    
-    # 匹配 "Total Size: XX.XX MB" 或 "File Size: XX.XX MB"
-    size_pattern = r'(?:Total Size|File Size):\s*([\d.]+)\s*MB'
-    match = re.search(size_pattern, details)
-    
-    if match:
-        return float(match.group(1))
-    
+    """从日志详情中解析下载大小（MB）"""
+    size_match = re.search(r'File Size: ([\d.]+) MB', details)
+    if size_match:
+        return float(size_match.group(1))
     return 0.0
 
 
 def parse_file_count(details):
-    """
-    从details字段解析文件数量
-    """
-    if not details:
-        return 0
-    
-    # 对于批量下载，计算Product IDs的数量
-    if 'Product IDs:' in details:
-        ids_pattern = r'Product IDs:\s*([\d,\s]+)'
-        match = re.search(ids_pattern, details)
-        if match:
-            ids_str = match.group(1)
-            # 计算逗号分隔的ID数量
-            ids = [id.strip() for id in ids_str.split(',') if id.strip()]
-            return len(ids)
-    
-    # 对于单个下载，返回1
-    if 'Product ID:' in details:
+    """从日志详情中解析下载文件数量"""
+    # 单个文件下载
+    if 'File Type:' in details:
         return 1
-    
+    # 批量下载
+    elif 'Product IDs:' in details:
+        ids_match = re.search(r'Product IDs: ([\d,]+)', details)
+        if ids_match:
+            return len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
     return 0
 
 
@@ -1822,56 +1630,29 @@ def ai_search_api(request):
             'error': f'服务器内部错误: {str(e)}'
         })
 
-
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def analytics_view(request):
+    """数据分析视图"""
+    return render(request, 'management/analytics.html')
 
 @login_required
 def get_user_profile_data(request):
-    """获取用户配置数据，用于前端显示"""
-    user_profile = request.user.profile
-    password_expiry_date = user_profile.get_password_expiry_date()
-    if password_expiry_date == "永久有效":
-        password_expiry_display = "永久有效"
-    else:
-        password_expiry_display = timezone.localtime(password_expiry_date).strftime("%Y-%m-%d %H:%M:%S")
-
-    # 获取今日下载数据
-    today = timezone.localdate()
-    start_of_day = timezone.make_aware(datetime.combine(today, datetime.min.time()))
-    end_of_day = timezone.make_aware(datetime.combine(today, datetime.max.time()))
-
-    today_downloads = Log.objects.filter(
-        user=request.user,
-        action_type__in=["download", "batch_download"],
-        timestamp__range=(start_of_day, end_of_day)
-    )
-
-    daily_download_count = today_downloads.count()
-    daily_download_size_mb = 0.0
-    for log_entry in today_downloads:
-        daily_download_size_mb += parse_download_size(log_entry.details)
-
-    data = {
-        "customer_name": user_profile.customer_name if user_profile.customer_name else "N/A",
-        "created_by": user_profile.created_by.username if user_profile.created_by else "N/A",
-        "password_validity_days": user_profile.password_validity_days,
-        "password_last_changed": timezone.localtime(user_profile.password_last_changed).strftime("%Y-%m-%d %H:%M:%S"),
-        "password_expiry_date": password_expiry_display,
-        "max_single_download_mb": user_profile.max_single_download_mb,
-        "max_daily_download_gb": user_profile.max_daily_download_gb,
-        "max_daily_download_count": user_profile.max_daily_download_count,
-        "max_batch_download_mb": user_profile.max_batch_download_mb,
-        "daily_download_size_mb": round(daily_download_size_mb, 2),
-        "daily_download_count": daily_download_count,
-        "last_download_date": user_profile.last_download_date.strftime("%Y-%m-%d") if user_profile.last_download_date else "N/A",
-    }
-    return JsonResponse(data)
-
-
-
-
-
-@login_required
-@user_passes_test(is_superuser)
-def analytics_view(request):
-    return render(request, 'management/analytics.html')
-
+    """获取用户配置数据API"""
+    try:
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'customer_name': user_profile.customer_name,
+                'max_single_download_mb': user_profile.max_single_download_mb,
+                'max_daily_download_gb': user_profile.max_daily_download_gb,
+                'max_daily_download_count': user_profile.max_daily_download_count,
+                'max_batch_download_mb': user_profile.max_batch_download_mb,
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })

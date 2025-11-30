@@ -222,7 +222,4 @@ LOGGING = {
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
 
-# Coze API 配置
-COZE_BOT_ID = "7551581399242522659"
-COZE_API_TOKEN = "pat_d5qyMKhw2qzTEeUV2xoYbrA9GbezLlFX0tl77uNHO5HlpRD6u7qzRASGHWMnDw3A"
-COZE_USER_ID = "coze_api_test_user"
+

@@ -296,16 +296,6 @@
         }
     }
 
-    // 初始化页面
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('页面加载完成，开始初始化...');
-        
-        // 延迟初始化以确保所有资源加载完成
-        setTimeout(() => {
-            updateDownloadChart();
-        }, 500);
-    });
-
     // 初始化用户筛选器
     async function initializeUserFilter(data, selectedUser = 'all') {
         const userFilter = document.getElementById('userFilter');
@@ -389,6 +379,16 @@
             clearDetailsTable();
         }
     }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('页面加载完成，开始初始化...');
+        
+        // 延迟初始化以确保所有资源加载完成
+        setTimeout(() => {
+            updateDownloadChart();
+        }, 500);
+    });
 
     // 清空统计数据
     function clearStatistics() {

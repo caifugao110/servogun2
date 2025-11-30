@@ -22159,3 +22159,120 @@ INFO 2025-10-07 14:31:25,942 basehttp 18580 7104 "GET /api/user_profile_data/?da
 INFO 2025-10-07 14:31:26,415 basehttp 18580 7104 "GET /logout_en/ HTTP/1.1" 302 0
 INFO 2025-10-07 14:31:26,445 basehttp 18580 7104 "GET /login_en/ HTTP/1.1" 200 39460
 INFO 2025-10-07 14:31:35,787 basehttp 18580 10732 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 392
+INFO 2025-11-30 10:32:49,551 autoreload 6496 18164 Watching for file changes with StatReloader
+INFO 2025-11-30 10:33:16,477 autoreload 3484 1352 Watching for file changes with StatReloader
+INFO 2025-11-30 10:34:02,907 basehttp 3484 16276 "GET /?ide_webview_request_time=1764470042752 HTTP/1.1" 200 40188
+INFO 2025-11-30 10:34:03,496 basehttp 3484 18268 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85895
+INFO 2025-11-30 10:34:03,498 basehttp 3484 19780 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80427
+INFO 2025-11-30 10:34:03,500 basehttp 3484 16276 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232808
+INFO 2025-11-30 10:34:03,502 basehttp 3484 6676 "GET /static/css/all.min.css HTTP/1.1" 200 102534
+INFO 2025-11-30 10:34:03,505 basehttp 3484 1616 "GET /static/js/pdf.min.js HTTP/1.1" 200 281543
+INFO 2025-11-30 10:34:03,845 basehttp 3484 6676 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-11-30 10:34:03,845 basehttp 3484 1616 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+WARNING 2025-11-30 10:34:03,900 log 3484 1616 Not Found: /@vite/client
+WARNING 2025-11-30 10:34:03,901 basehttp 3484 1616 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:34:04,623 basehttp 3484 16276 "GET /api/gitee/releases/latest/caifugao110/servogun2/ HTTP/1.1" 200 84
+INFO 2025-11-30 10:34:14,448 basehttp 3484 16276 "GET /login/ HTTP/1.1" 200 41165
+WARNING 2025-11-30 10:34:14,557 log 3484 16276 Not Found: /@vite/client
+WARNING 2025-11-30 10:34:14,558 basehttp 3484 16276 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:34:28,304 basehttp 3484 16276 "POST /login/ HTTP/1.1" 200 41820
+WARNING 2025-11-30 10:34:28,391 log 3484 16276 Not Found: /@vite/client
+WARNING 2025-11-30 10:34:28,392 basehttp 3484 16276 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:34:39,445 basehttp 3484 16276 "POST /login/ HTTP/1.1" 200 41820
+WARNING 2025-11-30 10:34:39,523 log 3484 16276 Not Found: /@vite/client
+WARNING 2025-11-30 10:34:39,524 basehttp 3484 16276 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:35:16,242 basehttp 3484 16276 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-11-30 10:35:16,253 basehttp 3484 16276 "GET / HTTP/1.1" 200 45161
+INFO 2025-11-30 10:35:16,297 basehttp 3484 16276 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:35:16,341 log 3484 16276 Not Found: /@vite/client
+WARNING 2025-11-30 10:35:16,342 basehttp 3484 16276 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:35:27,772 basehttp 3484 16276 "GET /management/ HTTP/1.1" 200 55902
+INFO 2025-11-30 10:35:27,810 basehttp 3484 16276 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:35:27,889 log 3484 16276 Not Found: /@vite/client
+WARNING 2025-11-30 10:35:27,890 basehttp 3484 16276 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:35:31,166 basehttp 3484 16276 "GET /management/analytics/ HTTP/1.1" 200 60842
+INFO 2025-11-30 10:35:40,567 basehttp 3484 16276 "GET /management/ HTTP/1.1" 200 55937
+INFO 2025-11-30 10:35:40,585 basehttp 3484 16276 "GET /static/css/bootstrap.min.css HTTP/1.1" 304 0
+INFO 2025-11-30 10:35:40,586 basehttp 3484 1616 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 304 0
+INFO 2025-11-30 10:35:40,586 basehttp 3484 19780 "GET /static/js/pdf.min.js HTTP/1.1" 304 0
+INFO 2025-11-30 10:35:40,587 basehttp 3484 18268 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 304 0
+INFO 2025-11-30 10:35:40,587 basehttp 3484 6676 "GET /static/css/all.min.css HTTP/1.1" 304 0
+INFO 2025-11-30 10:35:40,610 basehttp 3484 6676 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:35:40,663 log 3484 6676 Not Found: /@vite/client
+WARNING 2025-11-30 10:35:40,664 basehttp 3484 6676 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:35:47,456 basehttp 3484 6676 "GET /management/ HTTP/1.1" 200 55962
+INFO 2025-11-30 10:35:47,517 basehttp 3484 6676 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:35:47,545 log 3484 6676 Not Found: /@vite/client
+WARNING 2025-11-30 10:35:47,545 basehttp 3484 6676 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:35:50,180 basehttp 3484 6676 "GET /management/users/ HTTP/1.1" 200 169227
+INFO 2025-11-30 10:35:50,292 basehttp 3484 6676 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:35:50,356 log 3484 6676 Not Found: /@vite/client
+WARNING 2025-11-30 10:35:50,357 basehttp 3484 6676 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:36:06,322 basehttp 3484 6676 "GET /management/ HTTP/1.1" 200 56018
+INFO 2025-11-30 10:36:06,397 basehttp 3484 6676 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:36:06,422 log 3484 6676 Not Found: /@vite/client
+WARNING 2025-11-30 10:36:06,422 basehttp 3484 6676 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:36:12,264 basehttp 3484 6676 "GET /management/users/ HTTP/1.1" 200 169227
+INFO 2025-11-30 10:36:12,360 basehttp 3484 6676 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:36:12,426 log 3484 6676 Not Found: /@vite/client
+WARNING 2025-11-30 10:36:12,427 basehttp 3484 6676 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:36:41,876 basehttp 3484 6676 "GET /management/ HTTP/1.1" 200 56074
+INFO 2025-11-30 10:36:41,941 basehttp 3484 6676 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:36:41,977 log 3484 6676 Not Found: /@vite/client
+WARNING 2025-11-30 10:36:41,979 basehttp 3484 6676 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:36:44,252 basehttp 3484 6676 "GET /management/analytics/ HTTP/1.1" 200 60842
+INFO 2025-11-30 10:37:05,305 basehttp 3484 6676 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:37:05,332 log 3484 6676 Not Found: /@vite/client
+WARNING 2025-11-30 10:37:05,333 basehttp 3484 6676 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:37:05,818 basehttp 3484 6676 "GET /api/download-analytics/?days=1 HTTP/1.1" 200 232
+INFO 2025-11-30 10:37:38,862 basehttp 3484 6676 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+INFO 2025-11-30 10:37:42,561 basehttp 3484 6676 "GET /api/download-analytics/?days=60 HTTP/1.1" 200 3683
+INFO 2025-11-30 10:37:46,822 basehttp 3484 6676 "GET /api/download-analytics/?days=90 HTTP/1.1" 200 5608
+INFO 2025-11-30 10:37:55,200 basehttp 3484 6676 "GET /api/download-analytics/?days=90 HTTP/1.1" 200 5608
+INFO 2025-11-30 10:38:08,868 basehttp 3484 6676 "GET /management/analytics/ HTTP/1.1" 200 60842
+INFO 2025-11-30 10:38:08,899 basehttp 3484 16276 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80427
+INFO 2025-11-30 10:38:08,900 basehttp 3484 18268 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85895
+INFO 2025-11-30 10:38:08,901 basehttp 3484 19780 "GET /static/css/all.min.css HTTP/1.1" 200 102534
+INFO 2025-11-30 10:38:08,902 basehttp 3484 6676 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232808
+INFO 2025-11-30 10:38:08,905 basehttp 3484 1616 "GET /static/js/pdf.min.js HTTP/1.1" 200 281543
+INFO 2025-11-30 10:38:08,950 basehttp 3484 6676 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-11-30 10:38:08,951 basehttp 3484 1616 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-11-30 10:38:29,936 basehttp 3484 1616 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:38:29,964 log 3484 1616 Not Found: /@vite/client
+WARNING 2025-11-30 10:38:29,965 basehttp 3484 1616 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:38:30,447 basehttp 3484 1616 "GET /api/download-analytics/?days=1 HTTP/1.1" 200 232
+INFO 2025-11-30 10:39:25,510 basehttp 3484 1616 "GET /management/analytics/ HTTP/1.1" 200 60842
+INFO 2025-11-30 10:39:25,538 basehttp 3484 16276 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80427
+INFO 2025-11-30 10:39:25,540 basehttp 3484 19780 "GET /static/css/all.min.css HTTP/1.1" 200 102534
+INFO 2025-11-30 10:39:25,541 basehttp 3484 6676 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85895
+INFO 2025-11-30 10:39:25,542 basehttp 3484 1616 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232808
+INFO 2025-11-30 10:39:25,545 basehttp 3484 18268 "GET /static/js/pdf.min.js HTTP/1.1" 200 281543
+INFO 2025-11-30 10:39:25,587 basehttp 3484 6676 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-11-30 10:39:25,588 basehttp 3484 18268 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-11-30 10:39:46,606 basehttp 3484 18268 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:39:46,634 log 3484 18268 Not Found: /@vite/client
+WARNING 2025-11-30 10:39:46,635 basehttp 3484 18268 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:39:47,150 basehttp 3484 18268 "GET /api/download-analytics/?days=90 HTTP/1.1" 200 5608
+INFO 2025-11-30 10:42:48,806 basehttp 3484 18268 "GET /management/analytics/ HTTP/1.1" 200 60842
+INFO 2025-11-30 10:42:48,839 basehttp 3484 16276 "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 80427
+INFO 2025-11-30 10:42:48,841 basehttp 3484 1616 "GET /static/css/all.min.css HTTP/1.1" 200 102534
+INFO 2025-11-30 10:42:48,842 basehttp 3484 6676 "GET /static/css/bootstrap-icons.min.css HTTP/1.1" 200 85895
+INFO 2025-11-30 10:42:48,847 basehttp 3484 18268 "GET /static/css/bootstrap.min.css HTTP/1.1" 200 232808
+INFO 2025-11-30 10:42:48,849 basehttp 3484 19780 "GET /static/js/pdf.min.js HTTP/1.1" 200 281543
+INFO 2025-11-30 10:42:48,888 basehttp 3484 18268 "GET /static/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 134044
+INFO 2025-11-30 10:42:48,888 basehttp 3484 19780 "GET /static/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 158220
+INFO 2025-11-30 10:43:09,888 basehttp 3484 19780 "GET /api/user_profile_data/?days=1 HTTP/1.1" 200 391
+WARNING 2025-11-30 10:43:09,934 log 3484 19780 Not Found: /@vite/client
+WARNING 2025-11-30 10:43:09,935 basehttp 3484 19780 "GET /@vite/client HTTP/1.1" 404 11616
+INFO 2025-11-30 10:43:10,455 basehttp 3484 19780 "GET /api/download-analytics/?days=90 HTTP/1.1" 200 5608
+INFO 2025-11-30 11:50:18,494 autoreload 19776 12228 Watching for file changes with StatReloader
+INFO 2025-11-30 11:51:25,651 autoreload 19132 7704 Watching for file changes with StatReloader
+INFO 2025-11-30 11:55:12,680 autoreload 19776 12228 E:\My Trae\servogun2\clamps\views.py changed, reloading.
+INFO 2025-11-30 11:55:13,086 autoreload 19132 7704 E:\My Trae\servogun2\clamps\views.py changed, reloading.
+INFO 2025-11-30 11:55:13,946 autoreload 9132 16268 Watching for file changes with StatReloader
+INFO 2025-11-30 11:55:14,342 autoreload 15668 3984 Watching for file changes with StatReloader
+INFO 2025-11-30 11:55:37,368 autoreload 9132 16268 E:\My Trae\servogun2\clamps\views.py changed, reloading.
+INFO 2025-11-30 11:55:37,686 autoreload 15668 3984 E:\My Trae\servogun2\clamps\views.py changed, reloading.
+INFO 2025-11-30 11:55:38,655 autoreload 14648 10864 Watching for file changes with StatReloader
+INFO 2025-11-30 11:55:38,951 autoreload 17264 18748 Watching for file changes with StatReloader
+INFO 2025-11-30 11:56:06,418 autoreload 7308 12408 Watching for file changes with StatReloader
