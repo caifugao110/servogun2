@@ -806,9 +806,9 @@
             return document.getElementById('imageModal');
         }
         
-        // 表单提交时显示加载动画
+        // 表单提交时显示加载动画（排除导出表单）
         document.addEventListener('DOMContentLoaded', function() {
-            const forms = document.querySelectorAll('form');
+            const forms = document.querySelectorAll('form:not([data-no-loading])');
             forms.forEach(form => {
                 form.addEventListener('submit', function() {
                     showLoading();

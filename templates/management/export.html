@@ -63,7 +63,7 @@
                                 UTF-8编码，支持中文
                             </li>
                         </ul>
-                        <form method="post" action="{% url 'clamps:export_data' %}" style="display: inline;">
+                        <form method="post" action="{% url 'clamps:export_data' %}" style="display: inline;" data-no-loading>
                             {% csrf_token %}
                             <input type="hidden" name="data_type" value="products">
                             <button type="submit" class="btn btn-primary">
@@ -106,7 +106,7 @@
                             <i class="bi bi-funnel me-2"></i>
                             筛选后导出
                         </a>
-                        <form method="post" action="{% url 'clamps:export_data' %}" style="display: inline;">
+                        <form method="post" action="{% url 'clamps:export_data' %}" style="display: inline;" data-no-loading>
                             {% csrf_token %}
                             <input type="hidden" name="data_type" value="logs">
                             <button type="submit" class="btn btn-outline-success ms-2">
@@ -197,7 +197,7 @@
     document.querySelectorAll('form[action*="export_data"] button[type="submit"]').forEach(button => {
         button.addEventListener('click', function(e) {
             const form = this.closest('form');
-            const exportType = form.querySelector('input[name="export_type"]').value;
+            const exportType = form.querySelector('input[name="data_type"]').value;
             const exportTypeName = exportType === 'products' ? '产品数据' : '操作日志';
             showToast(`正在导出${exportTypeName}，请稍候...`, 'info');
         });

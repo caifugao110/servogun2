@@ -1,2 +1,4 @@
 # Ignore media files
 media/
+venv/
+logs/
