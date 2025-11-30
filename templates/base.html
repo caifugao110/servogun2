@@ -26,13 +26,7 @@
 	{% load static %}
     <link rel="icon" type="image/x-icon" href="{% static 'icon/Obara_logo.bmp' %}">
 	
-    <!-- ✅ 推荐方式：使用 CDN1 引入（如使用请取消注释） 
-    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-	-->
-
-    <!-- 📁 使用本地资源 -->
+    <!-- 使用本地资源 -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}">
@@ -661,11 +655,7 @@
     </footer>
     
     <!-- Bootstrap JS -->
-	<!-- ✅ 推荐方式：使用 CDN1 引入（如使用请取消注释） 
-    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-	-->
-	
-	 <!-- 📁 使用本地资源 -->
+	<!-- 使用本地资源 -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     
     <script>
@@ -685,76 +675,74 @@
             }
         }
         
-        /// **修正后的语言切换功能**
-    function switchLanguage() {
-        const currentPath = window.location.pathname;
-        let newPath = currentPath;
+        // 语言切换功能
+        function switchLanguage() {
+            const currentPath = window.location.pathname;
+            let newPath = currentPath;
 
-        // 定义中英文页面的URL映射关系
-        const translatablePaths = [
-            { zh: "/", en: "/_en/" },
-            { zh: "/login/", en: "/login_en/" },
-            { zh: "/search/", en: "/search_en/" },
-            { zh: "/search/results/", en: "/search/results_en/" },
-            // 使用正则表达式处理产品详情页
-            { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
-            { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" }
-        ];
+            // 定义中英文页面的URL映射关系
+            const translatablePaths = [
+                { zh: "/", en: "/_en/" },
+                { zh: "/login/", en: "/login_en/" },
+                { zh: "/search/", en: "/search_en/" },
+                { zh: "/search/results/", en: "/search/results_en/" },
+                { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
+                { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" }
+            ];
 
-        // 判断当前是在中文页还是英文页
-        const isEnglishPage = currentPath.includes('_en/') || translatablePaths.some(p => p.en instanceof RegExp && p.en.test(currentPath));
+            // 判断当前是在中文页还是英文页
+            const isEnglishPage = currentPath.includes('_en/') || translatablePaths.some(p => p.en instanceof RegExp && p.en.test(currentPath));
 
-        if (isEnglishPage) {
-            // 当前是英文页，目标是切换到中文
-            for (const pathMap of translatablePaths) {
-                if (typeof pathMap.en === 'string' && currentPath === pathMap.en) {
-                    newPath = pathMap.zh;
-                    break;
-                } else if (pathMap.en instanceof RegExp && pathMap.en.test(currentPath)) {
-                    newPath = currentPath.replace(pathMap.en, pathMap.zh);
-                    break;
-                }
-            }
-        } else {
-            // 当前是中文页，目标是切换到英文
-            for (const pathMap of translatablePaths) {
-                if (typeof pathMap.zh === 'string' && currentPath === pathMap.zh) {
-                    newPath = pathMap.en;
-                    break;
-                } else if (pathMap.zh instanceof RegExp && pathMap.zh.test(currentPath)) {
-                    newPath = currentPath.replace(pathMap.zh, pathMap.en);
-                    break;
-                }
-            }
-        }
-
-        // 如果路径发生变化，则跳转
-        if (newPath !== currentPath) {
-            // 保留查询参数
-            window.location.href = newPath + window.location.search;
-        }
-    }
-
-    // 初始化主题和语言状态 (大部分保持不变，仅微调)
-    document.addEventListener("DOMContentLoaded", function() {
-        // 主题初始化
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-bs-theme', savedTheme);
-        document.getElementById('theme-icon').className = savedTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-
-        // 语言切换按钮文本初始化
-        const languageToggleBtn = document.querySelector(".language-toggle");
-        const currentPath = window.location.pathname;
-        const isEnglishPage = currentPath.includes('_en/');
-        
-        if (languageToggleBtn) {
             if (isEnglishPage) {
-                languageToggleBtn.innerHTML = "<i class=\"bi bi-translate me-1\"></i>中文";
+                // 当前是英文页，切换到中文
+                for (const pathMap of translatablePaths) {
+                    if (typeof pathMap.en === 'string' && currentPath === pathMap.en) {
+                        newPath = pathMap.zh;
+                        break;
+                    } else if (pathMap.en instanceof RegExp && pathMap.en.test(currentPath)) {
+                        newPath = currentPath.replace(pathMap.en, pathMap.zh);
+                        break;
+                    }
+                }
             } else {
-                languageToggleBtn.innerHTML = "<i class=\"bi bi-translate me-1\"></i>English";
+                // 当前是中文页，切换到英文
+                for (const pathMap of translatablePaths) {
+                    if (typeof pathMap.zh === 'string' && currentPath === pathMap.zh) {
+                        newPath = pathMap.en;
+                        break;
+                    } else if (pathMap.zh instanceof RegExp && pathMap.zh.test(currentPath)) {
+                        newPath = currentPath.replace(pathMap.zh, pathMap.en);
+                        break;
+                    }
+                }
+            }
+
+            // 如果路径发生变化，则跳转
+            if (newPath !== currentPath) {
+                window.location.href = newPath + window.location.search;
             }
         }
-    });
+
+        // 初始化主题和语言状态
+        document.addEventListener("DOMContentLoaded", function() {
+            // 主题初始化
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            document.getElementById('theme-icon').className = savedTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+
+            // 语言切换按钮文本初始化
+            const languageToggleBtn = document.querySelector(".language-toggle");
+            const currentPath = window.location.pathname;
+            const isEnglishPage = currentPath.includes('_en/');
+            
+            if (languageToggleBtn) {
+                if (isEnglishPage) {
+                    languageToggleBtn.innerHTML = "<i class=\"bi bi-translate me-1\"></i>中文";
+                } else {
+                    languageToggleBtn.innerHTML = "<i class=\"bi bi-translate me-1\"></i>English";
+                }
+            }
+        });
         
         // 加载动画
         function showLoading() {

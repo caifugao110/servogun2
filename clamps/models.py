@@ -241,46 +241,118 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="products", verbose_name="所属分类")
     description = models.TextField(null=True, blank=True, verbose_name="描述")
     drawing_no_1 = models.CharField(max_length=255, null=True, blank=True, verbose_name="图号1(o)")
-    sub_category_type = models.CharField(max_length=100, null=True, blank=True, choices=ProductSubCategoryTypeChoices.choices(), verbose_name="产品子分类类型")
+    sub_category_type = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=ProductSubCategoryTypeChoices.choices(), 
+        verbose_name="产品子分类类型"
+    )
 
     # 通用参数
     stroke = models.FloatField(null=True, blank=True, verbose_name="行程")
-    electrode_arm_end = models.CharField(max_length=255, null=True, blank=True, choices=ElectrodeArmEndChoices.choices(), verbose_name="电极臂端部")
+    electrode_arm_end = models.CharField(
+        max_length=255, null=True, blank=True, 
+        choices=ElectrodeArmEndChoices.choices(), 
+        verbose_name="电极臂端部"
+    )
     clamping_force = models.FloatField(null=True, blank=True, verbose_name="加压力")
-    electrode_arm_type = models.CharField(max_length=100, null=True, blank=True, choices=ElectrodeArmTypeChoices.choices(), verbose_name="电极臂")
-    transformer = models.CharField(max_length=100, null=True, blank=True, choices=TransformerChoices.choices(), verbose_name="变压器")
+    electrode_arm_type = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=ElectrodeArmTypeChoices.choices(), 
+        verbose_name="电极臂"
+    )
+    transformer = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=TransformerChoices.choices(), 
+        verbose_name="变压器"
+    )
     weight = models.FloatField(null=True, blank=True, verbose_name="重量")
-    transformer_placement = models.CharField(max_length=100, null=True, blank=True, choices=TransformerPlacementChoices.choices(), verbose_name="变压器放置方向")
-    flange_pcd = models.CharField(max_length=100, null=True, blank=True, choices=FlangePCDChoices.choices(), verbose_name="法兰P.C.D")
-    bracket_direction = models.CharField(max_length=100, null=True, blank=True, choices=BracketDirectionChoices.choices(), verbose_name="托架方向")
+    transformer_placement = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=TransformerPlacementChoices.choices(), 
+        verbose_name="变压器放置方向"
+    )
+    flange_pcd = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=FlangePCDChoices.choices(), 
+        verbose_name="法兰P.C.D"
+    )
+    bracket_direction = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=BracketDirectionChoices.choices(), 
+        verbose_name="托架方向"
+    )
     bracket_angle = models.FloatField(null=True, blank=True, verbose_name="托架角度")
-    motor_manufacturer = models.CharField(max_length=100, null=True, blank=True, choices=MotorManufacturerChoices.choices(), verbose_name="MOTOR厂家")
+    motor_manufacturer = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=MotorManufacturerChoices.choices(), 
+        verbose_name="MOTOR厂家"
+    )
     bracket_count = models.FloatField(null=True, blank=True, verbose_name="托架个数")
-    gearbox_type = models.CharField(max_length=100, null=True, blank=True, choices=GearboxTypeChoices.choices(), verbose_name="齿轮箱型式")
-    bracket_material = models.CharField(max_length=100, null=True, blank=True, choices=BracketMaterialChoices.choices(), verbose_name="托架材料")
+    gearbox_type = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=GearboxTypeChoices.choices(), 
+        verbose_name="齿轮箱型式"
+    )
+    bracket_material = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=BracketMaterialChoices.choices(), 
+        verbose_name="托架材料"
+    )
     gearbox_stroke = models.CharField(max_length=100, null=True, blank=True, verbose_name="齿轮箱行程")
-    tool_changer = models.CharField(max_length=100, null=True, blank=True, choices=ToolChangerChoices.choices(), verbose_name="换枪装置")
+    tool_changer = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=ToolChangerChoices.choices(), 
+        verbose_name="换枪装置"
+    )
     throat_depth = models.FloatField(null=True, blank=True, verbose_name="喉深")
-    has_balance = models.CharField(max_length=100, null=True, blank=True, choices=HasBalanceChoices.choices(), verbose_name="有无平衡")
+    has_balance = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=HasBalanceChoices.choices(), 
+        verbose_name="有无平衡"
+    )
     throat_width = models.FloatField(null=True, blank=True, verbose_name="喉宽")
-    water_circuit = models.CharField(max_length=100, null=True, blank=True, choices=WaterCircuitChoices.choices(), verbose_name="水路")
+    water_circuit = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=WaterCircuitChoices.choices(), 
+        verbose_name="水路"
+    )
 
     # X2C-C 独有参数
     grip_extension_length = models.FloatField(null=True, blank=True, verbose_name="握杆伸出长度")
 
-    # 偏心相关参数 (X2C-C, X2C-V2-C, X2C-V3-C, X2C-X, X2C-V2-X)
+    # 偏心相关参数
     eccentricity = models.FloatField(null=True, blank=True, verbose_name="偏心距离")
-    eccentricity_direction = models.CharField(max_length=100, null=True, blank=True, choices=EccentricityDirectionChoices.choices(), verbose_name="偏心方向")
-    eccentricity_to_center = models.CharField(max_length=100, null=True, blank=True, choices=EccentricityToCenterChoices.choices(), verbose_name="偏心是否回到中心面")
+    eccentricity_direction = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=EccentricityDirectionChoices.choices(), 
+        verbose_name="偏心方向"
+    )
+    eccentricity_to_center = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=EccentricityToCenterChoices.choices(), 
+        verbose_name="偏心是否回到中心面"
+    )
 
-    # 导向方式 (X2C-C, X2C-V2-C)
-    guidance_method = models.CharField(max_length=100, null=True, blank=True, choices=GuidanceMethodChoices.choices(), verbose_name="导向方式")
+    # 导向方式
+    guidance_method = models.CharField(
+        max_length=100, null=True, blank=True, 
+        choices=GuidanceMethodChoices.choices(), 
+        verbose_name="导向方式"
+    )
 
-    # X型分类独有参数 (X2C-X, X2C-V2-X, X2C-V3-X)
+    # X型分类独有参数
     static_arm_eccentricity = models.FloatField(null=True, blank=True, verbose_name="静臂偏心")
-    static_electrode_arm_end = models.CharField(max_length=255, null=True, blank=True, choices=ElectrodeArmEndChoices.choices(), verbose_name="静电极臂端部")
+    static_electrode_arm_end = models.CharField(
+        max_length=255, null=True, blank=True, 
+        choices=ElectrodeArmEndChoices.choices(), 
+        verbose_name="静电极臂端部"
+    )
     moving_arm_eccentricity = models.FloatField(null=True, blank=True, verbose_name="动臂偏心")
-    moving_electrode_arm_end = models.CharField(max_length=255, null=True, blank=True, choices=ElectrodeArmEndChoices.choices(), verbose_name="动电极臂端部")
+    moving_electrode_arm_end = models.CharField(
+        max_length=255, null=True, blank=True, 
+        choices=ElectrodeArmEndChoices.choices(), 
+        verbose_name="动电极臂端部"
+    )
     pivot_to_drive_center_dist = models.FloatField(null=True, blank=True, verbose_name="支轴到驱动中心距离")
     static_arm_front_length = models.FloatField(null=True, blank=True, verbose_name="静电极臂前部长")
     static_arm_front_height = models.FloatField(null=True, blank=True, verbose_name="静电极臂前部高")
@@ -335,58 +407,41 @@ class UserProfile(models.Model):
     """用户配置模型，用于存储用户的额外配置信息"""
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile", verbose_name="用户")
-    
-    # 客户名称字段
     customer_name = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        verbose_name="客户名称",
-        help_text="用于备注客户名称"
+        max_length=255, null=True, blank=True, 
+        verbose_name="客户名称", help_text="用于备注客户名称"
     )
     
-    # 密码有效期设置 - 修改为支持1-15天和永久有效
     password_validity_days = models.IntegerField(
         default=5, 
         verbose_name="密码有效期（天）",
         help_text="设置为0表示永久有效，1-15表示有效天数"
     )
     password_last_changed = models.DateTimeField(
-        default=timezone.now, 
-        verbose_name="密码最后修改时间"
+        default=timezone.now, verbose_name="密码最后修改时间"
     )
     
-    # 文件下载限制设置
     max_single_download_mb = models.IntegerField(
-        default=100, 
-        verbose_name="单次最大下载大小（MB）"
+        default=100, verbose_name="单次最大下载大小（MB）"
     )
     max_daily_download_gb = models.IntegerField(
-        default=10, 
-        verbose_name="每日最大下载大小（GB）"
+        default=10, verbose_name="每日最大下载大小（GB）"
     )
     max_daily_download_count = models.IntegerField(
-        default=100, 
-        verbose_name="每日最大下载文件数"
+        default=100, verbose_name="每日最大下载文件数"
     )
     max_batch_download_mb = models.IntegerField(
-        default=200, 
-        verbose_name="单次批量下载最大大小（MB）"
+        default=200, verbose_name="单次批量下载最大大小（MB）"
     )
     
-    # 当日下载统计（每日重置）
     daily_download_size_mb = models.IntegerField(
-        default=0, 
-        verbose_name="当日已下载大小（MB）"
+        default=0, verbose_name="当日已下载大小（MB）"
     )
     daily_download_count = models.IntegerField(
-        default=0, 
-        verbose_name="当日已下载文件数"
+        default=0, verbose_name="当日已下载文件数"
     )
     last_download_date = models.DateField(
-        null=True, 
-        blank=True, 
-        verbose_name="最后下载日期"
+        null=True, blank=True, verbose_name="最后下载日期"
     )
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")

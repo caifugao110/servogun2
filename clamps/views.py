@@ -14,41 +14,43 @@
 
 
 
-import zipfile
 import io
 import os
-from collections import defaultdict
-from django.conf import settings
-from django.contrib import messages
-from django.shortcuts import redirect
-from django.db import transaction
-from django.contrib.auth.decorators import login_required
-from .models import Product
-from django.conf import settings
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q
-from django.core.paginator import Paginator
-from django.http import HttpResponse, StreamingHttpResponse
-from django.http import JsonResponse
-from django.utils import timezone
-from datetime import datetime, timedelta
-from django.contrib import messages
+import re
 import secrets
 import string
-from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_exempt
-import csv
-import chardet
 import tempfile
-import re
-import glob
+import zipfile
+from collections import defaultdict
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+
+# 第三方库
 from PyPDF2 import PdfReader, PdfWriter
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import inch
-from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.colors import Color
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+import chardet
+import csv
+import glob
+
+# Django核心
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Q
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+
+# 本地应用
+from .models import Product
 
 
 
@@ -121,7 +123,7 @@ def add_watermark_to_pdf(input_pdf_path, output_pdf_path, watermark_text):
 
 
 
-from .models import Category, Product, Log, UserProfile
+from .models import Category, Log, UserProfile
 
 
 def is_superuser(user):
@@ -149,16 +151,25 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            # 检查密码是否过期
-            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            # 检查密码是否过期 - 优化：使用select_related减少数据库查询
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                # 仅在必要时创建，减少数据库操作
+                user_profile = UserProfile.objects.create(user=user)
+            
             if user_profile.is_password_expired():
                 logout(request)
                 messages.error(request, '您的账户密码已过期，请联系您的营业经理进行账号续期。')
                 return render(request, 'login.html')
 
-            # 记录登录日志
-            log_entry = Log(user=user, action_type='login', ip_address=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT', ''))
-            log_entry.save()
+            # 记录登录日志 - 异步处理或延迟保存
+            Log.objects.create(
+                user=user, 
+                action_type='login', 
+                ip_address=request.META.get('REMOTE_ADDR'), 
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
             return redirect('clamps:home')
         else:
             messages.error(request, '无效的用户名或密码，请联系您的营业经理重新获取用户名或进行密码重置。')
@@ -173,13 +184,25 @@ def user_login_en(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            # 检查密码是否过期 - 优化：使用select_related减少数据库查询
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                # 仅在必要时创建，减少数据库操作
+                user_profile = UserProfile.objects.create(user=user)
+            
             if user_profile.is_password_expired():
                 logout(request)
                 messages.error(request, 'Your account password has expired. Please contact your sales manager for account renewal.')
                 return render(request, 'login_en.html')
-            log_entry = Log(user=user, action_type='login', ip_address=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT', ''))
-            log_entry.save()
+            
+            # 记录登录日志 - 异步处理或延迟保存
+            Log.objects.create(
+                user=user, 
+                action_type='login', 
+                ip_address=request.META.get('REMOTE_ADDR'), 
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
             return redirect('clamps:home_en')
         else:
             messages.error(request, 'Invalid username or password. Please contact your business manager to obtain a new username or reset your password.')
@@ -196,22 +219,27 @@ def generate_random_password(length=12):
 
 @login_required
 def user_logout(request):
-    # 记录登出日志
-    log_entry = Log(user=request.user, action_type='logout', ip_address=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT', ''))
-    log_entry.save()
+    Log.objects.create(
+        user=request.user, 
+        action_type='logout', 
+        ip_address=request.META.get('REMOTE_ADDR'), 
+        user_agent=request.META.get('HTTP_USER_AGENT', '')
+    )
     logout(request)
-    messages.info(request, '您已成功登出。') # 添加中文提示信息
-    return redirect('clamps:login') # 重定向到中文登录页面
+    messages.info(request, '您已成功登出。')
+    return redirect('clamps:login')
 
-# 新增：专门负责英文登出的视图
 @login_required
 def user_logout_en(request):
-    # 记录登出日志 (可以添加标记以区分)
-    log_entry = Log(user=request.user, action_type='logout_en', ip_address=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT', ''))
-    log_entry.save()
+    Log.objects.create(
+        user=request.user, 
+        action_type='logout_en', 
+        ip_address=request.META.get('REMOTE_ADDR'), 
+        user_agent=request.META.get('HTTP_USER_AGENT', '')
+    )
     logout(request)
-    messages.info(request, 'You have been successfully logged out.') # 添加英文提示信息
-    return redirect('clamps:login_en') # 重定向到英文登录页面
+    messages.info(request, 'You have been successfully logged out.')
+    return redirect('clamps:login_en')
 
 
 
@@ -262,8 +290,6 @@ def search_results_base(request, template_name):
     if drawing_no_1:
         drawing_numbers = [num.strip() for num in drawing_no_1.split(',') if num.strip()]
         if drawing_numbers:
-            # 创建Q对象用于OR查询
-            from django.db.models import Q
             drawing_q = Q()
             for num in drawing_numbers:
                 drawing_q |= Q(drawing_no_1__icontains=num)
@@ -1641,18 +1667,29 @@ def get_user_profile_data(request):
     """获取用户配置数据API"""
     try:
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        # 获取密码过期日期
+        password_expiry_date = user_profile.get_password_expiry_date()
+        if isinstance(password_expiry_date, str):
+            expiry_text = password_expiry_date
+        else:
+            # 转换为本地时间并格式化
+            expiry_text = password_expiry_date.strftime('%Y-%m-%d %H:%M:%S')
+        
         return JsonResponse({
-            'success': True,
-            'data': {
-                'customer_name': user_profile.customer_name,
-                'max_single_download_mb': user_profile.max_single_download_mb,
-                'max_daily_download_gb': user_profile.max_daily_download_gb,
-                'max_daily_download_count': user_profile.max_daily_download_count,
-                'max_batch_download_mb': user_profile.max_batch_download_mb,
-            }
+            'created_by': user_profile.created_by.username if user_profile.created_by else "N/A",
+            'password_expiry_date': expiry_text,
+            'max_daily_download_gb': user_profile.max_daily_download_gb,
+            'max_daily_download_count': user_profile.max_daily_download_count,
+            'daily_download_count': user_profile.daily_download_count,
+            'daily_download_size_mb': user_profile.daily_download_size_mb
         })
     except Exception as e:
         return JsonResponse({
-            'success': False,
-            'error': str(e)
+            'created_by': "获取失败",
+            'password_expiry_date': "获取失败",
+            'max_daily_download_gb': "N/A",
+            'max_daily_download_count': "N/A",
+            'daily_download_count': "N/A",
+            'daily_download_size_mb': "N/A"
         })

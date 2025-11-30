@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-from django.urls import path, include, re_path
-from . import views
+from django.urls import path, re_path
+from . import views, media_views
 
 app_name = 'clamps'
 
@@ -35,39 +33,33 @@ urlpatterns = [
     # 英文页面URL
     path('_en/', views.home_en, name='home_en'),
     path('login_en/', views.user_login_en, name='login_en'),
-    path('logout_en/', views.user_logout_en, name='logout_en'), # 新增：专门用于英文登出的URL
-    path("search_en/", views.search_en, name="search_en"),
+    path('logout_en/', views.user_logout_en, name='logout_en'),
+    path('search_en/', views.search_en, name='search_en'),
     path('search/results_en/', views.search_results_en, name='search_results_en'),
     re_path(r'^product/(?P<product_id>\d+)_en/$', views.product_detail_en, name='product_detail_en'),
 
-    # 管理功能 (保持不变)
+    # 管理功能
     path('management/', views.management_dashboard, name='management_dashboard'),
     path('management/users/', views.manage_users, name='manage_users'),
     path('management/users/toggle/<int:user_id>/', views.toggle_user_active, name='toggle_user_active'),
     path('management/users/reset_password/<int:user_id>/', views.reset_user_password, name='reset_user_password'),
-    path("management/users/delete/<int:user_id>/", views.delete_user, name="delete_user"),
-    path("management/users/add/", views.add_user, name="add_user"),
-    path("management/users/export/", views.export_users, name="export_users"),
+    path('management/users/delete/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('management/users/add/', views.add_user, name='add_user'),
+    path('management/users/export/', views.export_users, name='export_users'),
     path('management/logs/', views.view_logs, name='view_logs'),
     path('management/export/', views.export_data, name='export_data'),
     path('management/import_csv/', views.import_csv, name='import_csv'),
     path('management/sync_files/', views.sync_files, name='sync_files'),
+    path('management/analytics/', views.analytics_view, name='analytics'),
     
-    # Gitee API代理
+    # API接口
     path('api/gitee/releases/latest/<str:owner>/<str:repo>/', views.gitee_releases_latest, name='gitee_releases_latest'),
+    path('api/download-analytics/', views.download_analytics_api, name='download_analytics_api'),
+    path('api/ai_search/', views.ai_search_api, name='ai_search_api'),
+    path('api/user_profile_data/', views.get_user_profile_data, name='get_user_profile_data'),
     
-    # 下载数据分析API
-    path("api/download-analytics/", views.download_analytics_api, name="download_analytics_api"),
-    path("management/analytics/", views.analytics_view, name="analytics"),
-    # AI智能搜索API
-    path("api/ai_search/", views.ai_search_api, name="ai_search_api"),
-]
-
-from . import media_views
-
-urlpatterns += [
+    # 媒体文件保护
     re_path(r'^protected_media/(?P<path>.*)$', media_views.protected_media, name='protected_media'),
-    path("api/user_profile_data/", views.get_user_profile_data, name="get_user_profile_data"),
 ]
 
 
