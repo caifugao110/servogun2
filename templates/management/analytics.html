@@ -199,6 +199,14 @@
     let userDistributionChart = null;
     let downloadData = {};
 
+    // 从cookie中获取CSRF令牌
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+    
     // 从API获取下载数据（只使用真实数据）
     async function fetchDownloadData(days, user = 'all') {
         try {
@@ -209,21 +217,43 @@
                 url.searchParams.append('user', user);
             }
             
+            console.log('发送请求到:', url);
+            
             // 发送请求到后端API
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                    'X-CSRFToken': getCookie('csrftoken'),
                     'Content-Type': 'application/json',
                 },
                 credentials: 'same-origin'
             });
             
+            console.log('响应状态:', response.status);
+            
             if (!response.ok) {
+                // 检查是否是重定向
+                if (response.redirected) {
+                    console.error('API请求被重定向，可能是登录会话过期');
+                    showToast('登录会话已过期，请重新登录', 'danger');
+                    return null;
+                }
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
+            // 检查响应内容类型
+            const contentType = response.headers.get('content-type');
+            console.log('响应内容类型:', contentType);
+            
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('响应不是JSON格式:', text.substring(0, 100) + '...');
+                showToast('服务器返回了非JSON响应，请检查服务器日志', 'danger');
+                return null;
+            }
+            
             const data = await response.json();
+            console.log('获取到的数据:', data);
             return data;
         } catch (error) {
             console.error('获取下载数据失败:', error);
@@ -332,7 +362,10 @@
         
         try {
             // 获取数据
+            console.log('开始获取数据，参数:', { timeRange, userFilter });
             const data = await fetchDownloadData(timeRange, userFilter);
+            
+            console.log('API返回数据:', data);
             
             if (!data) {
                 // 数据获取失败
@@ -344,9 +377,31 @@
             
             // 检查数据是否为空
             if (!data.summary || !data.downloads || Object.keys(data.downloads).length === 0) {
+                console.log('数据为空，显示"暂无数据"');
                 showNoData();
-                clearStatistics();
-                clearDetailsTable();
+                // 即使数据为空，也要更新统计卡片显示0值
+                document.getElementById('totalDownloads').textContent = '0';
+                document.getElementById('totalFiles').textContent = '0';
+                document.getElementById('totalSize').textContent = '0.0 MB';
+                document.getElementById('activeUsers').textContent = '0';
+                document.getElementById('sidebarActiveUsers').textContent = '0';
+                document.getElementById('avgDownloads').textContent = '0';
+                document.getElementById('topUser').textContent = '-';
+                document.getElementById('avgFileSize').textContent = '0.00 MB';
+                // 更新时间
+                const now = new Date();
+                const timeString = now.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById('lastUpdateTime').textContent = timeString;
+                
+                // 清空表格
+                const tbody = document.getElementById('downloadDetailsBody');
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">暂无数据</td></tr>';
                 return;
             }
             
@@ -383,6 +438,10 @@
     // 初始化页面
     document.addEventListener('DOMContentLoaded', function() {
         console.log('页面加载完成，开始初始化...');
+        
+        // 检查是否登录
+        console.log('当前页面URL:', window.location.href);
+        console.log('CSRF令牌:', getCookie('csrftoken'));
         
         // 延迟初始化以确保所有资源加载完成
         setTimeout(() => {

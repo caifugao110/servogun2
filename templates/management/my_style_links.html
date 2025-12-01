@@ -19,7 +19,7 @@
 
 {% load tz %}
 
-{% block title %}我的式样链接 - 小原焊枪选型数据库{% endblock %}
+{% block title %}我的仕样链接 - 小原焊枪选型数据库{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -27,12 +27,12 @@
         <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
             <h1 class="display-6 fw-bold">
                 <i class="bi bi-link-45deg me-2"></i>
-                我的式样链接
+                我的仕样链接
             </h1>
             <div>
                 <a href="{% url 'clamps:create_style_link' %}" class="btn btn-success me-2">
                     <i class="bi bi-plus-circle me-2"></i>
-                    创建新式样
+                    创建新仕样
                 </a>
                 <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-2"></i>
@@ -41,12 +41,12 @@
             </div>
         </div>
         
-        <!-- 式样链接列表 -->
+        <!-- 仕样链接列表 -->
         <div class="card fade-in-up">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="bi bi-list me-2"></i>
-                    式样链接管理
+                    仕样链接管理
                 </h5>
             </div>
             <div class="card-body">
@@ -116,74 +116,24 @@
                                             {{ link.created_at|date:"Y-m-d H:i" }}
                                         </td>
                                         <td>
-                                            <!-- 操作按钮组 -->
-                                            <div class="btn-group" role="group">
-                                                <!-- 编辑按钮 -->
-                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editLinkModal{{ link.id }}">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                
-                                                <!-- 删除按钮 -->
-                                                <form method="post" action="{% url 'clamps:my_style_links' %}" style="display: inline;">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="link_id" value="{{ link.id }}">
-                                                    <button type="submit" name="delete" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除此链接吗？');">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    
-                                    <!-- 编辑链接模态框 -->
-                                    <div class="modal fade" id="editLinkModal{{ link.id }}" tabindex="-1" aria-labelledby="editLinkModalLabel{{ link.id }}" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="editLinkModalLabel{{ link.id }}">
-                                                        <i class="bi bi-pencil me-2"></i>
-                                                        编辑式样链接
-                                                    </h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <form method="post" action="{% url 'clamps:my_style_links' %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="link_id" value="{{ link.id }}">
-                                                    <div class="modal-body">
-                                                        <div class="row g-3">
-                                                            <div class="col-md-12">
-                                                                <label for="name{{ link.id }}" class="form-label">链接备注</label>
-                                                                <input type="text" class="form-control" id="name{{ link.id }}" name="name" value="{{ link.name }}">
-                                                            </div>
-                                                            
-                                                            <div class="col-md-6">
-                                                                <label for="expires_days{{ link.id }}" class="form-label">有效期（天）</label>
-                                                                <input type="number" class="form-control" id="expires_days{{ link.id }}" name="expires_days" min="0" max="365" value="{% if link.expires_at %}{{ link.expires_at|timeuntil:timezone.now|slice:':2' }}{% else %}0{% endif %}">
-                                                                <div class="form-text">设置为0表示永久有效</div>
-                                                            </div>
-                                                            
-                                                            <div class="col-md-6">
-                                                                <label for="max_clicks{{ link.id }}" class="form-label">最大点击次数</label>
-                                                                <input type="number" class="form-control" id="max_clicks{{ link.id }}" name="max_clicks" min="0" value="{{ link.max_clicks }}">
-                                                                <div class="form-text">设置为0表示无限制</div>
-                                                            </div>
-                                                            
-                                                            <div class="col-md-12">
-                                                                <div class="form-check form-switch">
-                                                                    <input class="form-check-input" type="checkbox" id="is_active{{ link.id }}" name="is_active" {% if link.is_active %}checked{% endif %}>
-                                                                    <label class="form-check-label" for="is_active{{ link.id }}">启用此链接</label>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                                        <button type="submit" name="update" class="btn btn-primary">保存修改</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
+                                    <!-- 操作按钮组 -->
+                                    <div class="btn-group" role="group">
+                                        <!-- 编辑按钮 -->
+                                        <a href="{% url 'clamps:edit_style_link' link.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        
+                                        <!-- 删除按钮 -->
+                                        <form method="post" action="{% url 'clamps:my_style_links' %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="link_id" value="{{ link.id }}">
+                                            <button type="submit" name="delete" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除此链接吗？');">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
+                                </td>
+                            </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -191,10 +141,10 @@
                 {% else %}
                     <div class="text-center py-4">
                         <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-                        <p class="text-muted mt-3">暂无式样链接</p>
+                        <p class="text-muted mt-3">暂无仕样链接</p>
                         <a href="{% url 'clamps:create_style_link' %}" class="btn btn-success mt-2">
                             <i class="bi bi-plus-circle me-2"></i>
-                            创建第一个式样链接
+                            创建第一个仕样链接
                         </a>
                     </div>
                 {% endif %}

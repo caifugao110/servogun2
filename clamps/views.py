@@ -1409,18 +1409,21 @@ def sync_files(request):
     return redirect('clamps:management_dashboard')
 
 
-# 式样管理相关视图
+# 仕样管理相关视图
 @login_required
 @user_passes_test(is_staff_or_superuser)
 def create_style_link(request):
-    """创建新式样链接"""
+    """创建新仕样链接"""
     if request.method == 'POST':
         # 生成唯一标识符
-        unique_id = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16))
+        while True:
+            unique_id = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16))
+            # 检查是否已存在
+            if not StyleLink.objects.filter(unique_id=unique_id).exists():
+                break
         
         # 获取表单数据
         name = request.POST.get('name', '').strip()
-        ai_disabled = request.POST.get('ai_disabled') == 'on'
         expires_days = request.POST.get('expires_days', '0')
         max_clicks = request.POST.get('max_clicks', '0')
         
@@ -1446,22 +1449,21 @@ def create_style_link(request):
         search_config = {
             'enabled_fields': enabled_fields,
             'disabled_fields': [],  # 现在通过enabled_fields的反选来确定禁用字段
-            'fixed_fields': fixed_fields,
-            'required_chars': request.POST.get('required_chars', '').strip()
+            'fixed_fields': fixed_fields
         }
         
-        # 创建式样链接
+        # 创建仕样链接
         style_link = StyleLink.objects.create(
             unique_id=unique_id,
             name=name,
-            ai_disabled=ai_disabled,
+            ai_disabled=True,  # 全局禁用AI智能搜索
             expires_at=expires_at,
             max_clicks=int(max_clicks),
             search_config=search_config,
             created_by=request.user
         )
         
-        messages.success(request, '式样链接创建成功！')
+        messages.success(request, '仕样链接创建成功！')
         return redirect('clamps:my_style_links')
     
     # GET请求，显示创建表单
@@ -1471,13 +1473,11 @@ def create_style_link(request):
 @login_required
 @user_passes_test(is_staff_or_superuser)
 def my_style_links(request):
-    """管理我的式样链接"""
-    # 根据权限获取链接列表
+    """管理我的仕样链接"""
+    # 实现权限控制：普通管理员只能查看和管理自己创建的链接，超级管理员可以查看所有链接
     if request.user.is_superuser:
-        # 超级管理员可以查看所有链接
         style_links = StyleLink.objects.all()
     else:
-        # 一般管理员只能查看自己创建的链接
         style_links = StyleLink.objects.filter(created_by=request.user)
     
     # 处理删除请求
@@ -1487,7 +1487,7 @@ def my_style_links(request):
         # 检查权限
         if request.user.is_superuser or style_link.created_by == request.user:
             style_link.delete()
-            messages.success(request, '式样链接已删除！')
+            messages.success(request, '仕样链接已删除！')
         else:
             messages.error(request, '您没有权限删除此链接！')
         return redirect('clamps:my_style_links')
@@ -1515,7 +1515,7 @@ def my_style_links(request):
                 style_link.expires_at = None
             
             style_link.save()
-            messages.success(request, '式样链接已更新！')
+            messages.success(request, '仕样链接已更新！')
         else:
             messages.error(request, '您没有权限更新此链接！')
         return redirect('clamps:my_style_links')
@@ -1523,18 +1523,18 @@ def my_style_links(request):
     context = {
         'style_links': style_links
     }
-    return render(request, 'management/my_style_links.html')
+    return render(request, 'management/my_style_links.html', context)
 
 
 @login_required
 def style_search(request, unique_id):
-    """处理式样链接的搜索请求"""
-    # 获取式样链接
+    """处理仕样链接的搜索请求"""
+    # 获取仕样链接
     style_link = get_object_or_404(StyleLink, unique_id=unique_id)
     
     # 检查链接是否可用
     if not style_link.can_be_clicked():
-        messages.error(request, '该式样链接已不可用！')
+        messages.error(request, '该仕样链接已不可用！')
         return redirect('clamps:home')
     
     # 增加点击次数
@@ -1551,6 +1551,64 @@ def style_search(request, unique_id):
         'search_config': style_link.search_config
     }
     return render(request, 'style_search.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def edit_style_link(request, link_id):
+    """编辑仕样链接"""
+    style_link = get_object_or_404(StyleLink, id=link_id)
+    
+    # 检查权限
+    if not request.user.is_superuser and style_link.created_by != request.user:
+        messages.error(request, '您没有权限编辑此链接！')
+        return redirect('clamps:my_style_links')
+    
+    if request.method == 'POST':
+        # 获取表单数据
+        name = request.POST.get('name', '').strip()
+        expires_days = request.POST.get('expires_days', '0')
+        max_clicks = request.POST.get('max_clicks', '0')
+        
+        # 处理有效期
+        expires_at = None
+        if expires_days and int(expires_days) > 0:
+            expires_at = timezone.now() + timedelta(days=int(expires_days))
+        
+        # 处理搜索配置
+        # 获取启用的字段
+        enabled_fields = request.POST.getlist('enabled_fields[]')
+        
+        # 处理固定字段
+        fixed_fields = {}
+        for key in request.POST:
+            if key.startswith('fixed_fields['):
+                # 提取字段名
+                field_name = key[len('fixed_fields['):-1]
+                value = request.POST[key]
+                if value:
+                    fixed_fields[field_name] = value
+        
+        search_config = {
+            'enabled_fields': enabled_fields,
+            'disabled_fields': [],  # 现在通过enabled_fields的反选来确定禁用字段
+            'fixed_fields': fixed_fields
+        }
+        
+        # 更新仕样链接
+        style_link.name = name
+        style_link.expires_at = expires_at
+        style_link.max_clicks = int(max_clicks)
+        style_link.search_config = search_config
+        style_link.save()
+        
+        messages.success(request, '仕样链接已更新！')
+        return redirect('clamps:my_style_links')
+    
+    context = {
+        'style_link': style_link
+    }
+    return render(request, 'management/edit_style_link.html', context)
 
 
 import requests
@@ -1635,13 +1693,22 @@ def download_analytics_api(request):
     提供下载数据分析的API接口
     已修改：删除匿名用户统计，不允许有空用户名
     """
+    print(f"API请求用户: {request.user.username}")
+    print(f"用户是否登录: {request.user.is_authenticated}")
+    print(f"用户是否是管理员: {request.user.is_staff}")
+    print(f"用户是否是超级管理员: {request.user.is_superuser}")
+    
     # 获取参数
     days = int(request.GET.get('days', 7))  # 默认7天
     user_filter = request.GET.get('user', 'all')  # 默认全部用户
     
+    print(f"请求参数: days={days}, user_filter={user_filter}")
+    
     # 计算时间范围
     end_date = timezone.now()
     start_date = end_date - timedelta(days=days)
+    
+    print(f"时间范围: {start_date} 到 {end_date}")
     
     # 基础查询：下载相关的日志
     # 只查询有用户关联的日志（排除匿名用户）
@@ -1740,22 +1807,28 @@ def download_analytics_api(request):
 
 def parse_download_size(details):
     """从日志详情中解析下载大小（MB）"""
-    size_match = re.search(r'File Size: ([\d.]+) MB', details)
-    if size_match:
-        return float(size_match.group(1))
+    try:
+        size_match = re.search(r'File Size: ([\d.]+) MB', details)
+        if size_match:
+            return float(size_match.group(1))
+    except Exception as e:
+        print(f"解析下载大小失败: {e}")
     return 0.0
 
 
 def parse_file_count(details):
     """从日志详情中解析下载文件数量"""
-    # 单个文件下载
-    if 'File Type:' in details:
-        return 1
-    # 批量下载
-    elif 'Product IDs:' in details:
-        ids_match = re.search(r'Product IDs: ([\d,]+)', details)
-        if ids_match:
-            return len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
+    try:
+        # 单个文件下载
+        if 'File Type:' in details:
+            return 1
+        # 批量下载
+        elif 'Product IDs:' in details:
+            ids_match = re.search(r'Product IDs: ([\d,]+)', details)
+            if ids_match:
+                return len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
+    except Exception as e:
+        print(f"解析文件数量失败: {e}")
     return 0
 
 

@@ -51,9 +51,10 @@ urlpatterns = [
     path('management/import_csv/', views.import_csv, name='import_csv'),
     path('management/sync_files/', views.sync_files, name='sync_files'),
     path('management/analytics/', views.analytics_view, name='analytics'),
-    # 式样管理
+    # 仕样管理
     path('management/style_links/create/', views.create_style_link, name='create_style_link'),
     path('management/style_links/my/', views.my_style_links, name='my_style_links'),
+    path('management/style_links/edit/<int:link_id>/', views.edit_style_link, name='edit_style_link'),
     path('style-search/<str:unique_id>/', views.style_search, name='style_search'),
     
     # API接口

@@ -17,7 +17,45 @@
 
 {% extends 'base.html' %}
 
-{% block title %}式样搜索 - 小原焊枪选型数据库{% endblock %}
+{% block extra_css %}
+<style>
+    /* 仕样搜索页面特定样式 */
+    .navbar-brand,
+    .nav-link[href="{% url 'clamps:search' %}"] {
+        pointer-events: none;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 仕样搜索页面导航重定向机制
+    document.addEventListener('DOMContentLoaded', function() {
+        // 保存当前仕样链接的URL
+        const styleLinkUrl = window.location.href;
+        
+        // 将仕样链接URL存储在sessionStorage中，以便在子页面中使用
+        sessionStorage.setItem('styleLinkUrl', styleLinkUrl);
+        
+        // 监听所有链接点击事件
+        document.addEventListener('click', function(event) {
+            const target = event.target.closest('a');
+            if (target) {
+                // 检查是否是内部链接
+                const isInternalLink = target.hostname === window.location.hostname;
+                if (isInternalLink) {
+                    // 保存当前链接的URL，以便在子页面中使用
+                    sessionStorage.setItem('fromStyleSearch', 'true');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block title %}仕样搜索 - 小原焊枪选型数据库{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -25,7 +63,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
             <h1 class="display-6 fw-bold">
                 <i class="bi bi-search me-2"></i>
-                式样搜索
+                仕样搜索
             </h1>
             <div>
                 <a href="{% url 'clamps:home' %}" class="btn btn-outline-secondary">
@@ -35,7 +73,7 @@
             </div>
         </div>
         
-        <!-- 式样搜索配置信息 -->
+        <!-- 仕样搜索配置信息 -->
         <div class="card fade-in-up mb-4">
             <div class="card-header">
                 <h5 class="mb-0">
@@ -117,6 +155,24 @@
                                    {% if 'stroke' in search_config.disabled_fields %}disabled{% endif %}>
                         </div>
                         
+                        <div class="col-md-4">
+                            <label for="throat_depth" class="form-label">
+                                <i class="bi bi-rulers me-2"></i>
+                                喉深
+                            </label>
+                            <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如：~100, 100~200, 200~" 
+                                   {% if 'throat_depth' in search_config.disabled_fields %}disabled{% endif %}>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="throat_width" class="form-label">
+                                <i class="bi bi-ruler-horizontal me-2"></i>
+                                喉宽
+                            </label>
+                            <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如：~50, 50~100, 100~" 
+                                   {% if 'throat_width' in search_config.disabled_fields %}disabled{% endif %}>
+                        </div>
+                        
                         <!-- 高级搜索字段 -->
                         <div class="col-md-4">
                             <label for="description" class="form-label">
@@ -130,22 +186,42 @@
                         <div class="col-md-4">
                             <label for="motor_manufacturer" class="form-label">
                                 <i class="bi bi-gear-wide-connected me-2"></i>
-                                MOTOR厂家
+                                MOTOR厂家（最少选择1项）
                             </label>
-                            <select class="form-select" id="motor_manufacturer" name="motor_manufacturer" 
+                            <select class="form-select" id="motor_manufacturer" name="motor_manufacturer" multiple 
                                     {% if 'motor_manufacturer' in search_config.disabled_fields %}disabled{% endif %}>
-                                <option value="">请选择</option>
-                                <option value="FANUC">FANUC</option>
-                                <option value="KUKA">KUKA</option>
-                                <option value="YASKAWA">YASKAWA</option>
-                                <option value="ABB">ABB</option>
-                                <option value="TOLOMATIC">TOLOMATIC</option>
-                                <option value="多摩川">多摩川</option>
-                                <option value="PANASONIC">PANASONIC</option>
-                                <option value="DIAKONT">DIAKONT</option>
-                                <option value="SEW">SEW</option>
-                                <option value="SANYO">SANYO</option>
-                                <option value="其他">其他</option>
+                                <option value="FANUC" {% if 'motor_manufacturer_FANUC' not in search_config.enabled_fields %}disabled{% endif %}>FANUC</option>
+                                <option value="KUKA" {% if 'motor_manufacturer_KUKA' not in search_config.enabled_fields %}disabled{% endif %}>KUKA</option>
+                                <option value="YASKAWA" {% if 'motor_manufacturer_YASKAWA' not in search_config.enabled_fields %}disabled{% endif %}>YASKAWA</option>
+                                <option value="ABB" {% if 'motor_manufacturer_ABB' not in search_config.enabled_fields %}disabled{% endif %}>ABB</option>
+                                <option value="TOLOMATIC" {% if 'motor_manufacturer_TOLOMATIC' not in search_config.enabled_fields %}disabled{% endif %}>TOLOMATIC</option>
+                                <option value="多摩川" {% if 'motor_manufacturer_多摩川' not in search_config.enabled_fields %}disabled{% endif %}>多摩川</option>
+                                <option value="PANASONIC" {% if 'motor_manufacturer_PANASONIC' not in search_config.enabled_fields %}disabled{% endif %}>PANASONIC</option>
+                                <option value="DIAKONT" {% if 'motor_manufacturer_DIAKONT' not in search_config.enabled_fields %}disabled{% endif %}>DIAKONT</option>
+                                <option value="SEW" {% if 'motor_manufacturer_SEW' not in search_config.enabled_fields %}disabled{% endif %}>SEW</option>
+                                <option value="SANYO" {% if 'motor_manufacturer_SANYO' not in search_config.enabled_fields %}disabled{% endif %}>SANYO</option>
+                                <option value="其他" {% if 'motor_manufacturer_其他' not in search_config.enabled_fields %}disabled{% endif %}>其他</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="transformer" class="form-label">
+                                <i class="bi bi-gear me-2"></i>
+                                变压器（最少选择1项）
+                            </label>
+                            <select class="form-select" id="transformer" name="transformer" multiple 
+                                    {% if 'transformer' in search_config.disabled_fields %}disabled{% endif %}>
+                                <option value="ITS85" {% if 'transformer_ITS85' not in search_config.enabled_fields %}disabled{% endif %}>ITS85</option>
+                                <option value="DB6-100R1" {% if 'transformer_DB6_100R1' not in search_config.enabled_fields %}disabled{% endif %}>DB6-100R1</option>
+                                <option value="RT552" {% if 'transformer_RT552' not in search_config.enabled_fields %}disabled{% endif %}>RT552</option>
+                                <option value="RT752" {% if 'transformer_RT752' not in search_config.enabled_fields %}disabled{% endif %}>RT752</option>
+                                <option value="BOSCH" {% if 'transformer_BOSCH' not in search_config.enabled_fields %}disabled{% endif %}>BOSCH</option>
+                                <option value="商科" {% if 'transformer_SHANGKE' not in search_config.enabled_fields %}disabled{% endif %}>商科</option>
+                                <option value="RT906" {% if 'transformer_RT906' not in search_config.enabled_fields %}disabled{% endif %}>RT906</option>
+                                <option value="RT706" {% if 'transformer_RT706' not in search_config.enabled_fields %}disabled{% endif %}>RT706</option>
+                                <option value="NI110" {% if 'transformer_NI110' not in search_config.enabled_fields %}disabled{% endif %}>NI110</option>
+                                <option value="RT452" {% if 'transformer_RT452' not in search_config.enabled_fields %}disabled{% endif %}>RT452</option>
+                                <option value="其他" {% if 'transformer_OTHER' not in search_config.enabled_fields %}disabled{% endif %}>其他</option>
                             </select>
                         </div>
                         

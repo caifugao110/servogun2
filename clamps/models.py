@@ -535,7 +535,7 @@ class UserProfile(models.Model):
 
 
 class StyleLink(models.Model):
-    """式样链接模型，用于生成和管理特定的搜索链接"""
+    """仕样链接模型，用于生成和管理特定的搜索链接"""
     
     # 链接标识和配置
     unique_id = models.CharField(max_length=32, unique=True, verbose_name="唯一标识符", help_text="用于生成链接的唯一标识")
@@ -559,8 +559,8 @@ class StyleLink(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     
     class Meta:
-        verbose_name = "式样链接"
-        verbose_name_plural = "式样链接"
+        verbose_name = "仕样链接"
+        verbose_name_plural = "仕样链接"
         ordering = ['-created_at']
     
     def __str__(self):

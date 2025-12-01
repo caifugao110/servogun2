@@ -1,0 +1,414 @@
+<!--
+  Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+
+{% extends 'base.html' %}
+
+{% block title %}编辑仕样链接 - 小原焊枪选型数据库{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
+            <h1 class="display-6 fw-bold">
+                <i class="bi bi-pencil me-2"></i>
+                编辑仕样链接
+            </h1>
+            <div>
+                <a href="{% url 'clamps:my_style_links' %}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-list me-2"></i>
+                    我的仕样链接
+                </a>
+                <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    返回仪表板
+                </a>
+            </div>
+        </div>
+        
+        <!-- 编辑仕样表单 -->
+        <div class="card fade-in-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    仕样链接配置
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'clamps:edit_style_link' style_link.id %}">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <!-- 基本信息 -->
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-tag me-2"></i>
+                                链接备注
+                            </label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ style_link.name }}" placeholder="请输入链接备注名称">
+                            <div class="form-text">用于标识该链接的用途，方便后续管理</div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="expires_days" class="form-label">
+                                <i class="bi bi-clock me-2"></i>
+                                有效期（天）
+                            </label>
+                            <input type="number" class="form-control" id="expires_days" name="expires_days" min="0" max="365" value="0">
+                            <div class="form-text">设置为0表示永久有效</div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="max_clicks" class="form-label">
+                                <i class="bi bi-mouse me-2"></i>
+                                最大点击次数
+                            </label>
+                            <input type="number" class="form-control" id="max_clicks" name="max_clicks" min="0" value="{{ style_link.max_clicks }}">
+                            <div class="form-text">设置为0表示无限制</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>
+                            <i class="bi bi-sliders me-2"></i>
+                            搜索字段配置
+                        </h6>
+                        <p class="text-muted small">选择在链接中哪些搜索选项是可选的，哪些是禁用的，哪些是固定的</p>
+                    </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <!-- 产品分类 -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="bi bi-folder2 me-2"></i>
+                                产品分类（可多选，未勾选的将被禁用）
+                            </label>
+                            <div class="border p-3 rounded">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="category_X2C-C_recommended" checked>
+                                    <label class="form-check-label">X2C-C(推荐)</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="category_X2C-X_recommended" checked>
+                                    <label class="form-check-label">X2C-X(推荐)</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="category_X2C-V2-C" checked>
+                                    <label class="form-check-label">X2C-V2-C</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="category_X2C-V2-X" checked>
+                                    <label class="form-check-label">X2C-V2-X</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="category_X2C-V3-C" checked>
+                                    <label class="form-check-label">X2C-V3-C</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="category_X2C-V3-X" checked>
+                                    <label class="form-check-label">X2C-V3-X</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 子分类类型 -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="bi bi-folder-symlink me-2"></i>
+                                子分类类型
+                            </label>
+                            <div class="alert alert-info" role="alert">
+                                <i class="bi bi-info-circle me-2"></i>
+                                子分类类型禁止定义，将根据产品分类自动显示
+                            </div>
+                        </div>
+                        
+                        <!-- 变压器类型 -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="bi bi-gear me-2"></i>
+                                变压器类型（可多选，未勾选的将被禁用）
+                            </label>
+                            <div class="border p-3 rounded">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_ITS85" checked>
+                                            <label class="form-check-label">ITS85</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_DB6_100R1" checked>
+                                            <label class="form-check-label">DB6-100R1</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_RT552" checked>
+                                            <label class="form-check-label">RT552</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_RT752" checked>
+                                            <label class="form-check-label">RT752</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_BOSCH" checked>
+                                            <label class="form-check-label">BOSCH</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_SHANGKE" checked>
+                                            <label class="form-check-label">商科</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_RT906" checked>
+                                            <label class="form-check-label">RT906</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_RT706" checked>
+                                            <label class="form-check-label">RT706</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_NI110" checked>
+                                            <label class="form-check-label">NI110</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_RT452" checked>
+                                            <label class="form-check-label">RT452</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_OTHER" checked>
+                                            <label class="form-check-label">其他</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 基本搜索字段 -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="bi bi-check-square me-2"></i>
+                                基本搜索字段（必选字段已自动勾选，不可取消）
+                            </label>
+                            <div class="border p-3 rounded">
+                                <div class="row">
+                                    <!-- 必选字段 -->
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="drawing_no_1" checked disabled>
+                                            <label class="form-check-label">图号1(o)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="clamping_force" checked disabled>
+                                            <label class="form-check-label">加压力</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="stroke" checked disabled>
+                                            <label class="form-check-label">行程</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="description" checked disabled>
+                                            <label class="form-check-label">描述</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="throat_depth" checked disabled>
+                                            <label class="form-check-label">喉深</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="throat_width" checked disabled>
+                                            <label class="form-check-label">喉宽</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 可选字段 -->
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="weight">
+                                            <label class="form-check-label">重量</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- MOTOR厂家类型 -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="bi bi-gear-wide-connected me-2"></i>
+                                MOTOR厂家类型（可多选，未勾选的将被禁用）
+                            </label>
+                            <div class="border p-3 rounded">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_FANUC" checked>
+                                            <label class="form-check-label">FANUC</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_KUKA" checked>
+                                            <label class="form-check-label">KUKA</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_YASKAWA" checked>
+                                            <label class="form-check-label">YASKAWA</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_ABB" checked>
+                                            <label class="form-check-label">ABB</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_TOLOMATIC" checked>
+                                            <label class="form-check-label">TOLOMATIC</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_多摩川" checked>
+                                            <label class="form-check-label">多摩川</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_PANASONIC" checked>
+                                            <label class="form-check-label">PANASONIC</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_DIAKONT" checked>
+                                            <label class="form-check-label">DIAKONT</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_SEW" checked>
+                                            <label class="form-check-label">SEW</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_SANYO" checked>
+                                            <label class="form-check-label">SANYO</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="motor_manufacturer_其他" checked>
+                                            <label class="form-check-label">其他</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 固定字段配置 -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="bi bi-lock me-2"></i>
+                                固定字段配置（可选）
+                            </label>
+                            <div class="border p-3 rounded">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="fixed_motor_manufacturer" class="form-label">固定MOTOR厂家</label>
+                                        <select class="form-select" id="fixed_motor_manufacturer" name="fixed_fields[motor_manufacturer]">
+                                            <option value="">不固定</option>
+                                            <option value="FANUC">FANUC</option>
+                                            <option value="KUKA">KUKA</option>
+                                            <option value="YASKAWA">YASKAWA</option>
+                                            <option value="ABB">ABB</option>
+                                            <option value="TOLOMATIC">TOLOMATIC</option>
+                                            <option value="多摩川">多摩川</option>
+                                            <option value="PANASONIC">PANASONIC</option>
+                                            <option value="DIAKONT">DIAKONT</option>
+                                            <option value="SEW">SEW</option>
+                                            <option value="SANYO">SANYO</option>
+                                            <option value="其他">其他</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="fixed_has_balance" class="form-label">固定有无平衡</label>
+                                        <select class="form-select" id="fixed_has_balance" name="fixed_fields[has_balance]">
+                                            <option value="">不固定</option>
+                                            <option value="有">有</option>
+                                            <option value="无">无</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="fixed_water_circuit" class="form-label">固定水路</label>
+                                        <select class="form-select" id="fixed_water_circuit" name="fixed_fields[water_circuit]">
+                                            <option value="">不固定</option>
+                                            <option value="1进1出">1进1出</option>
+                                            <option value="2进2出">2进2出</option>
+                                            <option value="3进3出">3进3出</option>
+                                            <option value="1进2出">1进2出</option>
+                                            <option value="2进3出">2进3出</option>
+                                            <option value="1进3出">1进3出</option>
+                                            <option value="其他">其他</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>
+                            保存修改
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

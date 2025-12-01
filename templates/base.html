@@ -513,7 +513,7 @@
     <!-- 导航栏 -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'clamps:home' %}">
+            <a class="navbar-brand" href="{% if is_style_search %}{% url 'clamps:home' %}{% else %}{% url 'clamps:home' %}{% endif %}" {% if is_style_search %}style="pointer-events: none; opacity: 0.6; cursor: not-allowed;"{% endif %}>
                 <i class="fas fa-industry me-2"></i>
                 小原焊枪选型数据库
             </a>
@@ -526,7 +526,7 @@
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'clamps:search' %}">
+                            <a class="nav-link" href="{% url 'clamps:search' %}" {% if is_style_search %}style="pointer-events: none; opacity: 0.6; cursor: not-allowed;"{% endif %}>
                                 <i class="bi bi-search text-success me-1"></i>产品搜索
                             </a>
                         </li>
@@ -928,6 +928,37 @@
     </script>
     
     {% block extra_js %}{% endblock %}
+    
+    <script>
+        // 仕样搜索页面导航重定向机制
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否从仕样搜索页面进入
+            const fromStyleSearch = sessionStorage.getItem('fromStyleSearch');
+            const styleLinkUrl = sessionStorage.getItem('styleLinkUrl');
+            
+            if (fromStyleSearch === 'true' && styleLinkUrl) {
+                // 监听浏览器的返回按钮事件
+                window.addEventListener('popstate', function() {
+                    // 重定向回仕样链接页面
+                    window.location.href = styleLinkUrl;
+                });
+                
+                // 监听所有返回按钮的点击事件
+                document.addEventListener('click', function(event) {
+                    const target = event.target.closest('a');
+                    if (target) {
+                        // 检查是否是返回按钮
+                        if (target.textContent.includes('返回') || target.textContent.includes('Back') || 
+                            target.querySelector('.bi-arrow-left') || target.querySelector('.bi-house')) {
+                            event.preventDefault();
+                            // 重定向回仕样链接页面
+                            window.location.href = styleLinkUrl;
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
 
