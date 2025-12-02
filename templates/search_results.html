@@ -97,11 +97,11 @@
                     <p class="mb-0">共找到 {{ total_results }} 个匹配的产品</p>
                 </div>
                 <div>
-                    <a href="{% url 'clamps:search' %}" class="btn btn-light">
-                        <i class="bi bi-arrow-left me-2"></i>
-                        返回搜索
-                    </a>
-                </div>
+                        <a href="{% if is_style_search %}{{ request.session.style_link_url }}{% else %}{% url 'clamps:search' %}{% endif %}" class="btn btn-light">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            返回搜索
+                        </a>
+                    </div>
             </div>
         </div>
         

@@ -206,7 +206,7 @@
                         <p class="card-text">同步media文件夹中的pdf、step和bmp文件路径到数据库。</p>
 						<form action="{% url 'clamps:sync_files' %}" method="post">
 							{% csrf_token %}
-							<button type="submit" class="btn btn-secondary" 
+							<button type="submit" class="btn btn-warning"" 
 									onclick="return confirm('确定要同步文件吗？');">
 								<i class="bi bi-arrow-right me-2"></i>
 								同步文件

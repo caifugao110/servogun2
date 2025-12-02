@@ -19,6 +19,118 @@
 
 {% block title %}创建新仕样 - 小原焊枪选型数据库{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* 优化复选框样式，使其在白色主题下更醒目 */
+    .form-check-input {
+        width: 1.25em;
+        height: 1.25em;
+        margin-top: 0.25em;
+        vertical-align: top;
+        background-color: #fff;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        border: 2px solid #adb5bd;
+        border-radius: 0.375em;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+    
+    /* 选中状态样式 */
+    .form-check-input:checked {
+        background-color: #0066cc;
+        border-color: #0066cc;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+        box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
+    }
+    
+    /* 悬停状态样式 */
+    .form-check-input:hover {
+        border-color: #0066cc;
+    }
+    
+    /* 聚焦状态样式 */
+    .form-check-input:focus {
+        border-color: #0066cc;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
+    }
+    
+    /* 禁用状态样式 */
+    .form-check-input:disabled {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+    
+    /* 调整标签样式，确保与复选框对齐 */
+    .form-check-label {
+        margin-left: 0.5em;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    
+    /* 优化行内复选框的间距 */
+    .form-check-inline {
+        margin-right: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* 优化普通复选框的间距 */
+    .form-check {
+        margin-bottom: 0.75rem;
+    }
+    
+    /* 优化边界和背景，提高整体对比度 */
+    .border {
+        border: 1px solid #dee2e6 !important;
+        background-color: #f8f9fa;
+    }
+    
+    /* 优化标签样式 */
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    /* Dark主题下的样式 */
+    [data-bs-theme="dark"] .form-check-input {
+        background-color: #343a40;
+        border-color: #6c757d;
+    }
+    
+    [data-bs-theme="dark"] .form-check-input:checked {
+        background-color: #0066cc;
+        border-color: #0066cc;
+        box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
+    }
+    
+    [data-bs-theme="dark"] .form-check-input:hover {
+        border-color: #0066cc;
+    }
+    
+    [data-bs-theme="dark"] .form-check-input:focus {
+        border-color: #0066cc;
+        box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
+    }
+    
+    [data-bs-theme="dark"] .form-check-label {
+        color: #adb5bd;
+    }
+    
+    [data-bs-theme="dark"] .border {
+        border: 1px solid #495057 !important;
+        background-color: #212529;
+    }
+    
+    [data-bs-theme="dark"] .form-label {
+        color: #adb5bd;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-12">
@@ -59,7 +171,7 @@
                                 链接备注
                             </label>
                             <input type="text" class="form-control" id="name" name="name" placeholder="请输入链接备注名称">
-                            <div class="form-text">用于标识该链接的用途，方便后续管理</div>
+                            <div class="form-text">用于标识该链接的用途，备注参考：至信选枪251202</div>
                         </div>
                         
                         <div class="col-md-3">
@@ -301,27 +413,27 @@
                             <div class="border p-3 rounded">
                                 <div class="row g-3">
                                     <div class="col-md-4">
-                                        <label for="fixed_drawing_no_1" class="form-label">固定图号1(o)</label>
+                                        <label for="fixed_drawing_no_1" class="form-label">图号1(o)</label>
                                         <input type="text" class="form-control" id="fixed_drawing_no_1" name="fixed_fields[drawing_no_1]" placeholder="不定义则允许用户输入">
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="fixed_description" class="form-label">固定描述</label>
+                                        <label for="fixed_description" class="form-label">描述</label>
                                         <input type="text" class="form-control" id="fixed_description" name="fixed_fields[description]" placeholder="不定义则允许用户输入">
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="fixed_clamping_force" class="form-label">固定加压力</label>
+                                        <label for="fixed_clamping_force" class="form-label">固压力</label>
                                         <input type="text" class="form-control" id="fixed_clamping_force" name="fixed_fields[clamping_force]" placeholder="例如：~3500, 3500~5500, 5500~，不定义则允许用户输入">
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="fixed_stroke" class="form-label">固定行程</label>
+                                        <label for="fixed_stroke" class="form-label">行程</label>
                                         <input type="text" class="form-control" id="fixed_stroke" name="fixed_fields[stroke]" placeholder="例如：~90, 100~190, 210~，不定义则允许用户输入">
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="fixed_throat_depth" class="form-label">固定喉深</label>
+                                        <label for="fixed_throat_depth" class="form-label">喉深</label>
                                         <input type="text" class="form-control" id="fixed_throat_depth" name="fixed_fields[throat_depth]" placeholder="例如：~100, 100~200, 200~，不定义则允许用户输入">
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="fixed_throat_width" class="form-label">固定喉宽</label>
+                                        <label for="fixed_throat_width" class="form-label">喉宽</label>
                                         <input type="text" class="form-control" id="fixed_throat_width" name="fixed_fields[throat_width]" placeholder="例如：~50, 50~100, 100~，不定义则允许用户输入">
                                     </div>
                                 </div>

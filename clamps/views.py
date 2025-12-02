@@ -170,7 +170,9 @@ def user_login(request):
                 ip_address=request.META.get('REMOTE_ADDR'), 
                 user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
-            return redirect('clamps:home')
+            # 处理next参数，重定向到原来请求的页面
+            next_url = request.GET.get('next', request.POST.get('next', 'clamps:home'))
+            return redirect(next_url)
         else:
             messages.error(request, '无效的用户名或密码，请联系您的营业经理重新获取用户名或进行密码重置。')
             return render(request, 'login.html')
@@ -203,7 +205,9 @@ def user_login_en(request):
                 ip_address=request.META.get('REMOTE_ADDR'), 
                 user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
-            return redirect('clamps:home_en')
+            # 处理next参数，重定向到原来请求的页面
+            next_url = request.GET.get('next', request.POST.get('next', 'clamps:home_en'))
+            return redirect(next_url)
         else:
             messages.error(request, 'Invalid username or password. Please contact your business manager to obtain a new username or reset your password.')
             return render(request, 'login_en.html')
@@ -393,6 +397,7 @@ def search_results_base(request, template_name):
         'page_obj': page_obj,
         'total_results': paginator.count,
         'query_params': query_params,
+        'is_style_search': request.session.get('from_style_search', False)
     }
     return render(request, template_name, context)
 
@@ -401,6 +406,7 @@ def search_results(request):
     return search_results_base(request, 'search_results.html')
 
 @login_required
+@user_passes_test(is_staff_or_superuser)
 def search_results_en(request):
     return search_results_base(request, 'search_results_en.html')
 
@@ -413,7 +419,10 @@ def product_detail(request, product_id):
     log_entry = Log(user=request.user, action_type='view', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id}')
     log_entry.save()
-    return render(request, 'product_detail.html', {'product': product})
+    return render(request, 'product_detail.html', {
+        'product': product,
+        'is_style_search': request.session.get('from_style_search', False)
+    })
 
 @login_required
 def product_detail_en(request, product_id):
@@ -421,7 +430,10 @@ def product_detail_en(request, product_id):
     log_entry = Log(user=request.user, action_type='view', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id} (English)')
     log_entry.save()
-    return render(request, 'product_detail_en.html', {'product': product})
+    return render(request, 'product_detail_en.html', {
+        'product': product,
+        'is_style_search': request.session.get('from_style_search', False)
+    })
 
 
 
@@ -586,6 +598,9 @@ def download_file(request, product_id, file_type):
                                 details=f'Product ID: {product_id}, File Type: {file_type}, File Size: {file_size_mb:.2f} MB')
                 log_entry.save()
                 
+                # 记录下载统计
+                user_profile.record_download(file_size_mb)
+                
                 return response
             else:
                 # 对于其他文件类型，重定向到受保护的媒体URL
@@ -594,6 +609,10 @@ def download_file(request, product_id, file_type):
                                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
                                 details=f'Product ID: {product_id}, File Type: {file_type}, File Size: {file_size_mb:.2f} MB')
                 log_entry.save()
+                
+                # 记录下载统计
+                user_profile.record_download(file_size_mb)
+                
                 return redirect('clamps:protected_media', path=relative_path)
 
         else:
@@ -693,6 +712,9 @@ def batch_download_view(request, file_type):
                         user_agent=request.META.get('HTTP_USER_AGENT', ''),
                         details=f'File Type: {file_type}, Product IDs: {product_ids_str}, Total Size: {total_size_mb:.2f} MB')
         log_entry.save()
+        
+        # 记录批量下载统计
+        user_profile.record_download(total_size_mb)
         
         return response
     messages.error(request, "无效的批量下载请求。")
@@ -1558,6 +1580,10 @@ def style_search(request, unique_id):
     # 增加点击次数
     style_link.increment_click()
     
+    # 设置会话状态，标记当前是从仕样搜索页面进入
+    request.session['from_style_search'] = True
+    request.session['style_link_url'] = request.build_absolute_uri()
+    
     # 准备搜索配置上下文
     search_config = style_link.search_config
     
@@ -1620,7 +1646,8 @@ def style_search(request, unique_id):
         'transformers': transformers,
         'motor_manufacturers': motor_manufacturers,
         'enabled_fields': enabled_fields,
-        'fixed_fields': fixed_fields
+        'fixed_fields': fixed_fields,
+        'is_style_search': True
     }
     return render(request, 'style_search.html', context)
 
@@ -1972,7 +1999,8 @@ def analytics_view(request):
 def get_user_profile_data(request):
     """获取用户配置数据API"""
     try:
-        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        # 每次请求都重新从数据库获取最新数据，避免使用缓存
+        user_profile = UserProfile.objects.get(user=request.user)
         
         # 获取密码过期日期
         password_expiry_date = user_profile.get_password_expiry_date()
@@ -1982,15 +2010,55 @@ def get_user_profile_data(request):
             # 转换为本地时间并格式化
             expiry_text = password_expiry_date.strftime('%Y-%m-%d %H:%M:%S')
         
+        # 从Log表中获取今日的下载统计数据
+        today = timezone.localtime(timezone.now()).date()
+        today_logs = Log.objects.filter(
+            user=request.user,
+            action_type__in=['download', 'batch_download'],
+            timestamp__date=today
+        )
+        
+        # 计算今日下载统计
+        daily_download_count = 0
+        daily_download_size_mb = 0.0
+        
+        for log in today_logs:
+            # 解析下载大小
+            size_match = re.search(r'File Size: ([\d.]+) MB', log.details)
+            if size_match:
+                daily_download_size_mb += float(size_match.group(1))
+            
+            # 解析下载文件数量
+            if 'batch_download' in log.action_type:
+                # 批量下载
+                ids_match = re.search(r'Product IDs: ([\d,]+)', log.details)
+                if ids_match:
+                    daily_download_count += len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
+            else:
+                # 单个文件下载
+                daily_download_count += 1
+        
         return JsonResponse({
             'created_by': user_profile.created_by.username if user_profile.created_by else "N/A",
             'password_expiry_date': expiry_text,
             'max_daily_download_gb': user_profile.max_daily_download_gb,
             'max_daily_download_count': user_profile.max_daily_download_count,
-            'daily_download_count': user_profile.daily_download_count,
-            'daily_download_size_mb': user_profile.daily_download_size_mb
+            'daily_download_count': daily_download_count,
+            'daily_download_size_mb': daily_download_size_mb
+        })
+    except UserProfile.DoesNotExist:
+        # 创建新的用户配置
+        user_profile = UserProfile.objects.create(user=request.user)
+        return JsonResponse({
+            'created_by': "N/A",
+            'password_expiry_date': "永久有效",
+            'max_daily_download_gb': user_profile.max_daily_download_gb,
+            'max_daily_download_count': user_profile.max_daily_download_count,
+            'daily_download_count': 0,
+            'daily_download_size_mb': 0
         })
     except Exception as e:
+        print(f"获取用户配置数据失败: {str(e)}")  # 添加错误日志
         return JsonResponse({
             'created_by': "获取失败",
             'password_expiry_date': "获取失败",

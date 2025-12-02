@@ -62,11 +62,11 @@
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">
                     <i class="bi bi-funnel me-2"></i>
-                    焊枪搜索
+                    仕样搜索
                 </h5>
             </div>
             <div class="card-body">
-                <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm">
+                <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm" data-no-loading>
                     {% csrf_token %}
                 <!-- 主要搜索字段和图片预览 -->
                 <div class="row g-3 mb-4">
@@ -112,8 +112,11 @@
                             <div class="col-md-6">
                                 <label for="throat_depth" class="form-label"><i class="bi bi-rulers me-2"></i>喉深</label>
                                 {% if fixed_fields.throat_depth %}
-                                <input type="text" class="form-control" id="throat_depth" name="throat_depth" 
-                                        value="{{ fixed_fields.throat_depth }}" readonly>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="throat_depth" name="throat_depth" 
+                                            value="{{ fixed_fields.throat_depth }}" readonly>
+                                    <span class="input-group-text text-danger">已定义禁止输入</span>
+                                </div>
                                 {% else %}
                                 <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如: ~350, 350~600, 600~">
                                 {% endif %}
@@ -121,8 +124,11 @@
                             <div class="col-md-6">
                                 <label for="throat_width" class="form-label"><i class="bi bi-arrows-expand me-2"></i>喉宽</label>
                                 {% if fixed_fields.throat_width %}
-                                <input type="text" class="form-control" id="throat_width" name="throat_width" 
-                                        value="{{ fixed_fields.throat_width }}" readonly>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="throat_width" name="throat_width" 
+                                            value="{{ fixed_fields.throat_width }}" readonly>
+                                    <span class="input-group-text text-danger">已定义禁止输入</span>
+                                </div>
                                 {% else %}
                                 <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如: ~350, 350~600, 600~">
                                 {% endif %}
@@ -139,8 +145,11 @@
                             <div class="col-md-6">
                                 <label for="clamping_force" class="form-label"><i class="bi bi-lightning me-2"></i>加压力</label>
                                 {% if fixed_fields.clamping_force %}
-                                <input type="text" class="form-control" id="clamping_force" name="clamping_force" 
-                                        value="{{ fixed_fields.clamping_force }}" readonly>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="clamping_force" name="clamping_force" 
+                                            value="{{ fixed_fields.clamping_force }}" readonly>
+                                    <span class="input-group-text text-danger">已定义禁止输入</span>
+                                </div>
                                 {% else %}
                                 <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~3500, 3500~5500, 5500~">
                                 {% endif %}
@@ -180,8 +189,11 @@
                                         图号1(o)
                                     </label>
                                     {% if fixed_fields.drawing_no_1 %}
-                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
-                                            value="{{ fixed_fields.drawing_no_1 }}" readonly>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
+                                                value="{{ fixed_fields.drawing_no_1 }}" readonly>
+                                        <span class="input-group-text text-danger">已定义禁止输入</span>
+                                    </div>
                                     {% else %}
                                     <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
                                             placeholder="焊枪图号，默认为空">
@@ -192,8 +204,11 @@
                                 <div class="col-md-4">
                                     <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>描述</label>
                                     {% if fixed_fields.description %}
-                                    <input type="text" class="form-control" id="description" name="description" 
-                                            value="{{ fixed_fields.description }}" readonly>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="description" name="description" 
+                                                value="{{ fixed_fields.description }}" readonly>
+                                        <span class="input-group-text text-danger">已定义禁止输入</span>
+                                    </div>
                                     {% else %}
                                     <input type="text" class="form-control" id="description" name="description" placeholder="客户描述，默认为空">
                                     {% endif %}
@@ -203,8 +218,11 @@
                                 <div class="col-md-4">
                                     <label for="stroke" class="form-label"><i class="bi bi-arrows-move me-2"></i>行程</label>
                                     {% if fixed_fields.stroke %}
-                                    <input type="text" class="form-control" id="stroke" name="stroke" 
-                                            value="{{ fixed_fields.stroke }}" readonly>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="stroke" name="stroke" 
+                                                value="{{ fixed_fields.stroke }}" readonly>
+                                        <span class="input-group-text text-danger">已定义禁止输入</span>
+                                    </div>
                                     {% else %}
                                     <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如: ~90, 100~190, 210~">
                                     {% endif %}
@@ -254,8 +272,11 @@
                                 <div class="col-md-4">
                                     <label for="weight" class="form-label"><i class="bi bi-box me-2"></i>重量</label>
                                     {% if fixed_fields.weight %}
-                                    <input type="text" class="form-control" id="weight" name="weight" 
-                                            value="{{ fixed_fields.weight }}" readonly>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="weight" name="weight" 
+                                                value="{{ fixed_fields.weight }}" readonly>
+                                        <span class="input-group-text text-danger">已定义禁止输入</span>
+                                    </div>
                                     {% else %}
                                     <input type="text" class="form-control" id="weight" name="weight" placeholder="例如: ~90, 90~120, 120~">
                                     {% endif %}
@@ -334,8 +355,11 @@
                                 <div class="col-md-4">
                                     <label for="grip_extension_length" class="form-label"><i class="bi bi-arrow-right me-2"></i>握杆伸出长度</label>
                                     {% if fixed_fields.grip_extension_length %}
-                                    <input type="text" class="form-control" id="grip_extension_length" name="grip_extension_length" 
-                                            value="{{ fixed_fields.grip_extension_length }}" readonly>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="grip_extension_length" name="grip_extension_length" 
+                                                value="{{ fixed_fields.grip_extension_length }}" readonly>
+                                        <span class="input-group-text text-danger">已定义禁止输入</span>
+                                    </div>
                                     {% else %}
                                     <input type="text" class="form-control" id="grip_extension_length" name="grip_extension_length" placeholder="请输入握杆伸出长度">
                                     {% endif %}
@@ -385,8 +409,11 @@
                                 <div class="col-md-4">
                                     <label for="static_arm_eccentricity" class="form-label"><i class="bi bi-circle-half me-2"></i>静臂偏心</label>
                                     {% if fixed_fields.static_arm_eccentricity %}
-                                    <input type="text" class="form-control" id="static_arm_eccentricity" name="static_arm_eccentricity" 
-                                            value="{{ fixed_fields.static_arm_eccentricity }}" readonly>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="static_arm_eccentricity" name="static_arm_eccentricity" 
+                                                value="{{ fixed_fields.static_arm_eccentricity }}" readonly>
+                                        <span class="input-group-text text-danger">已定义禁止输入</span>
+                                    </div>
                                     {% else %}
                                     <input type="text" class="form-control" id="static_arm_eccentricity" name="static_arm_eccentricity" placeholder="请输入静臂偏心">
                                     {% endif %}
@@ -421,8 +448,11 @@
                                 <div class="col-md-4">
                                     <label for="moving_arm_eccentricity" class="form-label"><i class="bi bi-circle-half me-2"></i>动臂偏心</label>
                                     {% if fixed_fields.moving_arm_eccentricity %}
-                                    <input type="text" class="form-control" id="moving_arm_eccentricity" name="moving_arm_eccentricity" 
-                                            value="{{ fixed_fields.moving_arm_eccentricity }}" readonly>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="moving_arm_eccentricity" name="moving_arm_eccentricity" 
+                                                value="{{ fixed_fields.moving_arm_eccentricity }}" readonly>
+                                        <span class="input-group-text text-danger">已定义禁止输入</span>
+                                    </div>
                                     {% else %}
                                     <input type="text" class="form-control" id="moving_arm_eccentricity" name="moving_arm_eccentricity" placeholder="请输入动臂偏心">
                                     {% endif %}
@@ -551,8 +581,8 @@
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-link-45deg text-primary" style="font-size: 2rem;"></i>
-                        <h5 class="card-title mt-3">仕样链接</h5>
-                        <p class="card-text text-muted">此搜索页面由仕样链接生成，搜索结果将根据配置进行过滤。</p>
+                        <h5 class="card-title mt-3">定制搜索</h5>
+                        <p class="card-text text-muted">营业按需定制搜索页面，选型数据库高度定制化。</p>
                     </div>
                 </div>
             </div>
@@ -570,6 +600,17 @@
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const searchSubmitBtn = document.getElementById('searchSubmitBtn');
+        
+        // 初始禁用搜索按钮
+        searchSubmitBtn.disabled = true;
+        
+        // 更新搜索按钮状态的函数
+        function updateSearchButtonStatus() {
+            const categoryValue = document.getElementById('category').value;
+            searchSubmitBtn.disabled = !categoryValue;
+        }
+        
         const categorySubTypes = {
             'X2C-C(推荐)': ['大型', '特殊', '仙鹤型', '中小型'],
             'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型'],
@@ -759,6 +800,7 @@
                 updateDynamicFields('');
                 productImageElement.src = defaultImagePath;
             }
+            updateSearchButtonStatus();
         });
 
         document.getElementById('sub_category_type').addEventListener('change', function() {
@@ -809,6 +851,8 @@
             updateDynamicFields('');
             productImageElement.src = defaultImagePath;
         }
+        // 更新搜索按钮的初始状态
+        updateSearchButtonStatus();
         // 页面加载完成后，如果尚未选择分类，则聚焦
         if (!document.getElementById('category').value) {
             document.getElementById('category').focus();
@@ -817,9 +861,8 @@
         // 表单提交验证
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             const categoryValue = document.getElementById('category').value;
-            const drawingNo1Value = document.getElementById('drawing_no_1').value.trim();
 
-            if (!categoryValue && !drawingNo1Value) {
+            if (!categoryValue) {
                 event.preventDefault(); // 阻止表单提交
                 alert('产品分类为必选项，请选择！');
                 document.getElementById('category').focus();
