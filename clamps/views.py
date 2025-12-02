@@ -45,7 +45,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
@@ -284,7 +284,12 @@ def search_results_base(request, template_name):
     queryset = Product.objects.all().order_by('drawing_no_1')
 
     if category_id:
-        queryset = queryset.filter(category_id=category_id)
+        try:
+            # 尝试将category_id转换为整数，使用category_id过滤
+            queryset = queryset.filter(category_id=int(category_id))
+        except ValueError:
+            # 如果转换失败，说明是分类名称，使用category__name过滤
+            queryset = queryset.filter(category__name=category_id)
     if description:
         queryset = queryset.filter(description__icontains=description)
     if drawing_no_1:
@@ -366,12 +371,14 @@ def search_results_base(request, template_name):
                        "stroke", "clamping_force", "weight", "throat_depth", "throat_width",
                        "transformer", "electrode_arm_end", "motor_manufacturer", "has_balance",
                        "transformer_placement", "flange_pcd", "bracket_direction", "water_circuit",
-                       "page", "csrfmiddlewaretoken"] and value:
+                       "page", "csrfmiddlewaretoken", "ide_webview_request_time"] and value:
             dynamic_fields[key] = value
 
     for field_name, field_value in dynamic_fields.items():
-        # 动态字段支持范围搜索
-        queryset = parse_range_query(field_name, field_value, queryset)
+        # 确保字段存在于Product模型中
+        if hasattr(Product, field_name):
+            # 动态字段支持范围搜索
+            queryset = parse_range_query(field_name, field_value, queryset)
 
     # 记录搜索日志
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
@@ -1433,7 +1440,16 @@ def create_style_link(request):
             expires_at = timezone.now() + timedelta(days=int(expires_days))
         
         # 处理搜索配置
-        # 获取启用的字段
+        # 获取产品分类
+        product_categories = request.POST.getlist('product_categories[]')
+        
+        # 获取变压器类型
+        transformers = request.POST.getlist('transformers[]')
+        
+        # 获取MOTOR厂家类型
+        motor_manufacturers = request.POST.getlist('motor_manufacturers[]')
+        
+        # 获取启用的其他搜索字段
         enabled_fields = request.POST.getlist('enabled_fields[]')
         
         # 处理固定字段
@@ -1447,8 +1463,10 @@ def create_style_link(request):
                     fixed_fields[field_name] = value
         
         search_config = {
+            'product_categories': product_categories,
+            'transformers': transformers,
+            'motor_manufacturers': motor_manufacturers,
             'enabled_fields': enabled_fields,
-            'disabled_fields': [],  # 现在通过enabled_fields的反选来确定禁用字段
             'fixed_fields': fixed_fields
         }
         
@@ -1540,15 +1558,69 @@ def style_search(request, unique_id):
     # 增加点击次数
     style_link.increment_click()
     
+    # 准备搜索配置上下文
+    search_config = style_link.search_config
+    
+    # 确保所有必要的配置项都存在
+    product_categories = search_config.get('product_categories', [])
+    transformers = search_config.get('transformers', [])
+    motor_manufacturers = search_config.get('motor_manufacturers', [])
+    enabled_fields = search_config.get('enabled_fields', [])
+    fixed_fields = search_config.get('fixed_fields', {})
+    
     # 处理搜索请求
-    if request.method == 'POST':
-        # 这里可以根据style_link.search_config来处理搜索逻辑
-        # 暂时重定向到普通搜索结果页面
-        return redirect('clamps:search_results')
+    if request.method == 'GET':
+        # 检查是否有实际的搜索参数（排除浏览器自动添加的参数）
+        actual_search_params = request.GET.copy()
+        # 移除浏览器自动添加的参数
+        for param in ['ide_webview_request_time']:
+            if param in actual_search_params:
+                actual_search_params.pop(param)
+        
+        if len(actual_search_params) > 0:
+            # 构建搜索参数
+            query_params = request.GET.copy()
+            
+            # 应用固定字段
+            for field, value in fixed_fields.items():
+                if field not in query_params:
+                    query_params[field] = value
+            
+            # 应用产品分类
+            if product_categories and 'category' not in query_params:
+                # 如果只有一个产品分类，直接使用
+                if len(product_categories) == 1:
+                    # 处理推荐分类，转换为实际分类名称
+                    category = product_categories[0]
+                    if category == 'X2C-C_recommended':
+                        category = 'X2C-C'
+                    elif category == 'X2C-X_recommended':
+                        category = 'X2C-X'
+                    query_params['category'] = category
+            
+            # 应用变压器类型
+            if transformers and 'transformer' not in query_params:
+                # 如果只有一个变压器类型，直接使用
+                if len(transformers) == 1:
+                    query_params['transformer'] = transformers[0]
+            
+            # 应用MOTOR厂家类型
+            if motor_manufacturers and 'motor_manufacturer' not in query_params:
+                # 如果只有一个MOTOR厂家类型，直接使用
+                if len(motor_manufacturers) == 1:
+                    query_params['motor_manufacturer'] = motor_manufacturers[0]
+            
+            # 如果有搜索参数，重定向到普通搜索结果页面
+            return redirect(f"{reverse('clamps:search_results')}?{query_params.urlencode()}")
     
     context = {
         'style_link': style_link,
-        'search_config': style_link.search_config
+        'search_config': search_config,
+        'product_categories': product_categories,
+        'transformers': transformers,
+        'motor_manufacturers': motor_manufacturers,
+        'enabled_fields': enabled_fields,
+        'fixed_fields': fixed_fields
     }
     return render(request, 'style_search.html', context)
 
@@ -1576,7 +1648,16 @@ def edit_style_link(request, link_id):
             expires_at = timezone.now() + timedelta(days=int(expires_days))
         
         # 处理搜索配置
-        # 获取启用的字段
+        # 获取产品分类
+        product_categories = request.POST.getlist('product_categories[]')
+        
+        # 获取变压器类型
+        transformers = request.POST.getlist('transformers[]')
+        
+        # 获取MOTOR厂家类型
+        motor_manufacturers = request.POST.getlist('motor_manufacturers[]')
+        
+        # 获取启用的其他搜索字段
         enabled_fields = request.POST.getlist('enabled_fields[]')
         
         # 处理固定字段
@@ -1590,8 +1671,10 @@ def edit_style_link(request, link_id):
                     fixed_fields[field_name] = value
         
         search_config = {
+            'product_categories': product_categories,
+            'transformers': transformers,
+            'motor_manufacturers': motor_manufacturers,
             'enabled_fields': enabled_fields,
-            'disabled_fields': [],  # 现在通过enabled_fields的反选来确定禁用字段
             'fixed_fields': fixed_fields
         }
         
@@ -1605,8 +1688,15 @@ def edit_style_link(request, link_id):
         messages.success(request, '仕样链接已更新！')
         return redirect('clamps:my_style_links')
     
+    # 计算有效期天数
+    if style_link.expires_at:
+        expires_days = (style_link.expires_at - style_link.created_at).days
+    else:
+        expires_days = 0
+    
     context = {
-        'style_link': style_link
+        'style_link': style_link,
+        'expires_days': expires_days
     }
     return render(request, 'management/edit_style_link.html', context)
 

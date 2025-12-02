@@ -17,64 +17,21 @@
 
 {% extends 'base.html' %}
 
-{% block extra_css %}
-<style>
-    /* 仕样搜索页面特定样式 */
-    .navbar-brand,
-    .nav-link[href="{% url 'clamps:search' %}"] {
-        pointer-events: none;
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-</style>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // 仕样搜索页面导航重定向机制
-    document.addEventListener('DOMContentLoaded', function() {
-        // 保存当前仕样链接的URL
-        const styleLinkUrl = window.location.href;
-        
-        // 将仕样链接URL存储在sessionStorage中，以便在子页面中使用
-        sessionStorage.setItem('styleLinkUrl', styleLinkUrl);
-        
-        // 监听所有链接点击事件
-        document.addEventListener('click', function(event) {
-            const target = event.target.closest('a');
-            if (target) {
-                // 检查是否是内部链接
-                const isInternalLink = target.hostname === window.location.hostname;
-                if (isInternalLink) {
-                    // 保存当前链接的URL，以便在子页面中使用
-                    sessionStorage.setItem('fromStyleSearch', 'true');
-                }
-            }
-        });
-    });
-</script>
-{% endblock %}
-
 {% block title %}仕样搜索 - 小原焊枪选型数据库{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
-            <h1 class="display-6 fw-bold">
-                <i class="bi bi-search me-2"></i>
-                仕样搜索
+        <div class="text-center mb-4 fade-in-up">
+            <h1 class="display-5 fw-bold">
+                <i class="bi bi-search me-3"></i>
+                SERVO GUN 仕样搜索
             </h1>
-            <div>
-                <a href="{% url 'clamps:home' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-house me-2"></i>
-                    返回首页
-                </a>
-            </div>
+            <p class="lead text-muted">请选择分类并填写搜索条件</p>
         </div>
         
         <!-- 仕样搜索配置信息 -->
-        <div class="card fade-in-up mb-4">
+        <div class="card mb-4 fade-in-up">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="bi bi-info-circle me-2"></i>
@@ -83,14 +40,6 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <strong>AI智能搜索：</strong>
-                        {% if style_link.ai_disabled %}
-                            <span class="badge bg-danger">已禁用</span>
-                        {% else %}
-                            <span class="badge bg-success">已启用</span>
-                        {% endif %}
-                    </div>
                     <div class="col-md-4">
                         <strong>创建者：</strong> {{ style_link.created_by.username }}
                     </div>
@@ -105,146 +54,777 @@
                     <div class="col-md-4">
                         <strong>点击次数：</strong> {{ style_link.click_count }}{% if style_link.max_clicks > 0 %}/{{ style_link.max_clicks }}{% endif %}
                     </div>
-                    {% if search_config.required_chars %}
-                    <div class="col-md-4">
-                        <strong>必须包含字符：</strong> <code>{{ search_config.required_chars }}</code>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
         
-        <!-- 搜索表单 -->
-        <div class="card fade-in-up">
-            <div class="card-header">
+        <div class="card mb-4 fade-in-up" style="border: 2px solid #28a745;">
+            <div class="card-header bg-success text-white">
                 <h5 class="mb-0">
-                    <i class="bi bi-filter me-2"></i>
+                    <i class="bi bi-funnel me-2"></i>
                     焊枪搜索
                 </h5>
             </div>
             <div class="card-body">
-                <form method="post" action="{% url 'clamps:style_search' style_link.unique_id %}">
+                <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm">
                     {% csrf_token %}
-                    
-                    <div class="row g-3">
-                        <!-- 基本搜索字段 -->
-                        <div class="col-md-4">
-                            <label for="drawing_no_1" class="form-label">
-                                <i class="bi bi-file-earmark-text me-2"></i>
-                                图号1
-                            </label>
-                            <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" placeholder="请输入图号" 
-                                   {% if 'drawing_no_1' in search_config.disabled_fields %}disabled{% endif %}>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="clamping_force" class="form-label">
-                                <i class="bi bi-lightning me-2"></i>
-                                加压力
-                            </label>
-                            <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如：~3500, 3500~5500, 5500~" 
-                                   {% if 'clamping_force' in search_config.disabled_fields %}disabled{% endif %}>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="stroke" class="form-label">
-                                <i class="bi bi-arrows-move me-2"></i>
-                                行程
-                            </label>
-                            <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如：~90, 100~190, 210~" 
-                                   {% if 'stroke' in search_config.disabled_fields %}disabled{% endif %}>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="throat_depth" class="form-label">
-                                <i class="bi bi-rulers me-2"></i>
-                                喉深
-                            </label>
-                            <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如：~100, 100~200, 200~" 
-                                   {% if 'throat_depth' in search_config.disabled_fields %}disabled{% endif %}>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="throat_width" class="form-label">
-                                <i class="bi bi-ruler-horizontal me-2"></i>
-                                喉宽
-                            </label>
-                            <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如：~50, 50~100, 100~" 
-                                   {% if 'throat_width' in search_config.disabled_fields %}disabled{% endif %}>
-                        </div>
-                        
-                        <!-- 高级搜索字段 -->
-                        <div class="col-md-4">
-                            <label for="description" class="form-label">
-                                <i class="bi bi-card-text me-2"></i>
-                                描述
-                            </label>
-                            <input type="text" class="form-control" id="description" name="description" placeholder="客户描述" 
-                                   {% if 'description' in search_config.disabled_fields %}disabled{% endif %}>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="motor_manufacturer" class="form-label">
-                                <i class="bi bi-gear-wide-connected me-2"></i>
-                                MOTOR厂家（最少选择1项）
-                            </label>
-                            <select class="form-select" id="motor_manufacturer" name="motor_manufacturer" multiple 
-                                    {% if 'motor_manufacturer' in search_config.disabled_fields %}disabled{% endif %}>
-                                <option value="FANUC" {% if 'motor_manufacturer_FANUC' not in search_config.enabled_fields %}disabled{% endif %}>FANUC</option>
-                                <option value="KUKA" {% if 'motor_manufacturer_KUKA' not in search_config.enabled_fields %}disabled{% endif %}>KUKA</option>
-                                <option value="YASKAWA" {% if 'motor_manufacturer_YASKAWA' not in search_config.enabled_fields %}disabled{% endif %}>YASKAWA</option>
-                                <option value="ABB" {% if 'motor_manufacturer_ABB' not in search_config.enabled_fields %}disabled{% endif %}>ABB</option>
-                                <option value="TOLOMATIC" {% if 'motor_manufacturer_TOLOMATIC' not in search_config.enabled_fields %}disabled{% endif %}>TOLOMATIC</option>
-                                <option value="多摩川" {% if 'motor_manufacturer_多摩川' not in search_config.enabled_fields %}disabled{% endif %}>多摩川</option>
-                                <option value="PANASONIC" {% if 'motor_manufacturer_PANASONIC' not in search_config.enabled_fields %}disabled{% endif %}>PANASONIC</option>
-                                <option value="DIAKONT" {% if 'motor_manufacturer_DIAKONT' not in search_config.enabled_fields %}disabled{% endif %}>DIAKONT</option>
-                                <option value="SEW" {% if 'motor_manufacturer_SEW' not in search_config.enabled_fields %}disabled{% endif %}>SEW</option>
-                                <option value="SANYO" {% if 'motor_manufacturer_SANYO' not in search_config.enabled_fields %}disabled{% endif %}>SANYO</option>
-                                <option value="其他" {% if 'motor_manufacturer_其他' not in search_config.enabled_fields %}disabled{% endif %}>其他</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="transformer" class="form-label">
-                                <i class="bi bi-gear me-2"></i>
-                                变压器（最少选择1项）
-                            </label>
-                            <select class="form-select" id="transformer" name="transformer" multiple 
-                                    {% if 'transformer' in search_config.disabled_fields %}disabled{% endif %}>
-                                <option value="ITS85" {% if 'transformer_ITS85' not in search_config.enabled_fields %}disabled{% endif %}>ITS85</option>
-                                <option value="DB6-100R1" {% if 'transformer_DB6_100R1' not in search_config.enabled_fields %}disabled{% endif %}>DB6-100R1</option>
-                                <option value="RT552" {% if 'transformer_RT552' not in search_config.enabled_fields %}disabled{% endif %}>RT552</option>
-                                <option value="RT752" {% if 'transformer_RT752' not in search_config.enabled_fields %}disabled{% endif %}>RT752</option>
-                                <option value="BOSCH" {% if 'transformer_BOSCH' not in search_config.enabled_fields %}disabled{% endif %}>BOSCH</option>
-                                <option value="商科" {% if 'transformer_SHANGKE' not in search_config.enabled_fields %}disabled{% endif %}>商科</option>
-                                <option value="RT906" {% if 'transformer_RT906' not in search_config.enabled_fields %}disabled{% endif %}>RT906</option>
-                                <option value="RT706" {% if 'transformer_RT706' not in search_config.enabled_fields %}disabled{% endif %}>RT706</option>
-                                <option value="NI110" {% if 'transformer_NI110' not in search_config.enabled_fields %}disabled{% endif %}>NI110</option>
-                                <option value="RT452" {% if 'transformer_RT452' not in search_config.enabled_fields %}disabled{% endif %}>RT452</option>
-                                <option value="其他" {% if 'transformer_OTHER' not in search_config.enabled_fields %}disabled{% endif %}>其他</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="weight" class="form-label">
-                                <i class="bi bi-balance-scale me-2"></i>
-                                重量
-                            </label>
-                            <input type="text" class="form-control" id="weight" name="weight" placeholder="例如：~100, 100~200, 200~" 
-                                   {% if 'weight' in search_config.disabled_fields %}disabled{% endif %}>
+                <!-- 主要搜索字段和图片预览 -->
+                <div class="row g-3 mb-4">
+                    <!-- 左侧两列：输入字段 -->
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <!-- 第一行 -->
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">
+                                    <i class="bi bi-diagram-3 me-2"></i>
+                                    <span style="color: red; font-weight: bold;">产品分类</span> <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">请选择，必选项</option>
+                                    {% if 'X2C-C_recommended' in product_categories %}
+                                    <option value="X2C-C">X2C-C(推荐)</option>
+                                    {% endif %}
+                                    {% if 'X2C-X_recommended' in product_categories %}
+                                    <option value="X2C-X">X2C-X(推荐)</option>
+                                    {% endif %}
+                                    {% if 'X2C-V2-C' in product_categories %}
+                                    <option value="X2C-V2-C">X2C-V2-C</option>
+                                    {% endif %}
+                                    {% if 'X2C-V2-X' in product_categories %}
+                                    <option value="X2C-V2-X">X2C-V2-X</option>
+                                    {% endif %}
+                                    {% if 'X2C-V3-C' in product_categories %}
+                                    <option value="X2C-V3-C">X2C-V3-C</option>
+                                    {% endif %}
+                                    {% if 'X2C-V3-X' in product_categories %}
+                                    <option value="X2C-V3-X">X2C-V3-X</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="sub_category_type" class="form-label"><i class="bi bi-tags me-2"></i>子分类类型</label>
+                                <select class="form-select" id="sub_category_type" name="sub_category_type">
+                                    <option value="">请选择，默认为空</option>
+                                </select>
+                            </div>
+
+                            <!-- 第二行 -->
+                            <div class="col-md-6">
+                                <label for="throat_depth" class="form-label"><i class="bi bi-rulers me-2"></i>喉深</label>
+                                {% if fixed_fields.throat_depth %}
+                                <input type="text" class="form-control" id="throat_depth" name="throat_depth" 
+                                        value="{{ fixed_fields.throat_depth }}" readonly>
+                                {% else %}
+                                <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如: ~350, 350~600, 600~">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="throat_width" class="form-label"><i class="bi bi-arrows-expand me-2"></i>喉宽</label>
+                                {% if fixed_fields.throat_width %}
+                                <input type="text" class="form-control" id="throat_width" name="throat_width" 
+                                        value="{{ fixed_fields.throat_width }}" readonly>
+                                {% else %}
+                                <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如: ~350, 350~600, 600~">
+                                {% endif %}
+                            </div>
+
+                            <!-- 第三行 -->
+                            <div class="col-md-6">
+                                <label for="transformer" class="form-label"><i class="bi bi-cpu me-2"></i>变压器</label>
+                                <select class="form-select" id="transformer" name="transformer">
+                                    <option value="">请选择，默认为空</option>
+                                    <!-- 变压器选项将通过JavaScript动态生成 -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="clamping_force" class="form-label"><i class="bi bi-lightning me-2"></i>加压力</label>
+                                {% if fixed_fields.clamping_force %}
+                                <input type="text" class="form-control" id="clamping_force" name="clamping_force" 
+                                        value="{{ fixed_fields.clamping_force }}" readonly>
+                                {% else %}
+                                <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~3500, 3500~5500, 5500~">
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- 搜索按钮 -->
-                    <div class="mt-4 text-center">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-search me-2"></i>
-                            开始搜索
-                        </button>
+
+                    <!-- 右侧一列：图片显示区域 -->
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h5 class="card-title">子分类选项预览图</h5>
+                                <p class="text-muted small mb-2">预览图仅展示窗口样式，不考虑变压器方向与齿轮箱类型</p>
+                                <img id="product_image" src="/static/images/No image available.png" alt="产品预览图" class="img-fluid" style="max-height: 250px;">
+                            </div>
+                        </div>
                     </div>
+                </div>
+                
+                <!-- 高级搜索字段 -->
+                <div class="mt-4">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
+                        <i class="bi bi-gear me-2"></i>
+                        高级搜索选项
+                    </button>
+                </div>
+                
+                <div class="collapse mt-3" id="advancedSearch">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- 所有高级字段（静态+动态）都放在这个row里面 -->
+                            <div class="row g-3" id="advanced-fields-container">
+                                <!-- 图号1(o) -->
+                                <div class="col-md-4">
+                                    <label for="drawing_no_1" class="form-label">
+                                        <i class="bi bi-file-earmark-text me-2"></i>
+                                        图号1(o)
+                                    </label>
+                                    {% if fixed_fields.drawing_no_1 %}
+                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
+                                            value="{{ fixed_fields.drawing_no_1 }}" readonly>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
+                                            placeholder="焊枪图号，默认为空">
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- 描述 -->
+                                <div class="col-md-4">
+                                    <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>描述</label>
+                                    {% if fixed_fields.description %}
+                                    <input type="text" class="form-control" id="description" name="description" 
+                                            value="{{ fixed_fields.description }}" readonly>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="description" name="description" placeholder="客户描述，默认为空">
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- 行程 -->
+                                <div class="col-md-4">
+                                    <label for="stroke" class="form-label"><i class="bi bi-arrows-move me-2"></i>行程</label>
+                                    {% if fixed_fields.stroke %}
+                                    <input type="text" class="form-control" id="stroke" name="stroke" 
+                                            value="{{ fixed_fields.stroke }}" readonly>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如: ~90, 100~190, 210~">
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- MOTOR厂家 -->
+                                <div class="col-md-4">
+                                    <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR厂家</label>
+                                    <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+                                        <option value="">请选择，默认为空</option>
+                                        {% for manufacturer in motor_manufacturers %}
+                                        <option value="{{ manufacturer }}">{{ manufacturer }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- 变压器放置方向 -->
+                                {% if 'transformer_placement' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="transformer_placement" class="form-label"><i class="bi bi-compass me-2"></i>变压器放置方向</label>
+                                    <select class="form-select" id="transformer_placement" name="transformer_placement">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="水平">水平</option>
+                                        <option value="竖直">竖直</option>
+                                        <option value="下置">下置</option>
+                                        <option value="上置">上置</option>
+                                        <option value="右置">右置</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 有无平衡 -->
+                                {% if 'has_balance' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="has_balance" class="form-label"><i class="bi bi-water me-2"></i>有无平衡</label>
+                                    <select class="form-select" id="has_balance" name="has_balance">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="有">有</option>
+                                        <option value="无">无</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 重量 -->
+                                {% if 'weight' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="weight" class="form-label"><i class="bi bi-box me-2"></i>重量</label>
+                                    {% if fixed_fields.weight %}
+                                    <input type="text" class="form-control" id="weight" name="weight" 
+                                            value="{{ fixed_fields.weight }}" readonly>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="例如: ~90, 90~120, 120~">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 法兰P.C.D -->
+                                {% if 'flange_pcd' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="flange_pcd" class="form-label"><i class="bi bi-circle me-2"></i>法兰P.C.D</label>
+                                    <select class="form-select" id="flange_pcd" name="flange_pcd">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="125">125</option>
+                                        <option value="125-160">125-160</option>
+                                        <option value="160">160</option>
+                                        <option value="200">200</option>
+                                        <option value="92">92</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 托架方向 -->
+                                {% if 'bracket_direction' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="bracket_direction" class="form-label"><i class="bi bi-arrow-up-right me-2"></i>托架方向</label>
+                                    <select class="form-select" id="bracket_direction" name="bracket_direction">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="右">右</option>
+                                        <option value="上">上</option>
+                                        <option value="前">前</option>
+                                        <option value="下">下</option>
+                                        <option value="后">后</option>
+                                        <option value="三维">三维</option>
+                                        <option value="左">左</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 水路 -->
+                                {% if 'water_circuit' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="water_circuit" class="form-label"><i class="bi bi-droplet me-2"></i>水路</label>
+                                    <select class="form-select" id="water_circuit" name="water_circuit">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="1进1出">1进1出</option>
+                                        <option value="2进2出">2进2出</option>
+                                        <option value="3进3出">3进3出</option>
+                                        <option value="1进2出">1进2出</option>
+                                        <option value="2进3出">2进3出</option>
+                                        <option value="1进3出">1进3出</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 换枪装置 -->
+                                {% if 'tool_changer' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="tool_changer" class="form-label"><i class="bi bi-tools me-2"></i>换枪装置</label>
+                                    <select class="form-select" id="tool_changer" name="tool_changer">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="无">无</option>
+                                        <option value="有">有</option>
+                                        <option value="STAUBLI">STAUBLI</option>
+                                        <option value="NITTA">NITTA</option>
+                                        <option value="ATI-QC210">ATI-QC210</option>
+                                        <option value="ATI-QC310">ATI-QC310</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 握杆伸出长度 -->
+                                {% if 'grip_extension_length' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="grip_extension_length" class="form-label"><i class="bi bi-arrow-right me-2"></i>握杆伸出长度</label>
+                                    {% if fixed_fields.grip_extension_length %}
+                                    <input type="text" class="form-control" id="grip_extension_length" name="grip_extension_length" 
+                                            value="{{ fixed_fields.grip_extension_length }}" readonly>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="grip_extension_length" name="grip_extension_length" placeholder="请输入握杆伸出长度">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 偏心方向 -->
+                                {% if 'eccentricity_direction' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="eccentricity_direction" class="form-label"><i class="bi bi-arrow-up-down me-2"></i>偏心方向</label>
+                                    <select class="form-select" id="eccentricity_direction" name="eccentricity_direction">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="上">上</option>
+                                        <option value="下">下</option>
+                                        <option value="左">左</option>
+                                        <option value="右">右</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 偏心是否回到中心面 -->
+                                {% if 'eccentricity_to_center' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="eccentricity_to_center" class="form-label"><i class="bi bi-circle-half me-2"></i>偏心是否回到中心面</label>
+                                    <select class="form-select" id="eccentricity_to_center" name="eccentricity_to_center">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="是">是</option>
+                                        <option value="否">否</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 导向方式 -->
+                                {% if 'guidance_method' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="guidance_method" class="form-label"><i class="bi bi-arrows-move me-2"></i>导向方式</label>
+                                    <select class="form-select" id="guidance_method" name="guidance_method">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="滑轨">滑轨</option>
+                                        <option value="导杆">导杆</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 静臂偏心 -->
+                                {% if 'static_arm_eccentricity' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="static_arm_eccentricity" class="form-label"><i class="bi bi-circle-half me-2"></i>静臂偏心</label>
+                                    {% if fixed_fields.static_arm_eccentricity %}
+                                    <input type="text" class="form-control" id="static_arm_eccentricity" name="static_arm_eccentricity" 
+                                            value="{{ fixed_fields.static_arm_eccentricity }}" readonly>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="static_arm_eccentricity" name="static_arm_eccentricity" placeholder="请输入静臂偏心">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 静电极臂端部 -->
+                                {% if 'static_electrode_arm_end' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="static_electrode_arm_end" class="form-label"><i class="bi bi-grip-vertical me-2"></i>静电极臂端部</label>
+                                    <select class="form-select" id="static_electrode_arm_end" name="static_electrode_arm_end">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="握杆（铝）">握杆（铝）</option>
+                                        <option value="TIP BASE（F 型）">TIP BASE（F 型）</option>
+                                        <option value="握杆（SBA）">握杆（SBA）</option>
+                                        <option value="TIP BASE（G 型）">TIP BASE（G 型）</option>
+                                        <option value="GUN HEAD（?36）">GUN HEAD（?36）</option>
+                                        <option value="GUN HEAD（?45）">GUN HEAD（?45）</option>
+                                        <option value="GUN HEAD（?40）">GUN HEAD（?40）</option>
+                                        <option value="GUN HEAD（?50）">GUN HEAD（?50）</option>
+                                        <option value="GUN HEAD（?60）">GUN HEAD（?60）</option>
+                                        <option value="握杆?45（铝）">握杆?45（铝）</option>
+                                        <option value="握杆?50（铝）">握杆?50（铝）</option>
+                                        <option value="特殊">特殊</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 动臂偏心 -->
+                                {% if 'moving_arm_eccentricity' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="moving_arm_eccentricity" class="form-label"><i class="bi bi-circle-half me-2"></i>动臂偏心</label>
+                                    {% if fixed_fields.moving_arm_eccentricity %}
+                                    <input type="text" class="form-control" id="moving_arm_eccentricity" name="moving_arm_eccentricity" 
+                                            value="{{ fixed_fields.moving_arm_eccentricity }}" readonly>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="moving_arm_eccentricity" name="moving_arm_eccentricity" placeholder="请输入动臂偏心">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 动电极臂端部 -->
+                                {% if 'moving_electrode_arm_end' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="moving_electrode_arm_end" class="form-label"><i class="bi bi-grip-vertical me-2"></i>动电极臂端部</label>
+                                    <select class="form-select" id="moving_electrode_arm_end" name="moving_electrode_arm_end">
+                                        <option value="">请选择，默认为空</option>
+                                        <option value="握杆（铝）">握杆（铝）</option>
+                                        <option value="TIP BASE（F 型）">TIP BASE（F 型）</option>
+                                        <option value="握杆（SBA）">握杆（SBA）</option>
+                                        <option value="TIP BASE（G 型）">TIP BASE（G 型）</option>
+                                        <option value="GUN HEAD（?36）">GUN HEAD（?36）</option>
+                                        <option value="握杆?45（铝）">握杆?45（铝）</option>
+                                        <option value="握杆?50（铝）">握杆?50（铝）</option>
+                                        <option value="特殊">特殊</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 电极臂端部 -->
+                                {% if 'electrode_arm_end' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="electrode_arm_end" class="form-label"><i class="bi bi-grip-vertical me-2"></i>电极臂端部</label>
+                                    <input type="text" class="form-control" id="electrode_arm_end" name="electrode_arm_end" placeholder="请输入电极臂端部">
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 偏心距离 -->
+                                {% if 'eccentricity' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="eccentricity" class="form-label"><i class="bi bi-circle-half me-2"></i>偏心距离</label>
+                                    <input type="text" class="form-control" id="eccentricity" name="eccentricity" placeholder="请输入偏心距离">
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 静电极臂前部长 -->
+                                {% if 'static_arm_front_length' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="static_arm_front_length" class="form-label"><i class="bi bi-rulers me-2"></i>静电极臂前部长</label>
+                                    <input type="text" class="form-control" id="static_arm_front_length" name="static_arm_front_length" placeholder="请输入静电极臂前部长">
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 静电极臂前部高 -->
+                                {% if 'static_arm_front_height' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="static_arm_front_height" class="form-label"><i class="bi bi-arrows-vertical me-2"></i>静电极臂前部高</label>
+                                    <input type="text" class="form-control" id="static_arm_front_height" name="static_arm_front_height" placeholder="请输入静电极臂前部高">
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 动电极臂前部长 -->
+                                {% if 'moving_arm_front_length' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="moving_arm_front_length" class="form-label"><i class="bi bi-rulers me-2"></i>动电极臂前部长</label>
+                                    <input type="text" class="form-control" id="moving_arm_front_length" name="moving_arm_front_length" placeholder="请输入动电极臂前部长">
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 动电极臂前部高 -->
+                                {% if 'moving_arm_front_height' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="moving_arm_front_height" class="form-label"><i class="bi bi-arrows-vertical me-2"></i>动电极臂前部高</label>
+                                    <input type="text" class="form-control" id="moving_arm_front_height" name="moving_arm_front_height" placeholder="请输入动电极臂前部高">
+                                </div>
+                                {% endif %}
+                                
+                                <!-- 动态字段将插入到这里 (关键改动) -->
+                                <div id="dynamic-fields-placeholder" class="contents"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索按钮 -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5" id="searchSubmitBtn">
+                        <i class="bi bi-search me-2"></i>
+                        开始搜索
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        重置条件
+                    </button>
+                </div>
                 </form>
+            </div>
+        </div>
+        
+        <!-- 搜索提示 -->
+        <div class="row mt-5">
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">搜索提示</h5>
+                        <p class="card-text text-muted">所有搜索条件都是可选的，留空表示不限制该条件。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">精确匹配</h5>
+                        <p class="card-text text-muted">数字字段支持精确匹配，文本字段支持模糊搜索。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">文件下载</h5>
+                        <p class="card-text text-muted">搜索结果中可直接下载PDF、STEP和ZIP文件。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-link-45deg text-primary" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">仕样链接</h5>
+                        <p class="card-text text-muted">此搜索页面由仕样链接生成，搜索结果将根据配置进行过滤。</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+    /* 确保占位符本身不影响布局 */
+    .contents {
+        display: contents;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const categorySubTypes = {
+            'X2C-C(推荐)': ['大型', '特殊', '仙鹤型', '中小型'],
+            'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型'],
+            'X2C-V3-C': ['大型', '小型'],
+            'X2C-X(推荐)': ['大型', '特殊', '中小型', 'X', 'Y'],
+            'X2C-V2-X': ['大型', '特殊', '小型', '中型', 'X', 'Y'],
+            'X2C-V3-X': ['大型', '小型']
+        };
+
+        const categoryTransformerTypes = {
+            'X2C-C(推荐)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
+            'X2C-V2-C': ['DB6','其他'],
+            'X2C-V3-C': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他'],
+            'X2C-X(推荐)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
+            'X2C-V2-X': ['DB6','其他'],
+            'X2C-V3-X': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他']
+        };
+        
+        // 缓存DOM元素
+        const dynamicFieldsPlaceholder = document.getElementById('dynamic-fields-placeholder');
+        let currentDynamicFields = [];
+
+        function formatTransformerDisplayText(type) {
+            if (type === 'ITS85' || type === 'DB6-100R1') return type + '(推荐)';
+            if (type === 'DB6-90-510' || type === 'DB6' || type === 'DB6-90') return 'DB6-90';
+            return type;
+        }
+
+        function updateTransformerOptions(categoryName) {
+            const transformerSelect = document.getElementById('transformer');
+            transformerSelect.innerHTML = '<option value="">请选择，默认为空</option>';
+            if (categoryName && categoryTransformerTypes[categoryName]) {
+                // 获取配置中允许的变压器类型
+                const allowedTransformers = [
+                    {% for transformer in transformers %}
+                        '{{ transformer }}'{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                ];
+                
+                categoryTransformerTypes[categoryName].forEach(transformerType => {
+                    // 只显示配置中允许的变压器类型
+                    if (allowedTransformers.includes(transformerType)) {
+                        const option = document.createElement('option');
+                        option.value = transformerType;
+                        option.textContent = formatTransformerDisplayText(transformerType);
+                        transformerSelect.appendChild(option);
+                    }
+                });
+            }
+        }
+
+        // 更新动态字段 (关键改动)
+        function updateDynamicFields(categoryName) {
+            // 1. 清除之前添加的动态字段
+            currentDynamicFields.forEach(field => field.remove());
+            currentDynamicFields = [];
+
+            let fieldsToCreate = [];
+            
+            // 检查是否启用了相关字段
+            const enabledFields = [
+                {% for field in enabled_fields %}
+                    '{{ field }}'{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            ];
+            
+            if (categoryName && categoryName.includes('-C')) {
+                if (enabledFields.includes('electrode_arm_end')) {
+                    fieldsToCreate.push(
+                        {
+                            id: 'electrode_arm_end',
+                            label: '电极臂端部',
+                            type: 'select',
+                            options: [
+                                { value: '', text: '请选择，默认为空' },
+                                { value: '握杆（铝）', text: '握杆（铝）' },
+                                { value: 'TIP BASE（F 型）', text: 'TIP BASE（F 型）' },
+                                { value: '握杆（SBA）', text: '握杆（SBA）' },
+                                { value: 'TIP BASE（G 型）', text: 'TIP BASE（G 型）' },
+                                { value: 'GUN HEAD（?36）', text: 'GUN HEAD（?36）' },
+                                { value: 'GUN HEAD（?45）', text: 'GUN HEAD（?45）' },
+                                { value: 'GUN HEAD（?40）', text: 'GUN HEAD（?40）' },
+                                { value: 'GUN HEAD（?50）', text: 'GUN HEAD（?50）' },
+                                { value: 'GUN HEAD（?60）', text: 'GUN HEAD（?60）' },
+                                { value: '握杆?45（铝）', text: '握杆?45（铝）' },
+                                { value: '握杆?50（铝）', text: '握杆?50（铝）' },
+                                { value: '特殊', text: '特殊' },
+                                { value: '其他', text: '其他' }
+                            ]
+                        }
+                    );
+                }
+                
+                if (enabledFields.includes('eccentricity')) {
+                    fieldsToCreate.push(
+                        {
+                            id: 'eccentricity',
+                            label: '偏心距离',
+                            icon: 'bi-arrows-angle-contract',
+                            placeholder: '例如: 10~50, 50~'
+                        }
+                    );
+                }
+            } else if (categoryName && categoryName.includes('-X')) {
+                if (enabledFields.includes('static_arm_front_length')) {
+                    fieldsToCreate.push(
+                        { id: 'static_arm_front_length', label: '静电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' }
+                    );
+                }
+                
+                if (enabledFields.includes('static_arm_front_height')) {
+                    fieldsToCreate.push(
+                        { id: 'static_arm_front_height', label: '静电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' }
+                    );
+                }
+                
+                if (enabledFields.includes('moving_arm_front_length')) {
+                    fieldsToCreate.push(
+                        { id: 'moving_arm_front_length', label: '动电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' }
+                    );
+                }
+                
+                if (enabledFields.includes('moving_arm_front_height')) {
+                    fieldsToCreate.push(
+                        { id: 'moving_arm_front_height', label: '动电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' }
+                    );
+                }
+            }
+
+            // 2. 创建并插入新的动态字段
+            fieldsToCreate.forEach(field => {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'col-md-4';
+                
+                if (field.type === 'select') {
+                    let optionsHtml = field.options.map(option => 
+                        `<option value="${option.value}">${option.text}</option>`
+                    ).join('');
+                    
+                    fieldDiv.innerHTML = `
+                        <label for="${field.id}" class="form-label">
+                            <i class="bi ${field.icon || 'bi-tools'} me-2"></i>
+                            ${field.label}
+                        </label>
+                        <select class="form-select" id="${field.id}" name="${field.id}">
+                            ${optionsHtml}
+                        </select>
+                    `;
+                } else {
+                    fieldDiv.innerHTML = `
+                        <label for="${field.id}" class="form-label">
+                            <i class="bi ${field.icon} me-2"></i>
+                            ${field.label}
+                        </label>
+                        <input type="text" class="form-control" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}">
+                    `;
+                }
+                
+                // 将新字段插入到占位符之前，这样它们就会出现在占位符的位置
+                dynamicFieldsPlaceholder.parentNode.insertBefore(fieldDiv, dynamicFieldsPlaceholder);
+                currentDynamicFields.push(fieldDiv); // 保存对新字段的引用，以便后续清除
+            });
+        }
+
+        const defaultImagePath = '/static/images/No image available.png';
+        const productImageElement = document.getElementById('product_image');
+
+        document.querySelector('button[type="reset"]').addEventListener('click', function() {
+            document.getElementById('searchForm').reset();
+            document.querySelectorAll('select').forEach(select => { select.selectedIndex = 0; });
+            updateSubCategoryOptions('');
+            updateTransformerOptions('');
+            updateDynamicFields('');
+            productImageElement.src = defaultImagePath;
+        });
+        
+        document.getElementById('category').addEventListener('change', function() {
+            const selectedText = this.options[this.selectedIndex].text;
+            if (selectedText && selectedText !== '请选择，必选项') {
+                updateSubCategoryOptions(selectedText);
+                updateTransformerOptions(selectedText);
+                updateDynamicFields(selectedText);
+                updateProductImage();
+            } else {
+                updateSubCategoryOptions('');
+                updateTransformerOptions('');
+                updateDynamicFields('');
+                productImageElement.src = defaultImagePath;
+            }
+        });
+
+        document.getElementById('sub_category_type').addEventListener('change', function() {
+            updateProductImage();
+        });
+        
+        function updateSubCategoryOptions(categoryName) {
+            const subCategorySelect = document.getElementById('sub_category_type');
+            subCategorySelect.innerHTML = '<option value="">请选择，默认为空</option>';
+            if (categoryName && categorySubTypes[categoryName]) {
+                categorySubTypes[categoryName].forEach(subType => {
+                    const option = document.createElement('option');
+                    option.value = subType;
+                    option.textContent = subType;
+                    subCategorySelect.appendChild(option);
+                });
+            }
+        }
+
+        function updateProductImage() {
+            const categorySelect = document.getElementById('category');
+            const subCategorySelect = document.getElementById('sub_category_type');
+            const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
+            const selectedSubCategoryText = subCategorySelect.options[subCategorySelect.selectedIndex].text;
+
+            if (selectedCategoryText && selectedSubCategoryText && selectedSubCategoryText !== '请选择，默认为空') {
+                const imageName = `${selectedCategoryText}-${selectedSubCategoryText}.png`;
+                const imagePath = `/static/images/${imageName}`;
+                const img = new Image();
+                img.onload = () => { productImageElement.src = imagePath; };
+                img.onerror = () => { productImageElement.src = defaultImagePath; };
+                img.src = imagePath;
+            } else {
+                productImageElement.src = defaultImagePath;
+            }
+        }
+
+        const initialCategorySelect = document.getElementById("category");
+        const initialCategoryText = initialCategorySelect.options[initialCategorySelect.selectedIndex].text;
+        if (initialCategoryText && initialCategoryText !== '请选择，必选项') {
+            updateSubCategoryOptions(initialCategoryText);
+            updateTransformerOptions(initialCategoryText);
+            updateDynamicFields(initialCategoryText);
+            updateProductImage();
+        } else {
+            updateSubCategoryOptions('');
+            updateTransformerOptions('');
+            updateDynamicFields('');
+            productImageElement.src = defaultImagePath;
+        }
+        // 页面加载完成后，如果尚未选择分类，则聚焦
+        if (!document.getElementById('category').value) {
+            document.getElementById('category').focus();
+        }
+
+        // 表单提交验证
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            const categoryValue = document.getElementById('category').value;
+            const drawingNo1Value = document.getElementById('drawing_no_1').value.trim();
+
+            if (!categoryValue && !drawingNo1Value) {
+                event.preventDefault(); // 阻止表单提交
+                alert('产品分类为必选项，请选择！');
+                document.getElementById('category').focus();
+            }
+        });
+    });
+</script>
 {% endblock %}

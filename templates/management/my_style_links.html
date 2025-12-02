@@ -59,7 +59,6 @@
                                     <th>唯一标识</th>
                                     <th>完整链接</th>
                                     <th>创建者</th>
-                                    <th>AI禁用</th>
                                     <th>有效期</th>
                                     <th>点击次数</th>
                                     <th>状态</th>
@@ -83,13 +82,6 @@
                                         </td>
                                         <td>
                                             {{ link.created_by.username }}
-                                        </td>
-                                        <td>
-                                            {% if link.ai_disabled %}
-                                                <span class="badge bg-success">是</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">否</span>
-                                            {% endif %}
                                         </td>
                                         <td>
                                             {% if link.expires_at %}
