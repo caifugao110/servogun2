@@ -156,6 +156,62 @@
             transform: translateY(-1px);
         }
         
+        /* 自定义checkbox样式 */
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #6c757d; /* 使用更深的灰色增强对比度 */
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            background-color: white;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+        
+        [data-bs-theme="dark"] .form-check-input {
+            background-color: #2c3034;
+            border-color: var(--border-color);
+        }
+        
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+            border-color: var(--primary-color);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e");
+            background-size: 12px 12px;
+        }
+        
+        .form-check-input:checked:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+        }
+        
+        /* 增强表单标签与勾选框的对齐 */
+        .form-check-label {
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            padding-left: 4px;
+            vertical-align: middle;
+        }
+        
+        /* 登录页面特定的勾选框样式，增强对比度 */
+        .card-body .form-check-input {
+            border: 2px solid #495057; /* 更深的灰色边框 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* 添加轻微阴影增强立体感 */
+        }
+        
+        .card-body .form-check-input:hover {
+            border-color: var(--primary-color); /* 悬停时变为主题色 */
+        }
+        
+        .card-body .form-check-input:checked {
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.5), 0 0 0 0.2rem rgba(0, 102, 204, 0.25); /* 增强选中状态的视觉效果 */
+        }
+        
         .form-label {
             font-weight: 600;
             color: var(--text-dark);
@@ -513,7 +569,7 @@
     <!-- 导航栏 -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{% if is_style_search %}{% url 'clamps:home' %}{% else %}{% url 'clamps:home' %}{% endif %}" {% if is_style_search %}style="pointer-events: none; opacity: 0.6; cursor: not-allowed;"{% endif %}>
+            <a class="navbar-brand" href="{% url 'clamps:home' %}" {% if is_style_search %}style="pointer-events: none; opacity: 0.6; cursor: not-allowed;"{% endif %}>
                 <i class="fas fa-industry me-2"></i>
                 小原焊枪选型数据库
             </a>
@@ -526,7 +582,7 @@
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% if is_style_search %}{{ request.session.style_link_url }}{% else %}{% url 'clamps:search' %}{% endif %}">
+                            <a class="nav-link" href="{% if is_style_search %}/style-search/{{ request.session.style_search_unique_id }}/{% else %}{% url 'clamps:search' %}{% endif %}">
                                 <i class="bi bi-search text-success me-1"></i>产品搜索
                             </a>
                         </li>
@@ -542,7 +598,7 @@
                 
                 <ul class="navbar-nav">
                     <li class="nav-item" id="language-toggle-container">
-                        <a href="javascript:void(0)" class="language-toggle me-3" {% if is_style_search %}style="pointer-events: none; opacity: 0.6; cursor: not-allowed;"{% endif %} onclick="switchLanguage()" title="Switch Language">
+                        <a href="javascript:void(0)" class="language-toggle me-3" onclick="switchLanguage()" title="Switch Language">
                             <i class="bi bi-translate me-1"></i>English
                         </a>
                     </li>
@@ -687,7 +743,9 @@
                 { zh: "/search/", en: "/search_en/" },
                 { zh: "/search/results/", en: "/search/results_en/" },
                 { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
-                { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" }
+                { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" },
+                { zh: /^\/style-search\/([a-zA-Z0-9]+)\/$/, en: "/style-search/$1_en/" },
+                { en: /^\/style-search\/([a-zA-Z0-9]+)_en\/$/, zh: "/style-search/$1/" }
             ];
 
             // 判断当前是在中文页还是英文页

@@ -97,7 +97,7 @@
                     <p class="mb-0">共找到 {{ total_results }} 个匹配的产品</p>
                 </div>
                 <div>
-                        <a href="{% if is_style_search %}{{ request.session.style_link_url }}{% else %}{% url 'clamps:search' %}{% endif %}" class="btn btn-light">
+                        <a href="{% if is_style_search %}/style-search/{{ request.session.style_search_unique_id }}/{% else %}{% url 'clamps:search' %}{% endif %}" class="btn btn-light">
                             <i class="bi bi-arrow-left me-2"></i>
                             返回搜索
                         </a>
@@ -131,13 +131,14 @@
                                 <tr>
                                     <th width="5%"><input type="checkbox" id="selectAll"></th>
                                     <th width="5%">序号</th>
-									<!--
+							<!--
                                     <th width="20%" class="highlight-field">描述</th>
-									-->
+							-->
                                     <th width="15%" class="highlight-field">图号1(o)</th>
-                                    <th width="15%" class="highlight-field">喉深</th>
-                                    <th width="15%" class="highlight-field">喉宽</th>
-                                    <th width="18%" class="highlight-field">变压器</th>
+                                    <th width="12%" class="highlight-field">喉深</th>
+                                    <th width="12%" class="highlight-field">喉宽</th>
+                                    <th width="12%" class="highlight-field">变压器</th>
+                                    <th width="12%" class="highlight-field">加压力</th>
                                     <th width="15%">预览图</th>
                                     <th width="12%">操作</th>
                                 </tr>
@@ -180,6 +181,15 @@
                                         <td>
                                             <span class="highlight-field" onclick="viewDetail({{ product.id }})">
                                                 {{ product.transformer|default:"--" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="highlight-field" onclick="viewDetail({{ product.id }})">
+                                                {% if product.clamping_force %}
+                                                    {{ product.clamping_force }}
+                                                {% else %}
+                                                    --
+                                                {% endif %}
                                             </span>
                                         </td>
                                         <td>
@@ -405,7 +415,7 @@
         });
     });
     
-    // 批量下载功能 - 修复为使用POST请求
+    // 批量下载功能 - 修复为使用POST请求，并添加文件存在性检查
     document.getElementById('batchDownloadBtn').addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
         if (checkedBoxes.length === 0) {
@@ -416,7 +426,7 @@
         const productIds = Array.from(checkedBoxes).map(cb => cb.value);
         const activeFileType = document.querySelector('.file-type-buttons .btn.active').dataset.fileType;
         
-        // 先检查文件大小
+        // 先检查文件大小和存在性 - 完全依赖后端检查
         checkBatchFileSize(productIds, activeFileType, () => {
             // 检查通过，显示下载提示
             showDownloadWarning(() => {

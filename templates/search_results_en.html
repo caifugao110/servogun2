@@ -97,7 +97,7 @@
                     <p class="mb-0">Found {{ total_results }} matching products</p>
                 </div>
                 <div>
-                    <a href="{% url 'clamps:search_en' %}" class="btn btn-light">
+                    <a href="{% if is_style_search %}/style-search/{{ request.session.style_search_unique_id }}_en/{% else %}{% url 'clamps:search_en' %}{% endif %}" class="btn btn-light">
                         <i class="bi bi-arrow-left me-2"></i>
                         Back to Search
                     </a>
@@ -132,9 +132,10 @@
                                     <th width="5%"><input type="checkbox" id="selectAll"></th>
                                     <th width="5%">No.</th>
                                     <th width="15%" class="highlight-field">Drawing No.1(o)</th>
-                                    <th width="15%" class="highlight-field">Throat Depth</th>
-                                    <th width="15%" class="highlight-field">Throat Width</th>
-                                    <th width="18%" class="highlight-field">Transformer</th>
+                                    <th width="12%" class="highlight-field">Throat Depth</th>
+                                    <th width="12%" class="highlight-field">Throat Width</th>
+                                    <th width="12%" class="highlight-field">Transformer</th>
+                                    <th width="12%" class="highlight-field">Pressure</th>
                                     <th width="15%">Preview</th>
                                     <th width="12%">Actions</th>
                                 </tr>
@@ -170,6 +171,15 @@
                                         <td>
                                             <span class="highlight-field" onclick="viewDetail({{ product.id }})">
                                                 {{ product.transformer|default:"--" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="highlight-field" onclick="viewDetail({{ product.id }})">
+                                                {% if product.clamping_force %}
+                                                    {{ product.clamping_force }}
+                                                {% else %}
+                                                    --
+                                                {% endif %}
                                             </span>
                                         </td>
                                         <td>
@@ -396,7 +406,7 @@
         });
     });
     
-    // Batch download functionality - fixed to use POST request
+    // Batch download functionality - fixed to use POST request with file existence check
     document.getElementById('batchDownloadBtn').addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
         if (checkedBoxes.length === 0) {
@@ -407,7 +417,7 @@
         const productIds = Array.from(checkedBoxes).map(cb => cb.value);
         const activeFileType = document.querySelector('.file-type-buttons .btn.active').dataset.fileType;
         
-        // Check file size first
+        // Check file size and existence first - completely rely on backend check
         checkBatchFileSize(productIds, activeFileType, () => {
             // Check passed, show download warning
             showDownloadWarning(() => {

@@ -55,6 +55,7 @@ urlpatterns = [
     path('management/style_links/create/', views.create_style_link, name='create_style_link'),
     path('management/style_links/my/', views.my_style_links, name='my_style_links'),
     path('management/style_links/edit/<int:link_id>/', views.edit_style_link, name='edit_style_link'),
+    path('style-search/<str:unique_id>_en/', views.style_search_en, name='style_search_en'),
     path('style-search/<str:unique_id>/', views.style_search, name='style_search'),
     
     # API接口

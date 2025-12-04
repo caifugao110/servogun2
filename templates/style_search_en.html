@@ -1,0 +1,866 @@
+<!--
+  Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+
+{% extends 'base_en.html' %}
+
+{% block title %}Style Search - OBARA Welding Gun Selection Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-4 fade-in-up">
+            <h1 class="display-5 fw-bold">
+                <i class="bi bi-search me-3"></i>
+                SERVO GUN Style Search
+            </h1>
+            <p class="lead text-muted">Please select a category and fill in the search criteria</p>
+        </div>
+        
+        <!-- Style Search Configuration Information -->
+        <div class="card mb-4 fade-in-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Search Configuration Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <strong>Created by：</strong> {{ style_link.created_by.username }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Created at：</strong> {{ style_link.created_at|date:"Y-m-d H:i" }}
+                    </div>
+                    {% if style_link.expires_at %}
+                    <div class="col-md-4">
+                        <strong>Expires at：</strong> {{ style_link.expires_at|date:"Y-m-d H:i" }}
+                    </div>
+                    {% endif %}
+                    <div class="col-md-4">
+                        <strong>Click count：</strong> {{ style_link.click_count }}{% if style_link.max_clicks > 0 %}/{{ style_link.max_clicks }}{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4 fade-in-up" style="border: 2px solid #28a745;">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-funnel me-2"></i>
+                    Style Search
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{% url 'clamps:search_results_en' %}" id="searchForm">
+                    {% csrf_token %}
+                <!-- Main search fields and image preview -->
+                <div class="row g-3 mb-4">
+                    <!-- Left two columns: input fields -->
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <!-- First row -->
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">
+                                    <i class="bi bi-diagram-3 me-2"></i>
+                                    <span style="color: red; font-weight: bold;">Product Category</span> <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">Please select, required option</option>
+                                    {% if 'X2C-C_recommended' in product_categories %}
+                                    <option value="X2C-C">X2C-C(Recommended)</option>
+                                    {% endif %}
+                                    {% if 'X2C-X_recommended' in product_categories %}
+                                    <option value="X2C-X">X2C-X(Recommended)</option>
+                                    {% endif %}
+                                    {% if 'X2C-V2-C' in product_categories %}
+                                    <option value="X2C-V2-C">X2C-V2-C</option>
+                                    {% endif %}
+                                    {% if 'X2C-V2-X' in product_categories %}
+                                    <option value="X2C-V2-X">X2C-V2-X</option>
+                                    {% endif %}
+                                    {% if 'X2C-V3-C' in product_categories %}
+                                    <option value="X2C-V3-C">X2C-V3-C</option>
+                                    {% endif %}
+                                    {% if 'X2C-V3-X' in product_categories %}
+                                    <option value="X2C-V3-X">X2C-V3-X</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="sub_category_type" class="form-label"><i class="bi bi-tags me-2"></i>Sub-category Type</label>
+                                <select class="form-select" id="sub_category_type" name="sub_category_type">
+                                    <option value="">Please select, default is empty</option>
+                                </select>
+                            </div>
+
+                            <!-- Second row -->
+                            <div class="col-md-6">
+                                <label for="throat_depth" class="form-label"><i class="bi bi-rulers me-2"></i>Throat Depth</label>
+                                {% if fixed_fields.throat_depth %}
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="throat_depth" name="throat_depth" 
+                                            value="{{ fixed_fields.throat_depth }}" readonly>
+                                    <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                </div>
+                                {% else %}
+                                <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="e.g.: ~350, 350~600, 600~">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="throat_width" class="form-label"><i class="bi bi-arrows-expand me-2"></i>Throat Width</label>
+                                {% if fixed_fields.throat_width %}
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="throat_width" name="throat_width" 
+                                            value="{{ fixed_fields.throat_width }}" readonly>
+                                    <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                </div>
+                                {% else %}
+                                <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="e.g.: ~350, 350~600, 600~">
+                                {% endif %}
+                            </div>
+
+                            <!-- Third row -->
+                            <div class="col-md-6">
+                                <label for="transformer" class="form-label"><i class="bi bi-cpu me-2"></i>Transformer</label>
+                                <select class="form-select" id="transformer" name="transformer">
+                                    <option value="">Please select, default is empty</option>
+                                    <!-- Transformer options will be generated dynamically via JavaScript -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="clamping_force" class="form-label"><i class="bi bi-lightning me-2"></i>Clamping Force</label>
+                                {% if fixed_fields.clamping_force %}
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="clamping_force" name="clamping_force" 
+                                            value="{{ fixed_fields.clamping_force }}" readonly>
+                                    <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                </div>
+                                {% else %}
+                                <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="e.g.: ~3500, 3500~5500, 5500~">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right column: Image display area -->
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h5 class="card-title">Sub-category Option Preview</h5>
+                                <p class="text-muted small mb-2">Preview only shows window style, ignoring transformer orientation and gearbox type</p>
+                                <img id="product_image" src="/static/images/No image available.png" alt="Product Preview" class="img-fluid" style="max-height: 250px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Advanced Search Fields -->
+                <div class="mt-4">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
+                        <i class="bi bi-gear me-2"></i>
+                        Advanced Search Options
+                    </button>
+                </div>
+                
+                <div class="collapse mt-3" id="advancedSearch">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- All advanced fields (static + dynamic) are placed in this row -->
+                            <div class="row g-3" id="advanced-fields-container">
+                                <!-- Drawing No. 1(o) -->
+                                <div class="col-md-4">
+                                    <label for="drawing_no_1" class="form-label">
+                                        <i class="bi bi-file-earmark-text me-2"></i>
+                                        Drawing No. 1(o)
+                                    </label>
+                                    {% if fixed_fields.drawing_no_1 %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
+                                                value="{{ fixed_fields.drawing_no_1 }}" readonly>
+                                        <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                    </div>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
+                                            placeholder="Weld gun drawing number, default is empty">
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Description -->
+                                <div class="col-md-4">
+                                    <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>Description</label>
+                                    {% if fixed_fields.description %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="description" name="description" 
+                                                value="{{ fixed_fields.description }}" readonly>
+                                        <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                    </div>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="description" name="description" placeholder="Customer description, default is empty">
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Stroke -->
+                                <div class="col-md-4">
+                                    <label for="stroke" class="form-label"><i class="bi bi-arrows-move me-2"></i>Stroke</label>
+                                    {% if fixed_fields.stroke %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="stroke" name="stroke" 
+                                                value="{{ fixed_fields.stroke }}" readonly>
+                                        <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                    </div>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="stroke" name="stroke" placeholder="e.g.: ~90, 100~190, 210~">
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- MOTOR Manufacturer -->
+                                <div class="col-md-4">
+                                    <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR Manufacturer</label>
+                                    <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+                                        <option value="">Please select, default is empty</option>
+                                        {% for manufacturer in motor_manufacturers %}
+                                        <option value="{{ manufacturer }}">{{ manufacturer }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- Transformer Placement -->
+                                {% if 'transformer_placement' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="transformer_placement" class="form-label"><i class="bi bi-compass me-2"></i>Transformer Placement</label>
+                                    <select class="form-select" id="transformer_placement" name="transformer_placement">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="水平">Horizontal</option>
+                                        <option value="竖直">Vertical</option>
+                                        <option value="下置">Bottom</option>
+                                        <option value="上置">Top</option>
+                                        <option value="右置">Right</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Has Balance -->
+                                {% if 'has_balance' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="has_balance" class="form-label"><i class="bi bi-water me-2"></i>Has Balance</label>
+                                    <select class="form-select" id="has_balance" name="has_balance">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="有">Yes</option>
+                                        <option value="无">No</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Weight -->
+                                {% if 'weight' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="weight" class="form-label"><i class="bi bi-box me-2"></i>Weight</label>
+                                    {% if fixed_fields.weight %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="weight" name="weight" 
+                                                value="{{ fixed_fields.weight }}" readonly>
+                                        <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                    </div>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="e.g.: ~90, 90~120, 120~">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Flange P.C.D -->
+                                {% if 'flange_pcd' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="flange_pcd" class="form-label"><i class="bi bi-circle me-2"></i>Flange P.C.D</label>
+                                    <select class="form-select" id="flange_pcd" name="flange_pcd">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="125">125</option>
+                                        <option value="125-160">125-160</option>
+                                        <option value="160">160</option>
+                                        <option value="200">200</option>
+                                        <option value="92">92</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Bracket Direction -->
+                                {% if 'bracket_direction' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="bracket_direction" class="form-label"><i class="bi bi-arrow-up-right me-2"></i>Bracket Direction</label>
+                                    <select class="form-select" id="bracket_direction" name="bracket_direction">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="右">Right</option>
+                                        <option value="上">Up</option>
+                                        <option value="前">Front</option>
+                                        <option value="下">Down</option>
+                                        <option value="后">Back</option>
+                                        <option value="三维">3D</option>
+                                        <option value="左">Left</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Water Circuit -->
+                                {% if 'water_circuit' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="water_circuit" class="form-label"><i class="bi bi-droplet me-2"></i>Water Circuit</label>
+                                    <select class="form-select" id="water_circuit" name="water_circuit">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="1进1出">1 In 1 Out</option>
+                                        <option value="2进2出">2 In 2 Out</option>
+                                        <option value="3进3出">3 In 3 Out</option>
+                                        <option value="1进2出">1 In 2 Out</option>
+                                        <option value="2进3出">2 In 3 Out</option>
+                                        <option value="1进3出">1 In 3 Out</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Tool Changer -->
+                                {% if 'tool_changer' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="tool_changer" class="form-label"><i class="bi bi-tools me-2"></i>Tool Changer</label>
+                                    <select class="form-select" id="tool_changer" name="tool_changer">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="无">No</option>
+                                        <option value="有">Yes</option>
+                                        <option value="STAUBLI">STAUBLI</option>
+                                        <option value="NITTA">NITTA</option>
+                                        <option value="ATI-QC210">ATI-QC210</option>
+                                        <option value="ATI-QC310">ATI-QC310</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Grip Extension Length -->
+                                {% if 'grip_extension_length' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="grip_extension_length" class="form-label"><i class="bi bi-arrow-right me-2"></i>Grip Extension Length</label>
+                                    {% if fixed_fields.grip_extension_length %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="grip_extension_length" name="grip_extension_length" 
+                                                value="{{ fixed_fields.grip_extension_length }}" readonly>
+                                        <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                    </div>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="grip_extension_length" name="grip_extension_length" placeholder="Please enter grip extension length">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Eccentricity Direction -->
+                                {% if 'eccentricity_direction' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="eccentricity_direction" class="form-label"><i class="bi bi-arrow-up-down me-2"></i>Eccentricity Direction</label>
+                                    <select class="form-select" id="eccentricity_direction" name="eccentricity_direction">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="上">Up</option>
+                                        <option value="下">Down</option>
+                                        <option value="左">Left</option>
+                                        <option value="右">Right</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Eccentricity to Center -->
+                                {% if 'eccentricity_to_center' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="eccentricity_to_center" class="form-label"><i class="bi bi-circle-half me-2"></i>Eccentricity to Center</label>
+                                    <select class="form-select" id="eccentricity_to_center" name="eccentricity_to_center">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="是">Yes</option>
+                                        <option value="否">No</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Guidance Method -->
+                                {% if 'guidance_method' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="guidance_method" class="form-label"><i class="bi bi-arrows-move me-2"></i>Guidance Method</label>
+                                    <select class="form-select" id="guidance_method" name="guidance_method">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="滑轨">Slide Rail</option>
+                                        <option value="导杆">Guide Rod</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Static Arm Eccentricity -->
+                                {% if 'static_arm_eccentricity' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="static_arm_eccentricity" class="form-label"><i class="bi bi-circle-half me-2"></i>Static Arm Eccentricity</label>
+                                    {% if fixed_fields.static_arm_eccentricity %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="static_arm_eccentricity" name="static_arm_eccentricity" 
+                                                value="{{ fixed_fields.static_arm_eccentricity }}" readonly>
+                                        <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                    </div>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="static_arm_eccentricity" name="static_arm_eccentricity" placeholder="Please enter static arm eccentricity">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Static Electrode Arm End -->
+                                {% if 'static_electrode_arm_end' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="static_electrode_arm_end" class="form-label"><i class="bi bi-grip-vertical me-2"></i>Static Electrode Arm End</label>
+                                    <select class="form-select" id="static_electrode_arm_end" name="static_electrode_arm_end">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="握杆（铝）">Grip Rod (Aluminum)</option>
+                                        <option value="TIP BASE（F 型）">TIP BASE (F Type)</option>
+                                        <option value="握杆（SBA）">Grip Rod (SBA)</option>
+                                        <option value="TIP BASE（G 型）">TIP BASE (G Type)</option>
+                                        <option value="GUN HEAD（?36）">GUN HEAD (?36)</option>
+                                        <option value="GUN HEAD（?45）">GUN HEAD (?45)</option>
+                                        <option value="GUN HEAD（?40）">GUN HEAD (?40)</option>
+                                        <option value="GUN HEAD（?50）">GUN HEAD (?50)</option>
+                                        <option value="GUN HEAD（?60）">GUN HEAD (?60)</option>
+                                        <option value="握杆?45（铝）">Grip Rod ?45 (Aluminum)</option>
+                                        <option value="握杆?50（铝）">Grip Rod ?50 (Aluminum)</option>
+                                        <option value="特殊">Special</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Moving Arm Eccentricity -->
+                                {% if 'moving_arm_eccentricity' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="moving_arm_eccentricity" class="form-label"><i class="bi bi-circle-half me-2"></i>Moving Arm Eccentricity</label>
+                                    {% if fixed_fields.moving_arm_eccentricity %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="moving_arm_eccentricity" name="moving_arm_eccentricity" 
+                                                value="{{ fixed_fields.moving_arm_eccentricity }}" readonly>
+                                        <span class="input-group-text text-danger">Defined, input prohibited</span>
+                                    </div>
+                                    {% else %}
+                                    <input type="text" class="form-control" id="moving_arm_eccentricity" name="moving_arm_eccentricity" placeholder="Please enter moving arm eccentricity">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Moving Electrode Arm End -->
+                                {% if 'moving_electrode_arm_end' in enabled_fields %}
+                                <div class="col-md-4">
+                                    <label for="moving_electrode_arm_end" class="form-label"><i class="bi bi-grip-vertical me-2"></i>Moving Electrode Arm End</label>
+                                    <select class="form-select" id="moving_electrode_arm_end" name="moving_electrode_arm_end">
+                                        <option value="">Please select, default is empty</option>
+                                        <option value="握杆（铝）">Grip Rod (Aluminum)</option>
+                                        <option value="TIP BASE（F 型）">TIP BASE (F Type)</option>
+                                        <option value="握杆（SBA）">Grip Rod (SBA)</option>
+                                        <option value="TIP BASE（G 型）">TIP BASE (G Type)</option>
+                                        <option value="GUN HEAD（?36）">GUN HEAD (?36)</option>
+                                        <option value="握杆?45（铝）">Grip Rod ?45 (Aluminum)</option>
+                                        <option value="握杆?50（铝）">Grip Rod ?50 (Aluminum)</option>
+                                        <option value="特殊">Special</option>
+                                        <option value="其他">Others</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Electrode Arm End -->
+                                
+                                
+                                <!-- Eccentricity -->
+                                
+                                
+                                <!-- Static Arm Front Length -->
+                                
+                                
+                                <!-- Static Arm Front Height -->
+                                
+                                
+                                <!-- Moving Arm Front Length -->
+                                
+                                
+                                <!-- Moving Arm Front Height -->
+                                
+                                
+                                <!-- Dynamic fields will be inserted here (key change) -->
+                                <div id="dynamic-fields-placeholder" class="contents"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Buttons -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5" id="searchSubmitBtn">
+                        <i class="bi bi-search me-2"></i>
+                        Start Search
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        Reset Criteria
+                    </button>
+                </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Search Tips -->
+        <div class="row mt-5">
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">Search Tips</h5>
+                        <p class="card-text text-muted">All search criteria are optional. Leaving a field empty means no restriction on that condition.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">Precise Matching</h5>
+                        <p class="card-text text-muted">Numeric fields support precise matching, while text fields support fuzzy search.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">File Download</h5>
+                        <p class="card-text text-muted">PDF, STEP, and ZIP files can be downloaded directly from the search results.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="bi bi-link-45deg text-primary" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3">Custom Search</h5>
+                        <p class="card-text text-muted">Customized search pages on demand, highly customizable selection database.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+    /* Ensure the placeholder itself does not affect layout */
+    .contents {
+        display: contents;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchSubmitBtn = document.getElementById('searchSubmitBtn');
+        
+        // Initially disable the search button
+        searchSubmitBtn.disabled = true;
+        
+        // Function to update search button status
+        function updateSearchButtonStatus() {
+            const categoryValue = document.getElementById('category').value;
+            searchSubmitBtn.disabled = !categoryValue;
+        }
+        
+        const categorySubTypes = {
+            'X2C-C(Recommended)': [
+                { label: 'Large', value: '大型' },
+                { label: 'Special', value: '特殊' },
+                { label: 'Crane Type', value: '仙鹤型' },
+                { label: 'Small-Medium', value: '中小型' }
+            ],
+            'X2C-V2-C': [
+                { label: 'Large', value: '大型' },
+                { label: 'Special', value: '特殊' },
+                { label: 'Crane Type', value: '仙鹤型' },
+                { label: 'Small-Medium', value: '中小型' }
+            ],
+            'X2C-V3-C': [
+                { label: 'Large', value: '大型' },
+                { label: 'Small', value: '小型' }
+            ],
+            'X2C-X(Recommended)': [
+                { label: 'Large', value: '大型' },
+                { label: 'Special', value: '特殊' },
+                { label: 'Small-Medium', value: '中小型' },
+                { label: 'X', value: 'X' },
+                { label: 'Y', value: 'Y' }
+            ],
+            'X2C-V2-X': [
+                { label: 'Large', value: '大型' },
+                { label: 'Special', value: '特殊' },
+                { label: 'Small', value: '小型' },
+                { label: 'Medium', value: '中型' },
+                { label: 'X', value: 'X' },
+                { label: 'Y', value: 'Y' }
+            ],
+            'X2C-V3-X': [
+                { label: 'Large', value: '大型' },
+                { label: 'Small', value: '小型' }
+            ]
+        };
+
+        const categoryTransformerTypes = {
+            'X2C-C(Recommended)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
+            'X2C-V2-C': ['DB6','其他'],
+            'X2C-V3-C': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他'],
+            'X2C-X(Recommended)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
+            'X2C-V2-X': ['DB6','其他'],
+            'X2C-V3-X': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他']
+        };
+
+        // Cache DOM elements
+        const dynamicFieldsPlaceholder = document.getElementById('dynamic-fields-placeholder');
+        let currentDynamicFields = [];
+
+        function formatTransformerDisplayText(type) {
+            if (type === 'ITS85' || type === 'DB6-100R1') return type + ' (Recommended)';
+            if (type === 'DB6-90-510' || type === 'DB6' || type === 'DB6-90') return 'DB6-90';
+            if (type === '商科') return 'Shangke';
+            if (type === '其他') return 'Others';
+            return type;
+        }
+
+        function updateTransformerOptions(categoryName) {
+            const transformerSelect = document.getElementById('transformer');
+            transformerSelect.innerHTML = '<option value="">Please select, default is empty</option>';
+            if (categoryName && categoryTransformerTypes[categoryName]) {
+                // Get allowed transformer types from configuration
+                const allowedTransformers = [
+                    {% for transformer in transformers %}
+                        '{{ transformer }}'{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                ];
+                
+                categoryTransformerTypes[categoryName].forEach(transformerType => {
+                    // Only display transformer types allowed in configuration
+                    if (allowedTransformers.includes(transformerType)) {
+                        const option = document.createElement('option');
+                        option.value = transformerType;
+                        option.textContent = formatTransformerDisplayText(transformerType);
+                        transformerSelect.appendChild(option);
+                    }
+                });
+            }
+        }
+
+        // Update dynamic fields (key change)
+        function updateDynamicFields(categoryName) {
+            // 1. Clear previously added dynamic fields
+            currentDynamicFields.forEach(field => field.remove());
+            currentDynamicFields = [];
+
+            let fieldsToCreate = [];
+            
+            // Check if related fields are enabled
+            const enabledFields = [
+                {% for field in enabled_fields %}
+                    '{{ field }}'{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            ];
+            
+            if (categoryName && categoryName.includes('-C')) {
+                if (enabledFields.includes('electrode_arm_end')) {
+                    fieldsToCreate.push(
+                        {
+                            id: 'electrode_arm_end',
+                            label: 'Electrode Arm End',
+                            type: 'select',
+                            options: [
+                                { value: '', text: 'Please select, default is empty' },
+                                { value: '握杆（铝）', text: 'Grip Rod (Aluminum)' },
+                                { value: 'TIP BASE（F 型）', text: 'TIP BASE (F Type)' },
+                                { value: '握杆（SBA）', text: 'Grip Rod (SBA)' },
+                                { value: 'TIP BASE（G 型）', text: 'TIP BASE (G Type)' },
+                                { value: 'GUN HEAD（?36）', text: 'GUN HEAD (?36)' },
+                                { value: 'GUN HEAD（?45）', text: 'GUN HEAD (?45)' },
+                                { value: 'GUN HEAD（?40）', text: 'GUN HEAD (?40)' },
+                                { value: 'GUN HEAD（?50）', text: 'GUN HEAD (?50)' },
+                                { value: 'GUN HEAD（?60）', text: 'GUN HEAD (?60)' },
+                                { value: '握杆?45（铝）', text: 'Grip Rod ?45 (Aluminum)' },
+                                { value: '握杆?50（铝）', text: 'Grip Rod ?50 (Aluminum)' },
+                                { value: '特殊', text: 'Special' },
+                                { value: '其他', text: 'Others' }
+                            ]
+                        }
+                    );
+                }
+                
+                if (enabledFields.includes('eccentricity')) {
+                    fieldsToCreate.push(
+                        {
+                            id: 'eccentricity',
+                            label: 'Eccentricity Distance',
+                            icon: 'bi-arrows-angle-contract',
+                            placeholder: 'e.g.: 10~50, 50~'
+                        }
+                    );
+                }
+            } else if (categoryName && categoryName.includes('-X')) {
+                if (enabledFields.includes('static_arm_front_length')) {
+                    fieldsToCreate.push(
+                        { id: 'static_arm_front_length', label: 'Static Arm Front Length', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' }
+                    );
+                }
+                
+                if (enabledFields.includes('static_arm_front_height')) {
+                    fieldsToCreate.push(
+                        { id: 'static_arm_front_height', label: 'Static Arm Front Height', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' }
+                    );
+                }
+                
+                if (enabledFields.includes('moving_arm_front_length')) {
+                    fieldsToCreate.push(
+                        { id: 'moving_arm_front_length', label: 'Moving Arm Front Length', icon: 'bi-arrows-expand', placeholder: 'e.g.: ~246, 246~346, 346~' }
+                    );
+                }
+                
+                if (enabledFields.includes('moving_arm_front_height')) {
+                    fieldsToCreate.push(
+                        { id: 'moving_arm_front_height', label: 'Moving Arm Front Height', icon: 'bi-arrows-vertical', placeholder: 'e.g.: ~50, 50~100, 100~' }
+                    );
+                }
+            }
+
+            // 2. Create and insert new dynamic fields
+            fieldsToCreate.forEach(field => {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'col-md-4';
+                
+                if (field.type === 'select') {
+                    let optionsHtml = field.options.map(option => 
+                        `<option value="${option.value}">${option.text}</option>`
+                    ).join('');
+                    
+                    fieldDiv.innerHTML = `
+                        <label for="${field.id}" class="form-label">
+                            <i class="bi ${field.icon || 'bi-tools'} me-2"></i>
+                            ${field.label}
+                        </label>
+                        <select class="form-select" id="${field.id}" name="${field.id}">
+                            ${optionsHtml}
+                        </select>
+                    `;
+                } else {
+                    fieldDiv.innerHTML = `
+                        <label for="${field.id}" class="form-label">
+                            <i class="bi ${field.icon} me-2"></i>
+                            ${field.label}
+                        </label>
+                        <input type="text" class="form-control" id="${field.id}" name="${field.id}" placeholder="${field.placeholder}">
+                    `;
+                }
+                
+                // Insert new fields before the placeholder, so they appear at the placeholder's position
+                dynamicFieldsPlaceholder.parentNode.insertBefore(fieldDiv, dynamicFieldsPlaceholder);
+                currentDynamicFields.push(fieldDiv); // Save reference to new fields for later cleanup
+            });
+        }
+
+        function updateSubCategoryOptions(categoryName) {
+            const subCategorySelect = document.getElementById('sub_category_type');
+            subCategorySelect.innerHTML = '<option value="">Please select, default is empty</option>';
+            
+            if (categoryName && categorySubTypes[categoryName]) {
+                categorySubTypes[categoryName].forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.value; // Submit the original Chinese value
+                    option.textContent = item.label; // Display the English label
+                    subCategorySelect.appendChild(option);
+                });
+            }
+        }
+
+        const defaultImagePath = '/static/images/No image available.png';
+        const productImageElement = document.getElementById('product_image');
+
+        function updateProductImage() {
+            const categorySelect = document.getElementById('category');
+            const subCategorySelect = document.getElementById('sub_category_type');
+
+            const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
+            // Use .value to get the original Chinese value needed for the image name
+            const selectedSubCategoryValue = subCategorySelect.value;
+
+            if (selectedCategoryText && selectedSubCategoryValue) {
+                // Construct image name using the original Chinese value for sub-category
+                const imageName = `${selectedCategoryText}-${selectedSubCategoryValue}.png`;
+                const imagePath = `/static/images/${imageName}`;
+                
+                const img = new Image();
+                img.onload = () => { productImageElement.src = imagePath; };
+                img.onerror = () => { productImageElement.src = defaultImagePath; };
+                img.src = imagePath;
+            } else {
+                productImageElement.src = defaultImagePath;
+            }
+        }
+
+        // Handle category selection change
+        document.getElementById('category').addEventListener('change', function() {
+            const categorySelect = this;
+            const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
+            if (selectedText && selectedText !== 'Please select, required option') {
+                updateSubCategoryOptions(selectedText);
+                updateTransformerOptions(selectedText);
+                updateDynamicFields(selectedText);
+                updateProductImage();
+            } else {
+                updateSubCategoryOptions('');
+                updateTransformerOptions('');
+                updateDynamicFields('');
+                productImageElement.src = defaultImagePath;
+            }
+            updateSearchButtonStatus();
+        });
+
+        // Handle sub-category type selection change
+        document.getElementById('sub_category_type').addEventListener('change', function() {
+            updateProductImage();
+        });
+
+        // Form reset functionality
+        document.querySelector('button[type="reset"]').addEventListener('click', function() {
+            document.getElementById('searchForm').reset();
+            document.querySelectorAll('select').forEach(select => {
+                select.selectedIndex = 0;
+            });
+            updateSubCategoryOptions('');
+            updateTransformerOptions('');
+            updateDynamicFields('');
+            productImageElement.src = defaultImagePath;
+            updateSearchButtonStatus();
+        });
+
+        // Initial setup
+        updateSearchButtonStatus();
+        const initialCategorySelect = document.getElementById("category");
+        const initialCategoryText = initialCategorySelect.options[initialCategorySelect.selectedIndex].text;
+        if (initialCategoryText && initialCategoryText !== 'Please select, required option') {
+            updateSubCategoryOptions(initialCategoryText);
+            updateTransformerOptions(initialCategoryText);
+            updateDynamicFields(initialCategoryText);
+            updateProductImage();
+        }
+    });
+</script>
+{% endblock %}

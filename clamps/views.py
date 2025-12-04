@@ -475,7 +475,7 @@ def check_file_size(request, product_id, file_type):
         if not os.path.exists(full_file_path):
             return JsonResponse({
                 'can_download': False,
-                'message': f'{file_type} file does not exist or is corrupted' if is_english else f'文件 {file_type} 不存在或已损坏'
+                'message': f'{file_type.upper()} file does not exist or is corrupted' if is_english else f'{file_type.upper()} 文件不存在或已损坏'
             })
         
         # 获取文件大小（MB）
@@ -621,7 +621,7 @@ def download_file(request, product_id, file_type):
                 return redirect('clamps:protected_media', path=relative_path)
 
         else:
-            messages.error(request, f"文件 {file_type} 不存在或已损坏")
+            messages.error(request, f"{file_type.upper()} 文件不存在或已损坏")
             referer = request.META.get('HTTP_REFERER')
             if referer and 'search_results' in referer:
                 return redirect(referer)
@@ -794,15 +794,29 @@ def check_batch_file_size(request):
         if not is_english:
             referer = request.META.get('HTTP_REFERER', '')
             is_english = 'en/' in referer or '_en/' in referer or 'search_results_en' in referer or 'product_detail_en' in referer
-        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-        can_download, message = user_profile.can_download_file(total_size_mb, is_batch=True, is_english=is_english)
+        # Check if there are any missing files
+        if missing_files:
+            if is_english:
+                message = f"Missing files: {', '.join(missing_files)}"
+            else:
+                message = f"缺失文件: {', '.join(missing_files)}"
+            response_data = {
+                'can_download': False,
+                'message': message,
+                'total_size_mb': round(total_size_mb, 2),
+                'missing_files': missing_files
+            }
+        else:
+            # If no missing files, check download permissions
+            user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+            can_download, message = user_profile.can_download_file(total_size_mb, is_batch=True, is_english=is_english)
 
-        response_data = {
-            'can_download': can_download,
-            'message': message,
-            'total_size_mb': round(total_size_mb, 2),
-            'missing_files': missing_files
-        }
+            response_data = {
+                'can_download': can_download,
+                'message': message,
+                'total_size_mb': round(total_size_mb, 2),
+                'missing_files': missing_files
+            }
         return JsonResponse(response_data)
     return JsonResponse({'can_download': False, 'message': '无效的请求方法。'})
 
@@ -1596,7 +1610,7 @@ def style_search(request, unique_id):
     
     # 设置会话状态，标记当前是从仕样搜索页面进入
     request.session['from_style_search'] = True
-    request.session['style_link_url'] = request.build_absolute_uri()
+    request.session['style_search_unique_id'] = unique_id
     
     # 准备搜索配置上下文
     search_config = style_link.search_config
@@ -1664,6 +1678,90 @@ def style_search(request, unique_id):
         'is_style_search': True
     }
     return render(request, 'style_search.html', context)
+
+
+def style_search_en(request, unique_id):
+    """仕样搜索英文页面"""
+    try:
+        style_link = StyleLink.objects.get(unique_id=unique_id)
+    except StyleLink.DoesNotExist:
+        messages.error(request, "Style search link not found!")
+        return redirect('clamps:home_en')
+    
+    # 更新点击次数
+    style_link.click_count += 1
+    style_link.save()
+    
+    # 设置会话标记
+    request.session['from_style_search'] = True
+    request.session['style_search_unique_id'] = unique_id
+    
+    # 准备搜索配置上下文
+    search_config = style_link.search_config
+    
+    # 确保所有必要的配置项都存在
+    product_categories = search_config.get('product_categories', [])
+    transformers = search_config.get('transformers', [])
+    motor_manufacturers = search_config.get('motor_manufacturers', [])
+    enabled_fields = search_config.get('enabled_fields', [])
+    fixed_fields = search_config.get('fixed_fields', {})
+    
+    # 处理搜索请求
+    if request.method == 'GET':
+        # 检查是否有实际的搜索参数（排除浏览器自动添加的参数）
+        actual_search_params = request.GET.copy()
+        # 移除浏览器自动添加的参数
+        for param in ['ide_webview_request_time']:
+            if param in actual_search_params:
+                actual_search_params.pop(param)
+        
+        if len(actual_search_params) > 0:
+            # 构建搜索参数
+            query_params = request.GET.copy()
+            
+            # 应用固定字段
+            for field, value in fixed_fields.items():
+                if field not in query_params:
+                    query_params[field] = value
+            
+            # 应用产品分类
+            if product_categories and 'category' not in query_params:
+                # 如果只有一个产品分类，直接使用
+                if len(product_categories) == 1:
+                    # 处理推荐分类，转换为实际分类名称
+                    category = product_categories[0]
+                    if category == 'X2C-C_recommended':
+                        category = 'X2C-C'
+                    elif category == 'X2C-X_recommended':
+                        category = 'X2C-X'
+                    query_params['category'] = category
+            
+            # 应用变压器类型
+            if transformers and 'transformer' not in query_params:
+                # 如果只有一个变压器类型，直接使用
+                if len(transformers) == 1:
+                    query_params['transformer'] = transformers[0]
+            
+            # 应用MOTOR厂家类型
+            if motor_manufacturers and 'motor_manufacturer' not in query_params:
+                # 如果只有一个MOTOR厂家类型，直接使用
+                if len(motor_manufacturers) == 1:
+                    query_params['motor_manufacturer'] = motor_manufacturers[0]
+            
+            # 如果有搜索参数，重定向到普通搜索结果页面
+            return redirect(f"{reverse('clamps:search_results_en')}?{query_params.urlencode()}")
+    
+    context = {
+        'style_link': style_link,
+        'search_config': search_config,
+        'product_categories': product_categories,
+        'transformers': transformers,
+        'motor_manufacturers': motor_manufacturers,
+        'enabled_fields': enabled_fields,
+        'fixed_fields': fixed_fields,
+        'is_style_search': True
+    }
+    return render(request, 'style_search_en.html', context)
 
 
 @login_required
