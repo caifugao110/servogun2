@@ -640,22 +640,47 @@ function addWatermark(context, width, height) {
 		}
     }
 	
-    // 下载文件时显示提示
+    // 下载文件时显示提示 - 增加文件大小检查
     document.querySelectorAll('.download-btn').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            const fileName = this.textContent.trim();
             const downloadUrl = this.href;
+            // 从URL中提取product_id和file_type
+            const urlParts = downloadUrl.split('/');
+            const productId = urlParts[urlParts.length - 3];
+            const fileType = urlParts[urlParts.length - 2];
             
-            // 显示提示
-            showDownloadWarning(() => {
-                // 3秒后开始下载
-                setTimeout(() => {
-                    window.location.href = downloadUrl;
-                }, 3000);
+            // 先检查文件大小
+            checkFileSize(productId, fileType, () => {
+                // 检查通过，显示下载提示
+                showDownloadWarning(() => {
+                    // 3秒后开始下载
+                    setTimeout(() => {
+                        window.location.href = downloadUrl;
+                    }, 3000);
+                });
             });
         });
     });
+    
+    // 检查单个文件大小
+    function checkFileSize(productId, fileType, callback) {
+        // 添加语言参数
+        const language = window.location.pathname.includes('en') || window.location.pathname.includes('_en') ? 'en' : 'zh';
+        fetch(`{% url 'clamps:check_file_size' 0 'TYPE' %}`.replace('0', productId).replace('TYPE', fileType) + `?language=${language}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.can_download) {
+                    callback();
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('检查文件大小时出错:', error);
+                showToast('检查文件大小时出错，请稍后重试', 'danger');
+            });
+    }
     
     function showDownloadWarning(callback) {
         const warningHtml = `
@@ -663,22 +688,28 @@ function addWatermark(context, width, height) {
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">下载提示</h5>
+                            <h5 class="modal-title">
+                                <i class="bi bi-download me-2"></i>
+                                下载提示
+                            </h5>
                         </div>
                         <div class="modal-body">
-                            <div class="alert alert-warning">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
+                            <div class="alert" style="background-color: #e0f7fa; border: 1px solid #b2ebf2; border-radius: 8px; color: #2c3e50; padding: 12px 16px;">
+                                <i class="bi bi-info-circle me-2" style="color: #2c3e50;"></i>
                                 图纸模型数据由于各种原因发生变更后不另行通知，选型数据库无法保证图纸模型数据完全正确，该数据不作为任何参考依据。
                             </div>
                             <div class="text-center">
                                 <div class="spinner-border text-primary me-2" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                                    <span class="visually-hidden">加载中...</span>
                                 </div>
                                 <span id="countdown">3</span> 秒后自动开始下载...<br>数据较多时服务器压缩需要时间，请耐心等待
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" id="directDownloadBtn">如窗口没有自动跳转点此直接下载</button>
+                            <button type="button" class="btn btn-primary" id="directDownloadBtn">
+                                <i class="bi bi-download me-1"></i>
+                                如窗口没有自动跳转点此直接下载
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -725,26 +756,23 @@ function addWatermark(context, width, height) {
     
     function showToast(message, type = 'info') {
         const toastHtml = `
-            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
+            <div class="alert alert-dismissible show" role="alert" style="background-color: #e0f7fa; border: 1px solid #b2ebf2; border-radius: 8px; color: #dc3545; padding: 12px 16px; margin-bottom: 16px; z-index: 9999; position: fixed; top: 80px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 600px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center;">
+                <i class="bi bi-exclamation-circle me-2" style="color: #dc3545;"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="color: #dc3545; opacity: 0.7; margin-left: auto;"></button>
             </div>
         `;
         
-        let toastContainer = document.querySelector('.toast-container');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-            document.body.appendChild(toastContainer);
-        }
+        // 插入到body末尾，使用固定定位使其居中显示
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
         
-        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-        const toast = new bootstrap.Toast(toastContainer.lastElementChild);
-        toast.show();
+        // 自动清理alert元素
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert.show');
+            if (alerts.length > 0) {
+                alerts[alerts.length - 1].remove();
+            }
+        }, 5000);
     }
 </script>
 {% endblock %}

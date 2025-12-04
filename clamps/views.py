@@ -406,7 +406,6 @@ def search_results(request):
     return search_results_base(request, 'search_results.html')
 
 @login_required
-@user_passes_test(is_staff_or_superuser)
 def search_results_en(request):
     return search_results_base(request, 'search_results_en.html')
 
@@ -452,10 +451,16 @@ def check_file_size(request, product_id, file_type):
         elif file_type == 'bmp':
             file_path = product.bmp_file_path
 
+        # 优先使用前端传递的language参数，其次通过HTTP_REFERER判断
+        is_english = request.GET.get('language') == 'en' or request.POST.get('language') == 'en'
+        if not is_english:
+            referer = request.META.get('HTTP_REFERER', '')
+            is_english = 'en/' in referer or '_en/' in referer or 'search_results_en' in referer or 'product_detail_en' in referer
+        
         if not file_path:
             return JsonResponse({
                 'can_download': False,
-                'message': f'产品没有关联的 {file_type} 文件'
+                'message': f'Product has no associated {file_type} file' if is_english else f'产品没有关联的 {file_type} 文件'
             })
 
         # 处理路径前缀，确保是相对于 MEDIA_ROOT 的路径
@@ -470,7 +475,7 @@ def check_file_size(request, product_id, file_type):
         if not os.path.exists(full_file_path):
             return JsonResponse({
                 'can_download': False,
-                'message': f'文件 {file_type} 不存在或已损坏'
+                'message': f'{file_type} file does not exist or is corrupted' if is_english else f'文件 {file_type} 不存在或已损坏'
             })
         
         # 获取文件大小（MB）
@@ -481,7 +486,7 @@ def check_file_size(request, product_id, file_type):
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
         
         # 检查下载限制
-        can_download, message = user_profile.can_download_file(file_size_mb)
+        can_download, message = user_profile.can_download_file(file_size_mb, is_english=is_english)
         
         return JsonResponse({
             'can_download': can_download,
@@ -492,7 +497,7 @@ def check_file_size(request, product_id, file_type):
     except Exception as e:
         return JsonResponse({
             'can_download': False,
-            'message': f'检查文件时发生错误: {str(e)}'
+            'message': f'Error checking file: {str(e)}' if is_english else f'检查文件时发生错误: {str(e)}'
         })
 
 
@@ -660,11 +665,19 @@ def batch_download_view(request, file_type):
                 elif file_type == 'both':
                     # 对于'both'类型，尝试下载PDF和STEP文件
                     if product.pdf_file_path:
-                        files_to_add.append((os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', '')), os.path.basename(str(product.pdf_file_path))))
-                        total_size_mb += os.path.getsize(os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', ''))) / (1024 * 1024)
+                        full_pdf_path = os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', ''))
+                        if os.path.exists(full_pdf_path):
+                            files_to_add.append((full_pdf_path, os.path.basename(str(product.pdf_file_path))))
+                            total_size_mb += os.path.getsize(full_pdf_path) / (1024 * 1024)
+                        else:
+                            messages.warning(request, f"文件 {os.path.basename(str(product.pdf_file_path))} 不存在或已损坏，已跳过。")
                     if product.step_file_path:
-                        files_to_add.append((os.path.join(settings.MEDIA_ROOT, str(product.step_file_path).replace('media/', '')), os.path.basename(str(product.step_file_path))))
-                        total_size_mb += os.path.getsize(os.path.join(settings.MEDIA_ROOT, str(product.step_file_path).replace('media/', ''))) / (1024 * 1024)
+                        full_step_path = os.path.join(settings.MEDIA_ROOT, str(product.step_file_path).replace('media/', ''))
+                        if os.path.exists(full_step_path):
+                            files_to_add.append((full_step_path, os.path.basename(str(product.step_file_path))))
+                            total_size_mb += os.path.getsize(full_step_path) / (1024 * 1024)
+                        else:
+                            messages.warning(request, f"文件 {os.path.basename(str(product.step_file_path))} 不存在或已损坏，已跳过。")
                     continue # 跳过下面的通用文件处理逻辑
                 
                 if file_path:
@@ -685,12 +698,8 @@ def batch_download_view(request, file_type):
                 else:
                     messages.warning(request, f"产品 {product.description} 没有关联的 {file_type} 文件，已跳过。")
             
+            # 由于前端已经通过checkBatchFileSize检查了文件大小，这里不再重复检查
             user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-            can_download, message = user_profile.can_download_file(total_size_mb)
-            
-            if not can_download:
-                messages.error(request, f"批量下载失败：{message}")
-                return redirect(request.META.get('HTTP_REFERER', 'clamps:home'))
 
             for full_path, arcname in files_to_add:
                 if file_type == 'pdf' or (file_type == 'both' and arcname.lower().endswith('.pdf')):
@@ -780,8 +789,13 @@ def check_batch_file_size(request):
             else:
                 missing_files.append(f"产品 {product.description} 没有关联的 {file_type} 文件")
         
+        # 优先使用前端传递的language参数，其次通过HTTP_REFERER判断
+        is_english = request.POST.get('language') == 'en' or request.GET.get('language') == 'en'
+        if not is_english:
+            referer = request.META.get('HTTP_REFERER', '')
+            is_english = 'en/' in referer or '_en/' in referer or 'search_results_en' in referer or 'product_detail_en' in referer
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-        can_download, message = user_profile.can_download_file(total_size_mb)
+        can_download, message = user_profile.can_download_file(total_size_mb, is_batch=True, is_english=is_english)
 
         response_data = {
             'can_download': can_download,

@@ -491,7 +491,7 @@ class UserProfile(models.Model):
         self.last_download_date = timezone.localtime(timezone.now()).date()
         self.save()
     
-    def can_download_file(self, file_size_mb, is_batch=False):
+    def can_download_file(self, file_size_mb, is_batch=False, is_english=False):
         """检查是否可以下载指定大小的文件"""
         today = timezone.localtime(timezone.now()).date()
         
@@ -507,17 +507,29 @@ class UserProfile(models.Model):
         
         # 检查单次下载大小限制
         if file_size_mb > max_single_download:
-            return False, f"文件大小超过{'批量' if is_batch else '单次'}下载限制（{max_single_download}MB）"
+            if is_english:
+                return False, f"File size exceeds {'batch' if is_batch else 'single'} download limit ({max_single_download}MB)"
+            else:
+                return False, f"文件大小超过{'批量' if is_batch else '单次'}下载限制（{max_single_download}MB）"
         
         # 检查每日下载大小限制
         if (self.daily_download_size_mb + file_size_mb) > (self.max_daily_download_gb * 1024):
-            return False, f"今日下载量将超过限制（{self.max_daily_download_gb}GB）"
+            if is_english:
+                return False, f"Today's download will exceed the limit ({self.max_daily_download_gb}GB)"
+            else:
+                return False, f"今日下载量将超过限制（{self.max_daily_download_gb}GB）"
         
         # 检查每日下载次数限制
         if self.daily_download_count >= self.max_daily_download_count:
-            return False, f"今日下载文件数已达到限制（{self.max_daily_download_count}个）"
+            if is_english:
+                return False, f"Today's download count has reached the limit ({self.max_daily_download_count} files)"
+            else:
+                return False, f"今日下载文件数已达到限制（{self.max_daily_download_count}个）"
         
-        return True, "可以下载"
+        if is_english:
+            return True, "Can download"
+        else:
+            return True, "可以下载"
     
     def record_download(self, file_size_mb):
         """记录下载行为"""
