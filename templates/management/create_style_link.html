@@ -256,70 +256,112 @@
                             </label>
                             <div class="border p-3 rounded">
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="ITS85">
                                             <label class="form-check-label">ITS85</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="DB6-100R1">
+                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="DB6-100R1" id="db6-100r1">
                                             <label class="form-check-label">DB6-100R1</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="RT552">
                                             <label class="form-check-label">RT552</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="RT752">
                                             <label class="form-check-label">RT752</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="BOSCH">
                                             <label class="form-check-label">BOSCH</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="商科">
                                             <label class="form-check-label">商科</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="RT906">
                                             <label class="form-check-label">RT906</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="RT706">
                                             <label class="form-check-label">RT706</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="NI110">
                                             <label class="form-check-label">NI110</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="RT452">
                                             <label class="form-check-label">RT452</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="transformers[]" value="其他">
                                             <label class="form-check-label">其他</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="DB6-90-510" id="db6-90-510">
+                                            <label class="form-check-label">DB6-90-510</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="DB6-225-510(B)">
+                                            <label class="form-check-label">DB6-225-510(B)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="SMF-100">
+                                            <label class="form-check-label">SMF-100</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="MF-100">
+                                            <label class="form-check-label">MF-100</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="DB6-90" id="db6-90">
+                                            <label class="form-check-label">DB6-90</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="DB6-100" id="db6-100">
+                                            <label class="form-check-label">DB6-100</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="DB6" id="db6">
+                                            <label class="form-check-label">DB6</label>
                                         </div>
                                     </div>
                                 </div>
@@ -536,4 +578,42 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DB6-100R1 和 DB6-100 自动关联
+        const db6_100r1 = document.getElementById('db6-100r1');
+        const db6_100 = document.getElementById('db6-100');
+        
+        if (db6_100r1 && db6_100) {
+            db6_100r1.addEventListener('change', function() {
+                db6_100.checked = this.checked;
+            });
+            
+            db6_100.addEventListener('change', function() {
+                db6_100r1.checked = this.checked;
+            });
+        }
+        
+        // DB6-90-510、DB6-90 和 DB6 自动关联
+        const db6_90_510 = document.getElementById('db6-90-510');
+        const db6_90 = document.getElementById('db6-90');
+        const db6 = document.getElementById('db6');
+        
+        if (db6_90_510 && db6_90 && db6) {
+            // 监听所有三个复选框的变化
+            [db6_90_510, db6_90, db6].forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    // 无论是勾选还是取消勾选，其他两个都跟随当前状态
+                    const checkedState = this.checked;
+                    db6_90_510.checked = checkedState;
+                    db6_90.checked = checkedState;
+                    db6.checked = checkedState;
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -1598,19 +1598,23 @@ def my_style_links(request):
 def style_search(request, unique_id):
     """处理仕样链接的搜索请求"""
     # 获取仕样链接
-    style_link = get_object_or_404(StyleLink, unique_id=unique_id)
-    
-    # 检查链接是否可用
-    if not style_link.can_be_clicked():
-        messages.error(request, '该仕样链接已不可用！')
-        return redirect('clamps:home')
-    
-    # 增加点击次数
-    style_link.increment_click()
-    
-    # 设置会话状态，标记当前是从仕样搜索页面进入
-    request.session['from_style_search'] = True
-    request.session['style_search_unique_id'] = unique_id
+    try:
+        style_link = StyleLink.objects.get(unique_id=unique_id)
+        
+        # 检查链接是否可用
+        if not style_link.can_be_clicked():
+            messages.error(request, '该仕样链接已不可用！')
+            return redirect('clamps:search')
+        
+        # 增加点击次数
+        style_link.increment_click()
+        
+        # 设置会话状态，标记当前是从仕样搜索页面进入
+        request.session['from_style_search'] = True
+        request.session['style_search_unique_id'] = unique_id
+    except StyleLink.DoesNotExist:
+        messages.error(request, '该仕样链接不存在或已失效！')
+        return redirect('clamps:search')
     
     # 准备搜索配置上下文
     search_config = style_link.search_config
@@ -1680,21 +1684,34 @@ def style_search(request, unique_id):
     return render(request, 'style_search.html', context)
 
 
+@login_required
+def empty_style_search(request):
+    """处理空的仕样搜索路径请求"""
+    messages.error(request, '该仕样链接不存在或已失效！')
+    return redirect('clamps:search')
+
+@login_required
+def empty_style_search_en(request):
+    """处理空的仕样搜索英文路径请求"""
+    messages.error(request, "Style search link not found!")
+    return redirect('clamps:search_en')
+
+
 def style_search_en(request, unique_id):
     """仕样搜索英文页面"""
     try:
         style_link = StyleLink.objects.get(unique_id=unique_id)
+        
+        # 更新点击次数
+        style_link.click_count += 1
+        style_link.save()
+        
+        # 设置会话标记
+        request.session['from_style_search'] = True
+        request.session['style_search_unique_id'] = unique_id
     except StyleLink.DoesNotExist:
         messages.error(request, "Style search link not found!")
-        return redirect('clamps:home_en')
-    
-    # 更新点击次数
-    style_link.click_count += 1
-    style_link.save()
-    
-    # 设置会话标记
-    request.session['from_style_search'] = True
-    request.session['style_search_unique_id'] = unique_id
+        return redirect('clamps:search_en')
     
     # 准备搜索配置上下文
     search_config = style_link.search_config

@@ -296,7 +296,7 @@
                         <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
                         <h3 class="mt-3 text-muted">未找到匹配的产品</h3>
                         <p class="text-muted">请尝试调整搜索条件或使用不同的关键词</p>
-                        <a href="{% url 'clamps:search' %}" class="btn btn-primary">
+                        <a href="{% if is_style_search %}/style-search/{{ request.session.style_search_unique_id }}/{% else %}{% url 'clamps:search' %}{% endif %}" class="btn btn-primary">
                             <i class="bi bi-arrow-left me-2"></i>
                             重新搜索
                         </a>
