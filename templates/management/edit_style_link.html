@@ -446,6 +446,72 @@
                             </div>
                         </div>
                         
+                        <!-- 齿轮箱型式 -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="bi bi-cog me-2"></i>
+                                齿轮箱型式（可多选，必须至少选择一项，未勾选的将不会显示）
+                            </label>
+                            <div class="border p-3 rounded">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="低压" {% if '低压' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">低压</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="高压" {% if '高压' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">高压</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="联轴器型" {% if '联轴器型' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">联轴器型</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="中空" {% if '中空' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">中空</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="TOLOMATIC" {% if 'TOLOMATIC' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">TOLOMATIC</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="偏心" {% if '偏心' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">偏心</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="折回" {% if '折回' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">折回</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="OBARA-中空" {% if 'OBARA-中空' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">OBARA-中空</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="DIAKONT" {% if 'DIAKONT' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <label class="form-check-label">DIAKONT</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- 数值型搜索条件锁定配置 -->
                         <div class="col-md-12">
                             <label class="form-label">

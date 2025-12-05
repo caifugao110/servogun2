@@ -57,8 +57,8 @@ urlpatterns = [
     path('management/style_links/edit/<int:link_id>/', views.edit_style_link, name='edit_style_link'),
     path('style-search/<str:unique_id>_en/', views.style_search_en, name='style_search_en'),
     path('style-search/<str:unique_id>/', views.style_search, name='style_search'),
-    path('style-search/', views.empty_style_search, name='empty_style_search'),
-    path('style-search_en/', views.empty_style_search_en, name='empty_style_search_en'),
+    re_path(r'^style-search/*/?$', views.empty_style_search, name='empty_style_search'),
+    re_path(r'^style-search_en/*/?$', views.empty_style_search_en, name='empty_style_search_en'),
     
     # API接口
     path('api/gitee/releases/latest/<str:owner>/<str:repo>/', views.gitee_releases_latest, name='gitee_releases_latest'),

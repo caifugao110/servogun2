@@ -1,4 +1,5 @@
-# Ignore media files
+# Ignore Local folder
 media/
 venv/
 logs/
+backups/

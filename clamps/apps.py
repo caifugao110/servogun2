@@ -15,8 +15,14 @@
 
 
 from django.apps import AppConfig
+import threading
 
 
 class ClampsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'clamps'
+
+    def ready(self):
+        # 在应用启动时自动启动备份调度器
+        from backup import start_scheduler
+        threading.Thread(target=start_scheduler, daemon=True).start()

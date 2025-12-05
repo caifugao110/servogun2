@@ -239,6 +239,17 @@
                                     </select>
                                 </div>
                                 
+                                <!-- 齿轮箱型式 -->
+                                <div class="col-md-4">
+                                    <label for="gearbox_type" class="form-label"><i class="bi bi-cog me-2"></i>齿轮箱型式</label>
+                                    <select class="form-select" id="gearbox_type" name="gearbox_type">
+                                        <option value="">请选择，默认为空</option>
+                                        {% for gearbox_type in gearbox_types %}
+                                        <option value="{{ gearbox_type }}">{{ gearbox_type }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
                                 <!-- 变压器放置方向 -->
                                 {% if 'transformer_placement' in enabled_fields %}
                                 <div class="col-md-4">

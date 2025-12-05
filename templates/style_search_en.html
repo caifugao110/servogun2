@@ -239,6 +239,17 @@
                                     </select>
                                 </div>
                                 
+                                <!-- Gearbox Type -->
+                                <div class="col-md-4">
+                                    <label for="gearbox_type" class="form-label"><i class="bi bi-cog me-2"></i>Gearbox Type</label>
+                                    <select class="form-select" id="gearbox_type" name="gearbox_type">
+                                        <option value="">Please select, default is empty</option>
+                                        {% for gearbox_type in gearbox_types %}
+                                        <option value="{{ gearbox_type }}">{{ gearbox_type }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
                                 <!-- Transformer Placement -->
                                 {% if 'transformer_placement' in enabled_fields %}
                                 <div class="col-md-4">

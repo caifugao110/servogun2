@@ -284,6 +284,7 @@ def search_results_base(request, template_name):
     flange_pcd = query_params.get('flange_pcd')
     bracket_direction = query_params.get('bracket_direction')
     water_circuit = query_params.get('water_circuit')
+    gearbox_type = query_params.get('gearbox_type')
 
     queryset = Product.objects.all().order_by('drawing_no_1')
 
@@ -358,6 +359,9 @@ def search_results_base(request, template_name):
             queryset = queryset.filter(has_balance=True)
         elif has_balance in ['无', 'No']:
             queryset = queryset.filter(has_balance=False)
+    
+    if gearbox_type:
+        queryset = queryset.filter(gearbox_type__icontains=gearbox_type)
     
     if transformer_placement:
         queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
@@ -1398,16 +1402,21 @@ def import_csv(request):
 
     return render(request, 'management/import_csv.html')
 
-@login_required
-@user_passes_test(lambda u: u.is_staff or u.is_superuser)
-def sync_files(request):
-    if request.method != 'POST':
-        return render(request, 'management/sync_files.html')
-
+def sync_files_core():
+    """文件同步核心逻辑，用于定时任务调用"""
+    import logging
+    from django.conf import settings
+    import os
+    from collections import defaultdict
+    from django.db import transaction
+    from .models import Product
+    
+    logger = logging.getLogger(__name__)
+    
     media_root = settings.MEDIA_ROOT
     if not os.path.isdir(media_root):
-        messages.error(request, f'媒体目录 {media_root} 不存在。')
-        return redirect('clamps:management_dashboard')
+        logger.error(f'媒体目录 {media_root} 不存在。')
+        return False, f'媒体目录 {media_root} 不存在。'
 
     # 1. 一次性加载所有产品
     products = Product.objects.all().only(
@@ -1456,13 +1465,30 @@ def sync_files(request):
         for field, objs in to_update.items():
             Product.objects.bulk_update(objs, [field])
 
-    # 6. 提示
+    # 6. 返回结果
     msg = f'同步完成：更新 {updated} 条记录。'
     if unmatch:
         msg += f' 未匹配 {unmatch} 个文件：{', '.join(unmatched_files[:5])}'
         if len(unmatched_files) > 5:
             msg += ' ...'
-    messages.success(request, msg)
+    
+    logger.info(msg)
+    return True, msg
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def sync_files(request):
+    if request.method != 'POST':
+        return render(request, 'management/sync_files.html')
+
+    success, msg = sync_files_core()
+    
+    if success:
+        messages.success(request, msg)
+    else:
+        messages.error(request, msg)
+        
     return redirect('clamps:management_dashboard')
 
 
@@ -1499,6 +1525,9 @@ def create_style_link(request):
         # 获取MOTOR厂家类型
         motor_manufacturers = request.POST.getlist('motor_manufacturers[]')
         
+        # 获取齿轮箱型式
+        gearbox_types = request.POST.getlist('gearbox_types[]')
+        
         # 获取启用的其他搜索字段
         enabled_fields = request.POST.getlist('enabled_fields[]')
         
@@ -1516,6 +1545,7 @@ def create_style_link(request):
             'product_categories': product_categories,
             'transformers': transformers,
             'motor_manufacturers': motor_manufacturers,
+            'gearbox_types': gearbox_types,
             'enabled_fields': enabled_fields,
             'fixed_fields': fixed_fields
         }
@@ -1623,6 +1653,7 @@ def style_search(request, unique_id):
     product_categories = search_config.get('product_categories', [])
     transformers = search_config.get('transformers', [])
     motor_manufacturers = search_config.get('motor_manufacturers', [])
+    gearbox_types = search_config.get('gearbox_types', [])
     enabled_fields = search_config.get('enabled_fields', [])
     fixed_fields = search_config.get('fixed_fields', {})
     
@@ -1668,6 +1699,12 @@ def style_search(request, unique_id):
                 if len(motor_manufacturers) == 1:
                     query_params['motor_manufacturer'] = motor_manufacturers[0]
             
+            # 应用齿轮箱型式
+            if gearbox_types and 'gearbox_type' not in query_params:
+                # 如果只有一个齿轮箱型式，直接使用
+                if len(gearbox_types) == 1:
+                    query_params['gearbox_type'] = gearbox_types[0]
+            
             # 如果有搜索参数，重定向到普通搜索结果页面
             return redirect(f"{reverse('clamps:search_results')}?{query_params.urlencode()}")
     
@@ -1677,6 +1714,7 @@ def style_search(request, unique_id):
         'product_categories': product_categories,
         'transformers': transformers,
         'motor_manufacturers': motor_manufacturers,
+        'gearbox_types': gearbox_types,
         'enabled_fields': enabled_fields,
         'fixed_fields': fixed_fields,
         'is_style_search': True
@@ -1720,6 +1758,7 @@ def style_search_en(request, unique_id):
     product_categories = search_config.get('product_categories', [])
     transformers = search_config.get('transformers', [])
     motor_manufacturers = search_config.get('motor_manufacturers', [])
+    gearbox_types = search_config.get('gearbox_types', [])
     enabled_fields = search_config.get('enabled_fields', [])
     fixed_fields = search_config.get('fixed_fields', {})
     
@@ -1765,6 +1804,12 @@ def style_search_en(request, unique_id):
                 if len(motor_manufacturers) == 1:
                     query_params['motor_manufacturer'] = motor_manufacturers[0]
             
+            # 应用齿轮箱型式
+            if gearbox_types and 'gearbox_type' not in query_params:
+                # 如果只有一个齿轮箱型式，直接使用
+                if len(gearbox_types) == 1:
+                    query_params['gearbox_type'] = gearbox_types[0]
+            
             # 如果有搜索参数，重定向到普通搜索结果页面
             return redirect(f"{reverse('clamps:search_results_en')}?{query_params.urlencode()}")
     
@@ -1774,6 +1819,7 @@ def style_search_en(request, unique_id):
         'product_categories': product_categories,
         'transformers': transformers,
         'motor_manufacturers': motor_manufacturers,
+        'gearbox_types': gearbox_types,
         'enabled_fields': enabled_fields,
         'fixed_fields': fixed_fields,
         'is_style_search': True
@@ -1813,6 +1859,9 @@ def edit_style_link(request, link_id):
         # 获取MOTOR厂家类型
         motor_manufacturers = request.POST.getlist('motor_manufacturers[]')
         
+        # 获取齿轮箱型式
+        gearbox_types = request.POST.getlist('gearbox_types[]')
+        
         # 获取启用的其他搜索字段
         enabled_fields = request.POST.getlist('enabled_fields[]')
         
@@ -1830,6 +1879,7 @@ def edit_style_link(request, link_id):
             'product_categories': product_categories,
             'transformers': transformers,
             'motor_manufacturers': motor_manufacturers,
+            'gearbox_types': gearbox_types,
             'enabled_fields': enabled_fields,
             'fixed_fields': fixed_fields
         }
