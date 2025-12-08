@@ -1,6 +1,22 @@
+﻿<!--
+  Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
 {% extends 'base.html' %}
 
-{% block title %}产品搜索 - 小原焊枪选型数据库{% endblock %}
+{% block title %}浜у搧鎼滅储 - 灏忓師鐒婃灙閫夊瀷鏁版嵁搴搟% endblock %}
 
 {% block content %}
 <div class="row">
@@ -8,17 +24,17 @@
         <div class="text-center mb-4 fade-in-up">
             <h1 class="display-5 fw-bold">
                 <i class="bi bi-search me-3"></i>
-                SERVO GUN 产品搜索
+                SERVO GUN 浜у搧鎼滅储
             </h1>
-            <p class="lead text-muted">请选择分类并填写搜索条件</p>
+            <p class="lead text-muted">璇烽€夋嫨鍒嗙被骞跺～鍐欐悳绱㈡潯浠?/p>
         </div>
         
-        <!-- AI智能搜索卡片 -->
+        <!-- AI鏅鸿兘鎼滅储鍗＄墖 -->
         <div class="card mb-4 fade-in-up" style="border: 2px solid #007bff;">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
                     <i class="bi bi-robot me-2"></i>
-                    AI智能搜索(测试功能，欢迎试用，结果仅供参考)
+                    AI鏅鸿兘鎼滅储(娴嬭瘯鍔熻兘锛屾杩庤瘯鐢紝缁撴灉浠呬緵鍙傝€?
                 </h5>
             </div>
             <div class="card-body">
@@ -26,38 +42,38 @@
                     <div class="col-md-9">
                         <label for="ai_query" class="form-label">
                             <i class="bi bi-chat-dots me-2"></i>
-                            请用自然语言描述您的焊枪需求，AI将为您智能匹配合适的产品图号
+                            璇风敤鑷劧璇█鎻忚堪鎮ㄧ殑鐒婃灙闇€姹傦紝AI灏嗕负鎮ㄦ櫤鑳藉尮閰嶅悎閫傜殑浜у搧鍥惧彿
                         </label>
                         <textarea class="form-control" id="ai_query" rows="1" style="resize: none;" 
-                                placeholder="例如：喉深 300 左右，喉宽 450 左右，85 变压器，压力 4500 左右的 C 枪"></textarea>
+                                placeholder="渚嬪锛氬枆娣?300 宸﹀彸锛屽枆瀹?450 宸﹀彸锛?5 鍙樺帇鍣紝鍘嬪姏 4500 宸﹀彸鐨?C 鏋?></textarea>
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-primary w-100" id="ai_search_btn">
                             <i class="bi bi-magic me-2"></i>
-                            AI智能搜索
+                            AI鏅鸿兘鎼滅储
                         </button>
                     </div>
                 </div>
                 
-                <!-- AI搜索结果显示区域 -->
+                <!-- AI鎼滅储缁撴灉鏄剧ず鍖哄煙 -->
                 <div id="ai_search_result" class="mt-3" style="display: none;">
                     <div class="alert alert-info">
                         <div id="ai_result_content"></div>
                         <div id="ai_result_actions" class="mt-2" style="display: none;">
                             <button type="button" class="btn btn-success" id="search_these_numbers">
                                 <i class="bi bi-search me-2"></i>
-                                搜索这些图号
+                                鎼滅储杩欎簺鍥惧彿
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 加载状态 -->
+                <!-- 鍔犺浇鐘舵€?-->
                 <div id="ai_search_loading" class="mt-3 text-center" style="display: none;">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">正在搜索...</span>
+                        <span class="visually-hidden">姝ｅ湪鎼滅储...</span>
                     </div>
-                    <p class="mt-2 text-muted">AI正在分析您的需求，等待时间大约10秒，请稍候...</p>
+                    <p class="mt-2 text-muted">AI姝ｅ湪鍒嗘瀽鎮ㄧ殑闇€姹傦紝绛夊緟鏃堕棿澶х害10绉掞紝璇风◢鍊?..</p>
                 </div>
             </div>
         </div>
@@ -66,31 +82,31 @@
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">
                     <i class="bi bi-funnel me-2"></i>
-                    常规搜索
+                    甯歌鎼滅储
                 </h5>
             </div>
             <div class="card-body">
                 <form method="get" action="{% url 'clamps:search_results' %}" id="searchForm">
                     {% csrf_token %}
-                <!-- 主要搜索字段和图片预览 -->
+                <!-- 涓昏鎼滅储瀛楁鍜屽浘鐗囬瑙?-->
                 <div class="row g-3 mb-4">
-                    <!-- 左侧两列：输入字段 -->
+                    <!-- 宸︿晶涓ゅ垪锛氳緭鍏ュ瓧娈?-->
                     <div class="col-md-8">
                         <div class="row g-3">
-                            <!-- 第一行 -->
+                            <!-- 绗竴琛?-->
                             <div class="col-md-6">
                                 <label for="category" class="form-label">
                                     <i class="bi bi-diagram-3 me-2"></i>
-                                    <span style="color: red; font-weight: bold;">产品分类</span> <span class="text-danger">*</span>
-                                    <a href="/static/pdf/产品搜索使用指南.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
+                                    <span style="color: red; font-weight: bold;">浜у搧鍒嗙被</span> <span class="text-danger">*</span>
+                                    <a href="/static/pdf/浜у搧鎼滅储浣跨敤鎸囧崡.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="浣跨敤鎸囧崡">
                                         <i class="bi bi-question-circle"></i>
                                     </a>
                                 </label>
                                 <select class="form-select" id="category" name="category">
-                                    <option value="">请选择，必选项</option>
+                                    <option value="">璇烽€夋嫨锛屽繀閫夐」</option>
                                     {% for category in categories %}
                                         {% if category.name in 'X2C-C,X2C-X' %}
-                                            <option value="{{ category.id }}">{{ category.name }}(推荐)</option>
+                                            <option value="{{ category.id }}">{{ category.name }}(鎺ㄨ崘)</option>
                                         {% else %}
                                             <option value="{{ category.id }}">{{ category.name }}</option>
                                         {% endif %}
@@ -98,202 +114,202 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label for="sub_category_type" class="form-label"><i class="bi bi-tags me-2"></i>子分类类型</label>
+                                <label for="sub_category_type" class="form-label"><i class="bi bi-tags me-2"></i>瀛愬垎绫荤被鍨?/label>
                                 <select class="form-select" id="sub_category_type" name="sub_category_type">
-                                    <option value="">请选择，默认为空</option>
+                                    <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
                                 </select>
                             </div>
 
-                            <!-- 第二行 -->
+                            <!-- 绗簩琛?-->
                             <div class="col-md-6">
-                                <label for="throat_depth" class="form-label"><i class="bi bi-rulers me-2"></i>喉深</label>
-                                <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="例如: ~350, 350~600, 600~">
+                                <label for="throat_depth" class="form-label"><i class="bi bi-rulers me-2"></i>鍠夋繁</label>
+                                <input type="text" class="form-control" id="throat_depth" name="throat_depth" placeholder="渚嬪: ~350, 350~600, 600~">
                             </div>
                             <div class="col-md-6">
-                                <label for="throat_width" class="form-label"><i class="bi bi-arrows-expand me-2"></i>喉宽</label>
-                                <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="例如: ~350, 350~600, 600~">
+                                <label for="throat_width" class="form-label"><i class="bi bi-arrows-expand me-2"></i>鍠夊</label>
+                                <input type="text" class="form-control" id="throat_width" name="throat_width" placeholder="渚嬪: ~350, 350~600, 600~">
                             </div>
 
-                            <!-- 第三行 -->
+                            <!-- 绗笁琛?-->
                             <div class="col-md-6">
-                                <label for="transformer" class="form-label"><i class="bi bi-cpu me-2"></i>变压器</label>
+                                <label for="transformer" class="form-label"><i class="bi bi-cpu me-2"></i>鍙樺帇鍣?/label>
                                 <select class="form-select" id="transformer" name="transformer">
-                                    <option value="">请选择，默认为空</option>
+                                    <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label for="clamping_force" class="form-label"><i class="bi bi-lightning me-2"></i>加压力</label>
-                                <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="例如: ~3500, 3500~5500, 5500~">
+                                <label for="clamping_force" class="form-label"><i class="bi bi-lightning me-2"></i>鍔犲帇鍔?/label>
+                                <input type="text" class="form-control" id="clamping_force" name="clamping_force" placeholder="渚嬪: ~3500, 3500~5500, 5500~">
                             </div>
                         </div>
                     </div>
 
-                    <!-- 右侧一列：图片显示区域 -->
+                    <!-- 鍙充晶涓€鍒楋細鍥剧墖鏄剧ず鍖哄煙 -->
                     <div class="col-md-4">
                         <div class="card h-100">
                             <div class="card-body text-center d-flex flex-column justify-content-center">
-                                <h5 class="card-title">子分类选项预览图</h5>
-                                <p class="text-muted small mb-2">预览图仅展示窗口样式，不考虑变压器方向与齿轮箱类型</p>
-                                <img id="product_image" src="/static/images/No image available.png" alt="产品预览图" class="img-fluid" style="max-height: 250px;">
+                                <h5 class="card-title">瀛愬垎绫婚€夐」棰勮鍥?/h5>
+                                <p class="text-muted small mb-2">棰勮鍥句粎灞曠ず绐楀彛鏍峰紡锛屼笉鑰冭檻鍙樺帇鍣ㄦ柟鍚戜笌榻胯疆绠辩被鍨?/p>
+                                <img id="product_image" src="/static/images/No image available.png" alt="浜у搧棰勮鍥? class="img-fluid" style="max-height: 250px;">
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 高级搜索字段 -->
+                <!-- 楂樼骇鎼滅储瀛楁 -->
                 <div class="mt-4">
                     <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
                         <i class="bi bi-gear me-2"></i>
-                        高级搜索选项
+                        楂樼骇鎼滅储閫夐」
                     </button>
                 </div>
                 
                 <div class="collapse mt-3" id="advancedSearch">
                     <div class="card">
                         <div class="card-body">
-                            <!-- 所有高级字段（静态+动态）都放在这个row里面 -->
+                            <!-- 鎵€鏈夐珮绾у瓧娈碉紙闈欐€?鍔ㄦ€侊級閮芥斁鍦ㄨ繖涓猺ow閲岄潰 -->
                             <div class="row g-3" id="advanced-fields-container">
 								<div class="col-md-4">
 									<label for="drawing_no_1" class="form-label">
 										<i class="bi bi-file-earmark-text me-2"></i>
-										图号1(o)
+										鍥惧彿1(o)
 									</label>
 									<input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
-										   placeholder="焊枪图号，默认为空">
+										   placeholder="鐒婃灙鍥惧彿锛岄粯璁や负绌?>
 								</div>
                                 <div class="col-md-4">
-                                    <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>描述</label>
-                                    <input type="text" class="form-control" id="description" name="description" placeholder="客户描述，默认为空">
+                                    <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>鎻忚堪</label>
+                                    <input type="text" class="form-control" id="description" name="description" placeholder="瀹㈡埛鎻忚堪锛岄粯璁や负绌?>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="stroke" class="form-label"><i class="bi bi-arrows-move me-2"></i>行程</label>
-                                    <input type="text" class="form-control" id="stroke" name="stroke" placeholder="例如: ~90, 100~190, 210~">
+                                    <label for="stroke" class="form-label"><i class="bi bi-arrows-move me-2"></i>琛岀▼</label>
+                                    <input type="text" class="form-control" id="stroke" name="stroke" placeholder="渚嬪: ~90, 100~190, 210~">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR厂家</label>
+                                    <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR鍘傚</label>
                                     <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
-                                        <option value="">请选择，默认为空</option>
+                                        <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
                                         <option value="FANUC">FANUC</option>
                                         <option value="KUKA">KUKA</option>
                                         <option value="YASKAWA">YASKAWA</option>
                                         <option value="ABB">ABB</option>
                                         <option value="TOLOMATIC">TOLOMATIC</option>
-                                        <option value="多摩川">多摩川</option>
+                                        <option value="澶氭懇宸?>澶氭懇宸?/option>
                                         <option value="PANASONIC">PANASONIC</option>
                                         <option value="DIAKONT">DIAKONT</option>
                                         <option value="SEW">SEW</option>
                                         <option value="SANYO">SANYO</option>
-                                        <option value="其他">其他</option>
+                                        <option value="鍏朵粬">鍏朵粬</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="gearbox_type" class="form-label"><i class="bi bi-cog me-2"></i>齿轮箱型式</label>
+                                    <label for="gearbox_type" class="form-label"><i class="bi bi-cog me-2"></i>榻胯疆绠卞瀷寮?/label>
                                     <select class="form-select" id="gearbox_type" name="gearbox_type">
-                                        <option value="">请选择，默认为空</option>
-                                        <option value="低压">低压</option>
-                                        <option value="高压">高压</option>
-                                        <option value="联轴器型">联轴器型</option>
-                                        <option value="中空">中空</option>
+                                        <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
+                                        <option value="浣庡帇">浣庡帇</option>
+                                        <option value="楂樺帇">楂樺帇</option>
+                                        <option value="鑱旇酱鍣ㄥ瀷">鑱旇酱鍣ㄥ瀷</option>
+                                        <option value="涓┖">涓┖</option>
                                         <option value="TOLOMATIC">TOLOMATIC</option>
-                                        <option value="偏心">偏心</option>
-                                        <option value="折回">折回</option>
-                                        <option value="OBARA-中空">OBARA-中空</option>
+                                        <option value="鍋忓績">鍋忓績</option>
+                                        <option value="鎶樺洖">鎶樺洖</option>
+                                        <option value="OBARA-涓┖">OBARA-涓┖</option>
                                         <option value="DIAKONT">DIAKONT</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="transformer_placement" class="form-label"><i class="bi bi-compass me-2"></i>变压器放置方向</label>
+                                    <label for="transformer_placement" class="form-label"><i class="bi bi-compass me-2"></i>鍙樺帇鍣ㄦ斁缃柟鍚?/label>
                                     <select class="form-select" id="transformer_placement" name="transformer_placement">
-                                        <option value="">请选择，默认为空</option>
-                                        <option value="水平">水平</option>
-                                        <option value="竖直">竖直</option>
-                                        <option value="下置">下置</option>
-                                        <option value="上置">上置</option>
-                                        <option value="右置">右置</option>
-                                        <option value="其他">其他</option>
+                                        <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
+                                        <option value="姘村钩">姘村钩</option>
+                                        <option value="绔栫洿">绔栫洿</option>
+                                        <option value="涓嬬疆">涓嬬疆</option>
+                                        <option value="涓婄疆">涓婄疆</option>
+                                        <option value="鍙崇疆">鍙崇疆</option>
+                                        <option value="鍏朵粬">鍏朵粬</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="has_balance" class="form-label"><i class="bi bi-water me-2"></i>有无平衡</label>
+                                    <label for="has_balance" class="form-label"><i class="bi bi-water me-2"></i>鏈夋棤骞宠　</label>
                                     <select class="form-select" id="has_balance" name="has_balance">
-                                        <option value="">请选择，默认为空</option>
-                                        <option value="有">有</option>
-                                        <option value="无">无</option>
+                                        <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
+                                        <option value="鏈?>鏈?/option>
+                                        <option value="鏃?>鏃?/option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="weight" class="form-label"><i class="bi bi-box me-2"></i>重量</label>
-                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="例如: ~90, 90~120, 120~">
+                                    <label for="weight" class="form-label"><i class="bi bi-box me-2"></i>閲嶉噺</label>
+                                    <input type="text" class="form-control" id="weight" name="weight" placeholder="渚嬪: ~90, 90~120, 120~">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="flange_pcd" class="form-label"><i class="bi bi-circle me-2"></i>法兰P.C.D</label>
+                                    <label for="flange_pcd" class="form-label"><i class="bi bi-circle me-2"></i>娉曞叞P.C.D</label>
                                     <select class="form-select" id="flange_pcd" name="flange_pcd">
-                                        <option value="">请选择，默认为空</option>
+                                        <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
                                         <option value="125">125</option>
                                         <option value="125-160">125-160</option>
                                         <option value="160">160</option>
                                         <option value="200">200</option>
                                         <option value="92">92</option>
-                                        <option value="其他">其他</option>
+                                        <option value="鍏朵粬">鍏朵粬</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="bracket_direction" class="form-label"><i class="bi bi-arrow-up-right me-2"></i>托架方向</label>
+                                    <label for="bracket_direction" class="form-label"><i class="bi bi-arrow-up-right me-2"></i>鎵樻灦鏂瑰悜</label>
                                     <select class="form-select" id="bracket_direction" name="bracket_direction">
-                                        <option value="">请选择，默认为空</option>
-                                        <option value="右">右</option>
-                                        <option value="上">上</option>
-                                        <option value="前">前</option>
-                                        <option value="下">下</option>
-                                        <option value="后">后</option>
-                                        <option value="三维">三维</option>
-                                        <option value="左">左</option>
+                                        <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
+                                        <option value="鍙?>鍙?/option>
+                                        <option value="涓?>涓?/option>
+                                        <option value="鍓?>鍓?/option>
+                                        <option value="涓?>涓?/option>
+                                        <option value="鍚?>鍚?/option>
+                                        <option value="涓夌淮">涓夌淮</option>
+                                        <option value="宸?>宸?/option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="water_circuit" class="form-label"><i class="bi bi-droplet me-2"></i>水路</label>
+                                    <label for="water_circuit" class="form-label"><i class="bi bi-droplet me-2"></i>姘磋矾</label>
                                     <select class="form-select" id="water_circuit" name="water_circuit">
-                                        <option value="">请选择，默认为空</option>
-                                        <option value="1进1出">1进1出</option>
-                                        <option value="2进2出">2进2出</option>
-                                        <option value="3进3出">3进3出</option>
-                                        <option value="1进2出">1进2出</option>
-                                        <option value="2进3出">2进3出</option>
-                                        <option value="1进3出">1进3出</option>
-                                        <option value="其他">其他</option>
+                                        <option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>
+                                        <option value="1杩?鍑?>1杩?鍑?/option>
+                                        <option value="2杩?鍑?>2杩?鍑?/option>
+                                        <option value="3杩?鍑?>3杩?鍑?/option>
+                                        <option value="1杩?鍑?>1杩?鍑?/option>
+                                        <option value="2杩?鍑?>2杩?鍑?/option>
+                                        <option value="1杩?鍑?>1杩?鍑?/option>
+                                        <option value="鍏朵粬">鍏朵粬</option>
                                     </select>
                                 </div>
                                 
-                                <!-- 动态字段将插入到这里 (关键改动) -->
+                                <!-- 鍔ㄦ€佸瓧娈靛皢鎻掑叆鍒拌繖閲?(鍏抽敭鏀瑰姩) -->
                                 <div id="dynamic-fields-placeholder" class="contents"></div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 搜索按钮 -->
+                <!-- 鎼滅储鎸夐挳 -->
                 <div class="text-center mt-4">
                     <button type="submit" class="btn btn-primary btn-lg px-5" id="searchSubmitBtn">
                         <i class="bi bi-search me-2"></i>
-                        开始搜索
+                        寮€濮嬫悳绱?
                     </button>
                     <button type="reset" class="btn btn-outline-secondary btn-lg px-5 ms-3">
                         <i class="bi bi-arrow-clockwise me-2"></i>
-                        重置条件
+                        閲嶇疆鏉′欢
                     </button>
                 </div>
                 </form>
             </div>
         </div>
         
-        <!-- 搜索提示 -->
+        <!-- 鎼滅储鎻愮ず -->
         <div class="row mt-5">
 		    <div class="col-md-3">
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-robot text-primary" style="font-size: 2rem;"></i>
-                        <h5 class="card-title mt-3">AI智能搜索</h5>
-                        <p class="card-text text-muted">使用自然语言描述需求，AI自动匹配合适的焊枪产品。</p>
+                        <h5 class="card-title mt-3">AI鏅鸿兘鎼滅储</h5>
+                        <p class="card-text text-muted">浣跨敤鑷劧璇█鎻忚堪闇€姹傦紝AI鑷姩鍖归厤鍚堥€傜殑鐒婃灙浜у搧銆?/p>
                     </div>
                 </div>
             </div>
@@ -301,8 +317,8 @@
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-lightbulb text-warning" style="font-size: 2rem;"></i>
-                        <h5 class="card-title mt-3">搜索提示</h5>
-                        <p class="card-text text-muted">所有搜索条件都是可选的，留空表示不限制该条件。</p>
+                        <h5 class="card-title mt-3">鎼滅储鎻愮ず</h5>
+                        <p class="card-text text-muted">鎵€鏈夋悳绱㈡潯浠堕兘鏄彲閫夌殑锛岀暀绌鸿〃绀轰笉闄愬埗璇ユ潯浠躲€?/p>
                     </div>
                 </div>
             </div>
@@ -310,8 +326,8 @@
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-funnel text-info" style="font-size: 2rem;"></i>
-                        <h5 class="card-title mt-3">精确匹配</h5>
-                        <p class="card-text text-muted">数字字段支持精确匹配，文本字段支持模糊搜索。</p>
+                        <h5 class="card-title mt-3">绮剧‘鍖归厤</h5>
+                        <p class="card-text text-muted">鏁板瓧瀛楁鏀寔绮剧‘鍖归厤锛屾枃鏈瓧娈垫敮鎸佹ā绯婃悳绱€?/p>
                     </div>
                 </div>
             </div>
@@ -319,8 +335,8 @@
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
-                        <h5 class="card-title mt-3">文件下载</h5>
-                        <p class="card-text text-muted">搜索结果中可直接下载PDF、STEP和ZIP文件。</p>
+                        <h5 class="card-title mt-3">鏂囦欢涓嬭浇</h5>
+                        <p class="card-text text-muted">鎼滅储缁撴灉涓彲鐩存帴涓嬭浇PDF銆丼TEP鍜孼IP鏂囦欢銆?/p>
                     </div>
                 </div>
             </div>
@@ -331,7 +347,7 @@
 
 {% block extra_js %}
 <style>
-    /* 确保占位符本身不影响布局 */
+    /* 纭繚鍗犱綅绗︽湰韬笉褰卞搷甯冨眬 */
     .contents {
         display: contents;
     }
@@ -339,36 +355,36 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const categorySubTypes = {
-            'X2C-C(推荐)': ['大型', '特殊', '仙鹤型', '中小型'],
-            'X2C-V2-C': ['大型', '特殊', '仙鹤型', '中小型'],
-            'X2C-V3-C': ['大型', '小型'],
-            'X2C-X(推荐)': ['大型', '特殊', '中小型', 'X', 'Y'],
-            'X2C-V2-X': ['大型', '特殊', '小型', '中型', 'X', 'Y'],
-            'X2C-V3-X': ['大型', '小型']
+            'X2C-C(鎺ㄨ崘)': ['澶у瀷', '鐗规畩', '浠欓工鍨?, '涓皬鍨?],
+            'X2C-V2-C': ['澶у瀷', '鐗规畩', '浠欓工鍨?, '涓皬鍨?],
+            'X2C-V3-C': ['澶у瀷', '灏忓瀷'],
+            'X2C-X(鎺ㄨ崘)': ['澶у瀷', '鐗规畩', '涓皬鍨?, 'X', 'Y'],
+            'X2C-V2-X': ['澶у瀷', '鐗规畩', '灏忓瀷', '涓瀷', 'X', 'Y'],
+            'X2C-V3-X': ['澶у瀷', '灏忓瀷']
         };
 
         const categoryTransformerTypes = {
-            'X2C-C(推荐)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
-            'X2C-V2-C': ['DB6','其他'],
-            'X2C-V3-C': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他'],
-            'X2C-X(推荐)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '商科', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '其他'],
-            'X2C-V2-X': ['DB6','其他'],
-            'X2C-V3-X': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '商科', '其他']
+            'X2C-C(鎺ㄨ崘)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '鍟嗙', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '鍏朵粬'],
+            'X2C-V2-C': ['DB6','鍏朵粬'],
+            'X2C-V3-C': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '鍟嗙', '鍏朵粬'],
+            'X2C-X(鎺ㄨ崘)': ['ITS85', 'DB6-100R1', 'RT552', 'RT752','RT906', 'NI110',  'BOSCH', '鍟嗙', 'DB6-90-510', 'RT452', 'RT706','DB6-225-510(B)', '鍏朵粬'],
+            'X2C-V2-X': ['DB6','鍏朵粬'],
+            'X2C-V3-X': ['ITS85','SMF-100', 'MF-100','DB6-90', 'DB6-100', 'BOSCH', '鍟嗙', '鍏朵粬']
         };
         
-        // 缓存DOM元素
+        // 缂撳瓨DOM鍏冪礌
         const dynamicFieldsPlaceholder = document.getElementById('dynamic-fields-placeholder');
         let currentDynamicFields = [];
 
         function formatTransformerDisplayText(type) {
-            if (type === 'ITS85' || type === 'DB6-100R1') return type + '(推荐)';
+            if (type === 'ITS85' || type === 'DB6-100R1') return type + '(鎺ㄨ崘)';
             if (type === 'DB6-90-510' || type === 'DB6' || type === 'DB6-90') return 'DB6-90';
             return type;
         }
 
         function updateTransformerOptions(categoryName) {
             const transformerSelect = document.getElementById('transformer');
-            transformerSelect.innerHTML = '<option value="">请选择，默认为空</option>';
+            transformerSelect.innerHTML = '<option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>';
             if (categoryName && categoryTransformerTypes[categoryName]) {
                 categoryTransformerTypes[categoryName].forEach(transformerType => {
                     const option = document.createElement('option');
@@ -379,9 +395,9 @@
             }
         }
 
-        // 更新动态字段 (关键改动)
+        // 鏇存柊鍔ㄦ€佸瓧娈?(鍏抽敭鏀瑰姩)
         function updateDynamicFields(categoryName) {
-            // 1. 清除之前添加的动态字段
+            // 1. 娓呴櫎涔嬪墠娣诲姞鐨勫姩鎬佸瓧娈?
             currentDynamicFields.forEach(field => field.remove());
             currentDynamicFields = [];
 
@@ -391,42 +407,42 @@
                 fieldsToCreate.push(
                     {
                         id: 'electrode_arm_end',
-                        label: '电极臂端部',
+                        label: '鐢垫瀬鑷傜閮?,
                         type: 'select',
                         options: [
-                            { value: '', text: '请选择，默认为空' },
-                            { value: '握杆（铝）', text: '握杆（铝）' },
-                            { value: 'TIP BASE（F 型）', text: 'TIP BASE（F 型）' },
-                            { value: '握杆（SBA）', text: '握杆（SBA）' },
-                            { value: 'TIP BASE（G 型）', text: 'TIP BASE（G 型）' },
-                            { value: 'GUN HEAD（?36）', text: 'GUN HEAD（?36）' },
-                            { value: 'GUN HEAD（?45）', text: 'GUN HEAD（?45）' },
-                            { value: 'GUN HEAD（?40）', text: 'GUN HEAD（?40）' },
-                            { value: 'GUN HEAD（?50）', text: 'GUN HEAD（?50）' },
-                            { value: 'GUN HEAD（?60）', text: 'GUN HEAD（?60）' },
-                            { value: '握杆?45（铝）', text: '握杆?45（铝）' },
-                            { value: '握杆?50（铝）', text: '握杆?50（铝）' },
-                            { value: '特殊', text: '特殊' },
-                            { value: '其他', text: '其他' }
+                            { value: '', text: '璇烽€夋嫨锛岄粯璁や负绌? },
+                            { value: '鎻℃潌锛堥摑锛?, text: '鎻℃潌锛堥摑锛? },
+                            { value: 'TIP BASE锛團 鍨嬶級', text: 'TIP BASE锛團 鍨嬶級' },
+                            { value: '鎻℃潌锛圫BA锛?, text: '鎻℃潌锛圫BA锛? },
+                            { value: 'TIP BASE锛圙 鍨嬶級', text: 'TIP BASE锛圙 鍨嬶級' },
+                            { value: 'GUN HEAD锛?36锛?, text: 'GUN HEAD锛?36锛? },
+                            { value: 'GUN HEAD锛?45锛?, text: 'GUN HEAD锛?45锛? },
+                            { value: 'GUN HEAD锛?40锛?, text: 'GUN HEAD锛?40锛? },
+                            { value: 'GUN HEAD锛?50锛?, text: 'GUN HEAD锛?50锛? },
+                            { value: 'GUN HEAD锛?60锛?, text: 'GUN HEAD锛?60锛? },
+                            { value: '鎻℃潌?45锛堥摑锛?, text: '鎻℃潌?45锛堥摑锛? },
+                            { value: '鎻℃潌?50锛堥摑锛?, text: '鎻℃潌?50锛堥摑锛? },
+                            { value: '鐗规畩', text: '鐗规畩' },
+                            { value: '鍏朵粬', text: '鍏朵粬' }
                         ]
                     },
 					{
                         id: 'eccentricity',
-                        label: '偏心距离',
+                        label: '鍋忓績璺濈',
                         icon: 'bi-arrows-angle-contract',
-                        placeholder: '例如: 10~50, 50~'
+                        placeholder: '渚嬪: 10~50, 50~'
                     }
                 );
             } else if (categoryName && categoryName.includes('-X')) {
                 fieldsToCreate = [
-                    { id: 'static_arm_front_length', label: '静电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
-                    { id: 'static_arm_front_height', label: '静电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' },
-                    { id: 'moving_arm_front_length', label: '动电极臂前部长', icon: 'bi-arrows-expand', placeholder: '例如: ~246, 246~346, 346~' },
-                    { id: 'moving_arm_front_height', label: '动电极臂前部高', icon: 'bi-arrows-vertical', placeholder: '例如: ~50, 50~100, 100~' }
+                    { id: 'static_arm_front_length', label: '闈欑數鏋佽噦鍓嶉儴闀?, icon: 'bi-arrows-expand', placeholder: '渚嬪: ~246, 246~346, 346~' },
+                    { id: 'static_arm_front_height', label: '闈欑數鏋佽噦鍓嶉儴楂?, icon: 'bi-arrows-vertical', placeholder: '渚嬪: ~50, 50~100, 100~' },
+                    { id: 'moving_arm_front_length', label: '鍔ㄧ數鏋佽噦鍓嶉儴闀?, icon: 'bi-arrows-expand', placeholder: '渚嬪: ~246, 246~346, 346~' },
+                    { id: 'moving_arm_front_height', label: '鍔ㄧ數鏋佽噦鍓嶉儴楂?, icon: 'bi-arrows-vertical', placeholder: '渚嬪: ~50, 50~100, 100~' }
                 ];
             }
 
-            // 2. 创建并插入新的动态字段
+            // 2. 鍒涘缓骞舵彃鍏ユ柊鐨勫姩鎬佸瓧娈?
             fieldsToCreate.forEach(field => {
                 const fieldDiv = document.createElement('div');
                 fieldDiv.className = 'col-md-4';
@@ -455,9 +471,9 @@
                     `;
                 }
                 
-                // 将新字段插入到占位符之前，这样它们就会出现在占位符的位置
+                // 灏嗘柊瀛楁鎻掑叆鍒板崰浣嶇涔嬪墠锛岃繖鏍峰畠浠氨浼氬嚭鐜板湪鍗犱綅绗︾殑浣嶇疆
                 dynamicFieldsPlaceholder.parentNode.insertBefore(fieldDiv, dynamicFieldsPlaceholder);
-                currentDynamicFields.push(fieldDiv); // 保存对新字段的引用，以便后续清除
+                currentDynamicFields.push(fieldDiv); // 淇濆瓨瀵规柊瀛楁鐨勫紩鐢紝浠ヤ究鍚庣画娓呴櫎
             });
         }
 
@@ -475,7 +491,7 @@
         
         document.getElementById('category').addEventListener('change', function() {
             const selectedText = this.options[this.selectedIndex].text;
-            if (selectedText && selectedText !== '请选择，可为空') {
+            if (selectedText && selectedText !== '璇烽€夋嫨锛屽彲涓虹┖') {
                 updateSubCategoryOptions(selectedText);
                 updateTransformerOptions(selectedText);
                 updateDynamicFields(selectedText);
@@ -494,7 +510,7 @@
         
         function updateSubCategoryOptions(categoryName) {
             const subCategorySelect = document.getElementById('sub_category_type');
-            subCategorySelect.innerHTML = '<option value="">请选择，默认为空</option>';
+            subCategorySelect.innerHTML = '<option value="">璇烽€夋嫨锛岄粯璁や负绌?/option>';
             if (categoryName && categorySubTypes[categoryName]) {
                 categorySubTypes[categoryName].forEach(subType => {
                     const option = document.createElement('option');
@@ -511,7 +527,7 @@
             const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex].text;
             const selectedSubCategoryText = subCategorySelect.options[subCategorySelect.selectedIndex].text;
 
-            if (selectedCategoryText && selectedSubCategoryText && selectedSubCategoryText !== '请选择，默认为空') {
+            if (selectedCategoryText && selectedSubCategoryText && selectedSubCategoryText !== '璇烽€夋嫨锛岄粯璁や负绌?) {
                 const imageName = `${selectedCategoryText}-${selectedSubCategoryText}.png`;
                 const imagePath = `/static/images/${imageName}`;
                 const img = new Image();
@@ -523,10 +539,10 @@
             }
         }
 
-        // 初始化
+        // 鍒濆鍖?
         const initialCategorySelect = document.getElementById("category");
         const initialCategoryText = initialCategorySelect.options[initialCategorySelect.selectedIndex].text;
-        if (initialCategoryText && initialCategoryText !== '请选择，必选项') {
+        if (initialCategoryText && initialCategoryText !== '璇烽€夋嫨锛屽繀閫夐」') {
             updateSubCategoryOptions(initialCategoryText);
             updateTransformerOptions(initialCategoryText);
             updateDynamicFields(initialCategoryText);
@@ -537,24 +553,24 @@
             updateDynamicFields('');
             productImageElement.src = defaultImagePath;
         }
-        // 页面加载完成后，如果尚未选择分类，则聚焦
+        // 椤甸潰鍔犺浇瀹屾垚鍚庯紝濡傛灉灏氭湭閫夋嫨鍒嗙被锛屽垯鑱氱劍
         if (!document.getElementById('category').value) {
             document.getElementById('category').focus();
         }
 
-        // AI搜索功能
+        // AI鎼滅储鍔熻兘
         document.getElementById('ai_search_btn').addEventListener('click', function() {
             const query = document.getElementById('ai_query').value.trim();
             if (!query) {
-                alert('请输入您的需求描述');
+                alert('璇疯緭鍏ユ偍鐨勯渶姹傛弿杩?);
                 return;
             }
             
-            // 显示加载状态
+            // 鏄剧ず鍔犺浇鐘舵€?
             document.getElementById('ai_search_loading').style.display = 'block';
             document.getElementById('ai_search_result').style.display = 'none';
             
-            // 发送AJAX请求
+            // 鍙戦€丄JAX璇锋眰
             fetch('/api/ai_search/', {
                 method: 'POST',
                 headers: {
@@ -567,61 +583,61 @@
             })
             .then(response => response.json())
             .then(data => {
-                // 隐藏加载状态
+                // 闅愯棌鍔犺浇鐘舵€?
                 document.getElementById('ai_search_loading').style.display = 'none';
                 
                 if (data.success) {
-                    // 显示结果
+                    // 鏄剧ず缁撴灉
                     const resultContent = document.getElementById('ai_result_content');
                     const resultActions = document.getElementById('ai_result_actions');
                     
-                    if (data.data === '未找到符合要求的焊枪') {
-                        resultContent.innerHTML = '<strong>搜索结果：</strong>' + data.data + '<br><small class="text-muted">建议您调整搜索条件后重试</small>';
+                    if (data.data === '鏈壘鍒扮鍚堣姹傜殑鐒婃灙') {
+                        resultContent.innerHTML = '<strong>鎼滅储缁撴灉锛?/strong>' + data.data + '<br><small class="text-muted">寤鸿鎮ㄨ皟鏁存悳绱㈡潯浠跺悗閲嶈瘯</small>';
                         resultActions.style.display = 'none';
                     } else {
-                        resultContent.innerHTML = '<strong>找到以下图号：</strong><br>' + data.data;
+                        resultContent.innerHTML = '<strong>鎵惧埌浠ヤ笅鍥惧彿锛?/strong><br>' + data.data;
                         resultActions.style.display = 'block';
                         
-                        // 存储图号数据供后续使用
+                        // 瀛樺偍鍥惧彿鏁版嵁渚涘悗缁娇鐢?
                         document.getElementById('search_these_numbers').setAttribute('data-numbers', data.data);
                     }
                     
                     document.getElementById('ai_search_result').style.display = 'block';
                 } else {
-                    alert('搜索失败：' + data.error);
+                    alert('鎼滅储澶辫触锛? + data.error);
                 }
             })
             .catch(error => {
                 document.getElementById('ai_search_loading').style.display = 'none';
-                alert('网络错误，请稍后重试');
+                alert('缃戠粶閿欒锛岃绋嶅悗閲嶈瘯');
                 console.error('Error:', error);
             });
         });
         
-        // "搜索这些图号"按钮功能
+        // "鎼滅储杩欎簺鍥惧彿"鎸夐挳鍔熻兘
         document.getElementById('search_these_numbers').addEventListener('click', function() {
             const numbers = this.getAttribute('data-numbers');
             if (numbers) {
-                // 清空所有搜索条件
+                // 娓呯┖鎵€鏈夋悳绱㈡潯浠?
                 document.getElementById('searchForm').reset();
                 
-                // 将图号填入图号1字段
+                // 灏嗗浘鍙峰～鍏ュ浘鍙?瀛楁
                 document.getElementById('drawing_no_1').value = numbers;
                 
-                // 提交表单
+                // 鎻愪氦琛ㄥ崟
                 document.getElementById('searchForm').submit();
             }
         });
 
-        // 表单提交验证
+        // 琛ㄥ崟鎻愪氦楠岃瘉
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             const categoryValue = document.getElementById('category').value;
             const drawingNo1Value = document.getElementById('drawing_no_1').value.trim();
 
             if (!categoryValue && !drawingNo1Value) {
-                event.preventDefault(); // 阻止表单提交
-                alert('产品分类为必选项，请选择！');
-                location.reload(); // 页面刷新
+                event.preventDefault(); // 闃绘琛ㄥ崟鎻愪氦
+                alert('浜у搧鍒嗙被涓哄繀閫夐」锛岃閫夋嫨锛?);
+                location.reload(); // 椤甸潰鍒锋柊
             }
         });
     });

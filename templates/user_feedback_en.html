@@ -1,0 +1,183 @@
+﻿<!--
+  Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+{% extends 'base_en.html' %}
+
+{% block title %}User Feedback - Obara Welding Gun Selection Database{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg fade-in-up">
+        <div class="card-header bg-gradient-primary text-white">
+            <h3 class="mb-0">
+                <i class="bi bi-chat-dots me-2"></i>
+                User Feedback
+            </h3>
+        </div>
+        <div class="card-body p-5">
+            <p class="text-muted mb-4">Thank you for using the Obara Welding Gun Selection Database! We value your feedback greatly, as it helps us continuously improve our products and services.</p>
+            
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Feedback Category -->
+                <div class="mb-4">
+                    <label for="category" class="form-label required">
+                        <i class="bi bi-tag text-primary me-2"></i>
+                        Feedback Category
+                    </label>
+                    <select class="form-select" id="category" name="category" required>
+                        <option value="">Please select feedback category</option>
+                        <option value="鏁版嵁閿欒">Data Error</option>
+                        <option value="鏁版嵁涓㈠け">Data Loss</option>
+                        <option value="绯荤粺閿欒">System Error</option>
+                        <option value="鍔熻兘浼樺寲">Feature Optimization</option>
+                        <option value="鍏朵粬寤鸿">Other Suggestions</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a feedback category</div>
+                </div>
+                
+                <!-- Feedback Content -->
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="bi bi-file-text text-primary me-2"></i>
+                        Feedback Content
+                    </label>
+                    <div class="p-4 rounded-3 border">
+                        <!-- Related Link -->
+                        <div class="mb-3">
+                            <label for="related_link" class="form-label">
+                                <i class="bi bi-link text-secondary me-2"></i>
+                                Related Link <span class="text-muted">(Optional)</span>
+                            </label>
+                            <input type="url" class="form-control" id="related_link" name="related_link" placeholder="Please enter related link (if applicable)">
+                            <div class="invalid-feedback">Please enter a valid URL</div>
+                        </div>
+                        
+                        <!-- Content Description -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label required">
+                                <i class="bi bi-pencil-square text-secondary me-2"></i>
+                                Content Description
+                            </label>
+                            <textarea class="form-control" id="content" name="content" rows="5" placeholder="Please describe your issue or suggestion in detail" required></textarea>
+                            <div class="invalid-feedback">Please fill in the content description</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="bi bi-person text-primary me-2"></i>
+                        Contact Information <span class="text-muted">(Optional)</span>
+                    </label>
+                    <div class="p-4 rounded-3 border">
+                        <div class="row g-3">
+                            <!-- Name -->
+                            <div class="col-md-4">
+                                <label for="contact_name" class="form-label">
+                                    <i class="bi bi-person-fill text-secondary me-2"></i>
+                                    Name
+                                </label>
+                                <input type="text" class="form-control" id="contact_name" name="contact_name" placeholder="Please enter your name">
+                            </div>
+                            
+                            <!-- Phone -->
+                            <div class="col-md-4">
+                                <label for="contact_phone" class="form-label">
+                                    <i class="bi bi-telephone-fill text-secondary me-2"></i>
+                                    Phone
+                                </label>
+                                <input type="tel" class="form-control" id="contact_phone" name="contact_phone" placeholder="Please enter your phone number">
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="col-md-4">
+                                <label for="contact_email" class="form-label">
+                                    <i class="bi bi-envelope-fill text-secondary me-2"></i>
+                                    Email
+                                </label>
+                                <input type="email" class="form-control" id="contact_email" name="contact_email" placeholder="Please enter your email address">
+                                <div class="invalid-feedback">Please enter a valid email address</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 py-2" id="submit-btn" disabled>
+                        <i class="bi bi-send me-2"></i>
+                        Submit Feedback
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer text-center text-muted">
+            <p class="mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                We will process your feedback as soon as possible and contact you if needed.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Form validation
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+    
+    // Dynamic validation to enable/disable submit button
+    document.addEventListener('DOMContentLoaded', function() {
+        const categorySelect = document.getElementById('category');
+        const contentTextarea = document.getElementById('content');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        // Check if fields are filled
+        function checkFields() {
+            const categoryValue = categorySelect.value.trim();
+            const contentValue = contentTextarea.value.trim();
+            
+            // If both category and content are filled, enable submit button
+            if (categoryValue && contentValue) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+        
+        // Listen for field changes
+        categorySelect.addEventListener('change', checkFields);
+        contentTextarea.addEventListener('input', checkFields);
+        
+        // Initial check
+        checkFields();
+    });
+</script>
+{% endblock %}

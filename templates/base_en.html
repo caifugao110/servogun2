@@ -588,7 +588,7 @@
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% if is_style_search %}/style-search/{{ request.session.style_search_unique_id }}_en/{% else %}{% url 'clamps:search_en' %}{% endif %}">
-                            <i class="bi bi-search text-success me-1"></i>Product Search
+                                <i class="bi bi-search text-success me-1"></i>Product Search
                             </a>
                         </li>
                         {% if user.is_staff %}
@@ -598,6 +598,11 @@
                                 </a>
                             </li>
                         {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'clamps:user_feedback_en' %}">
+                                <i class="bi bi-chat-dots text-primary me-1"></i>Feedback
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
                 
@@ -754,6 +759,8 @@
             { zh: "/login/", en: "/login_en/" },
             { zh: "/search/", en: "/search_en/" },
             { zh: "/search/results/", en: "/search/results_en/" },
+            { zh: "/feedback/", en: "/feedback_en/" },
+            { en: "/feedback_en/", zh: "/feedback/" },
             // 使用正则表达式处理产品详情页
             { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
             { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" },

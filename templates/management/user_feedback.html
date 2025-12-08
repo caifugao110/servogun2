@@ -1,0 +1,225 @@
+﻿<!--
+  Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+{% extends 'base.html' %}
+
+{% block title %}鐢ㄦ埛鍙嶉绠＄悊 - 灏忓師鐒婃灙閫夊瀷鏁版嵁搴搟% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg fade-in-up">
+        <div class="card-header bg-gradient-primary text-white">
+            <h3 class="mb-0">
+                <i class="bi bi-chat-dots-fill me-2"></i>
+                鐢ㄦ埛鍙嶉绠＄悊
+            </h3>
+        </div>
+        <div class="card-body">
+            
+            <!-- 绛涢€夊拰缁熻 -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="p-3 rounded-3 border">
+                        <form method="get" class="d-flex flex-wrap gap-3 align-items-center">
+                            <label for="status_filter" class="form-label mb-0">
+                                <i class="bi bi-filter text-secondary me-1"></i>
+                                鐘舵€佺瓫閫夛細
+                            </label>
+                            <select class="form-select" id="status_filter" name="status">
+                                <option value="" {% if not current_status %}selected{% endif %}>鍏ㄩ儴鐘舵€?/option>
+                                {% for status_value, status_display in status_choices %}
+                                <option value="{{ status_value }}" {% if current_status == status_value %}selected{% endif %}>
+                                    {{ status_display }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search me-1"></i>
+                                绛涢€?
+                            </button>
+                            {% if current_status %}
+                            <a href="{% url 'clamps:manage_user_feedback' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>
+                                娓呴櫎绛涢€?
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'clamps:export_user_feedback' %}{% if current_status %}?status={{ current_status }}{% endif %}" class="btn btn-success">
+                                <i class="bi bi-file-earmark-arrow-down me-1"></i>
+                                瀵煎嚭鍙嶉
+                            </a>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 border text-end">
+                        <span class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            鍏?{{ page_obj.paginator.count }} 鏉″弽棣?
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 鍙嶉鍒楄〃 -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-primary">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">鍙嶉鍒嗙被</th>
+                            <th scope="col">鍙嶉鍐呭</th>
+                            <th scope="col">鑱旂郴鏂瑰紡</th>
+                            <th scope="col">鎻愪氦鐢ㄦ埛</th>
+                            <th scope="col">鎻愪氦鏃堕棿</th>
+                            <th scope="col">鐘舵€?/th>
+                            <th scope="col">鎿嶄綔</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in page_obj.object_list %}
+                        <tr>
+                            <th scope="row" class="text-primary">{{ feedback.id }}</th>
+                            <td>
+                                <span class="badge bg-primary">{{ feedback.category }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    {% if feedback.related_link %}
+                                    <a href="{{ feedback.related_link }}" target="_blank" class="text-primary text-decoration-none mb-1" title="鐩稿叧閾炬帴">
+                                        <i class="bi bi-link-45deg me-1"></i>
+                                        {{ feedback.related_link|truncatechars:30 }}
+                                    </a>
+                                    {% endif %}
+                                    <p class="mb-0 text-muted small">{{ feedback.content|truncatechars:50 }}</p>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    {% if feedback.contact_name %}
+                                    <small><i class="bi bi-person-fill text-secondary me-1"></i>{{ feedback.contact_name }}</small>
+                                    {% endif %}
+                                    {% if feedback.contact_phone %}
+                                    <small><i class="bi bi-telephone-fill text-secondary me-1"></i>{{ feedback.contact_phone }}</small>
+                                    {% endif %}
+                                    {% if feedback.contact_email %}
+                                    <small><i class="bi bi-envelope-fill text-secondary me-1"></i>{{ feedback.contact_email }}</small>
+                                    {% endif %}
+                                    {% if not feedback.contact_name and not feedback.contact_phone and not feedback.contact_email %}
+                                    <small class="text-muted">鏃犺仈绯绘柟寮?/small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if feedback.user %}
+                                <span class="text-primary">{{ feedback.user.username }}</span>
+                                {% else %}
+                                <span class="text-muted">鍖垮悕鐢ㄦ埛</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ feedback.created_at|date:"Y-m-d H:i:s" }}
+                                </small>
+                            </td>
+                            <td>
+                                {% if feedback.status == "寰呯‘璁? %}
+                                <span class="badge bg-warning">{{ feedback.status }}</span>
+                                {% elif feedback.status == "宸茬‘璁ゅ緟澶勭悊" %}
+                                <span class="badge bg-info">{{ feedback.status }}</span>
+                                {% elif feedback.status == "宸插鐞? %}
+                                <span class="badge bg-success">{{ feedback.status }}</span>
+                                {% elif feedback.status == "鏃犳硶纭" %}
+                                <span class="badge bg-secondary">{{ feedback.status }}</span>
+                                {% elif feedback.status == "鏃犳晥鍙嶉" %}
+                                <span class="badge bg-danger">{{ feedback.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- 鐘舵€佹洿鏂拌〃鍗?-->
+                                <form method="post" action="{% url 'clamps:update_feedback_status' feedback.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        {% for status_value, status_display in status_choices %}
+                                        <option value="{{ status_value }}" {% if feedback.status == status_value %}selected{% endif %}>
+                                            {{ status_display }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 鍒嗛〉 -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Feedback pagination">
+                <ul class="pagination justify-content-center mt-4">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ i }}</span>
+                    </li>
+                    {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ i }}{% if current_status %}&status={{ current_status }}{% endif %}">{{ i }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_status %}&status={{ current_status }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            <!-- 绌虹姸鎬佹彁绀?-->
+            {% if page_obj.paginator.count == 0 %}
+            <div class="text-center py-5 p-4 rounded-3 border">
+                <i class="bi bi-inbox-fill text-muted" style="font-size: 4rem;"></i>
+                <h5 class="mt-3 text-muted">鏆傛棤鐢ㄦ埛鍙嶉</h5>
+                <p class="text-muted">褰撶敤鎴锋彁浜ゅ弽棣堝悗锛屽皢鍦ㄦ澶勬樉绀恒€?/p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

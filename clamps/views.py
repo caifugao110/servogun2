@@ -123,7 +123,7 @@ def add_watermark_to_pdf(input_pdf_path, output_pdf_path, watermark_text):
 
 
 
-from .models import Category, Log, UserProfile, StyleLink
+from .models import Category, Log, UserProfile, StyleLink, UserFeedback
 
 
 def is_superuser(user):
@@ -170,6 +170,19 @@ def user_login(request):
                 ip_address=request.META.get('REMOTE_ADDR'), 
                 user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
+            
+            # 检查是否有已处理但未通知的反馈
+            processed_feedback = UserFeedback.objects.filter(
+                user=user,
+                status__in=['已处理', '无法确认', '无效反馈'],
+                is_notified=False
+            )
+            
+            if processed_feedback.exists():
+                messages.success(request, '您提交的反馈已被管理员处理，感谢您的反馈。')
+                # 标记所有已处理的反馈为已通知
+                processed_feedback.update(is_notified=True)
+            
             # 处理next参数，重定向到原来请求的页面
             next_url = request.GET.get('next', request.POST.get('next', 'clamps:home'))
             return redirect(next_url)
@@ -205,6 +218,19 @@ def user_login_en(request):
                 ip_address=request.META.get('REMOTE_ADDR'), 
                 user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
+            
+            # 检查是否有已处理但未通知的反馈
+            processed_feedback = UserFeedback.objects.filter(
+                user=user,
+                status__in=['已处理', '无法确认', '无效反馈'],
+                is_notified=False
+            )
+            
+            if processed_feedback.exists():
+                messages.success(request, 'Your feedback has been processed by the administrator. Thank you for your feedback.')
+                # 标记所有已处理的反馈为已通知
+                processed_feedback.update(is_notified=True)
+            
             # 处理next参数，重定向到原来请求的页面
             next_url = request.GET.get('next', request.POST.get('next', 'clamps:home_en'))
             return redirect(next_url)
@@ -2246,3 +2272,183 @@ def get_user_profile_data(request):
             'daily_download_count': "N/A",
             'daily_download_size_mb': "N/A"
         })
+
+
+# 用户反馈相关视图函数
+def user_feedback(request):
+    """用户反馈收集页面（中文）"""
+    if request.method == 'POST':
+        category = request.POST.get('category')
+        related_link = request.POST.get('related_link')
+        content = request.POST.get('content')
+        contact_name = request.POST.get('contact_name')
+        contact_phone = request.POST.get('contact_phone')
+        contact_email = request.POST.get('contact_email')
+        
+        # 验证必填字段
+        if not category:
+            messages.error(request, '请选择反馈分类')
+            return render(request, 'user_feedback.html')
+        if not content:
+            messages.error(request, '请填写内容说明')
+            return render(request, 'user_feedback.html')
+        
+        # 创建反馈记录
+        feedback = UserFeedback(
+            category=category,
+            related_link=related_link if related_link else None,
+            content=content,
+            contact_name=contact_name if contact_name else None,
+            contact_phone=contact_phone if contact_phone else None,
+            contact_email=contact_email if contact_email else None,
+            user=request.user if request.user.is_authenticated else None
+        )
+        feedback.save()
+        
+        messages.success(request, '您的反馈已提交成功，感谢您的支持！')
+        return redirect('clamps:user_feedback')
+    
+    return render(request, 'user_feedback.html')
+
+
+def user_feedback_en(request):
+    """用户反馈收集页面（英文）"""
+    if request.method == 'POST':
+        category = request.POST.get('category')
+        related_link = request.POST.get('related_link')
+        content = request.POST.get('content')
+        contact_name = request.POST.get('contact_name')
+        contact_phone = request.POST.get('contact_phone')
+        contact_email = request.POST.get('contact_email')
+        
+        # 验证必填字段
+        if not category:
+            messages.error(request, 'Please select feedback category')
+            return render(request, 'user_feedback_en.html')
+        if not content:
+            messages.error(request, 'Please fill in content description')
+            return render(request, 'user_feedback_en.html')
+        
+        # 创建反馈记录
+        feedback = UserFeedback(
+            category=category,
+            related_link=related_link if related_link else None,
+            content=content,
+            contact_name=contact_name if contact_name else None,
+            contact_phone=contact_phone if contact_phone else None,
+            contact_email=contact_email if contact_email else None,
+            user=request.user if request.user.is_authenticated else None
+        )
+        feedback.save()
+        
+        messages.success(request, 'Your feedback has been submitted successfully, thank you for your support!')
+        return redirect('clamps:user_feedback_en')
+    
+    return render(request, 'user_feedback_en.html')
+
+
+@login_required
+@user_passes_test(is_superuser)
+def manage_user_feedback(request):
+    """管理用户反馈页面（仅超级管理员可见）"""
+    feedback_list = UserFeedback.objects.all().order_by('-created_at')
+    
+    # 状态选项用于筛选
+    status_choices = UserFeedback._meta.get_field('status').choices
+    
+    # 筛选功能
+    status_filter = request.GET.get('status')
+    if status_filter:
+        feedback_list = feedback_list.filter(status=status_filter)
+    
+    # 分页
+    paginator = Paginator(feedback_list, 10)  # 每页10条
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'status_choices': status_choices,
+        'current_status': status_filter
+    }
+    
+    return render(request, 'management/user_feedback.html', context)
+
+
+@login_required
+@user_passes_test(is_superuser)
+def update_feedback_status(request, feedback_id):
+    """更新反馈状态（仅超级管理员可见）"""
+    feedback = get_object_or_404(UserFeedback, id=feedback_id)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status:
+            # 检查状态是否从非处理状态变为处理状态
+            feedback.status = new_status
+            
+            # 如果状态变为已处理、无法确认或无效反馈，标记为未通知用户
+            if feedback.status in ['已处理', '无法确认', '无效反馈']:
+                feedback.is_notified = False
+            feedback.save()
+            
+            messages.success(request, '反馈状态已更新')
+        return redirect('clamps:manage_user_feedback')
+
+
+@login_required
+@user_passes_test(is_superuser)
+def export_user_feedback(request):
+    """导出用户反馈为CSV文件（仅超级管理员可见）"""
+    import csv
+    from django.http import HttpResponse
+    
+    # 获取筛选条件
+    status_filter = request.GET.get('status')
+    feedback_list = UserFeedback.objects.all().order_by('-created_at')
+    
+    if status_filter:
+        feedback_list = feedback_list.filter(status=status_filter)
+    
+    # 记录导出日志
+    Log.objects.create(
+        user=request.user,
+        action_type='export_data',
+        details=f'导出用户反馈数据（状态筛选: {status_filter if status_filter else "全部"}）',
+        ip_address=request.META.get('REMOTE_ADDR'),
+        user_agent=request.META.get('HTTP_USER_AGENT', '')
+    )
+    
+    # 创建CSV响应
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="user_feedback.csv"'
+    
+    writer = csv.writer(response)
+    # 写入CSV头部
+    writer.writerow(['ID', '反馈分类', '反馈内容', '相关链接', '联系方式', '提交用户', '提交时间', '状态'])
+    
+    # 写入数据
+    for feedback in feedback_list:
+        contact_info = []
+        if feedback.contact_name:
+            contact_info.append(f"姓名: {feedback.contact_name}")
+        if feedback.contact_phone:
+            contact_info.append(f"电话: {feedback.contact_phone}")
+        if feedback.contact_email:
+            contact_info.append(f"邮箱: {feedback.contact_email}")
+        
+        contact_str = "，".join(contact_info) if contact_info else "无联系方式"
+        username = feedback.user.username if feedback.user else "匿名用户"
+        
+        writer.writerow([
+            feedback.id,
+            feedback.category,
+            feedback.content,
+            feedback.related_link or "无",
+            contact_str,
+            username,
+            feedback.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            feedback.status
+        ])
+    
+    return response

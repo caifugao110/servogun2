@@ -546,6 +546,115 @@ class UserProfile(models.Model):
         self.save()
 
 
+class FeedbackCategoryChoices(enum.Enum):
+    DATA_ERROR = "数据错误"
+    DATA_LOSS = "数据丢失"
+    SYSTEM_ERROR = "系统错误"
+    FEATURE_OPTIMIZATION = "功能优化"
+    OTHER_SUGGESTION = "其他建议"
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.value) for key in cls]
+
+
+class FeedbackStatusChoices(enum.Enum):
+    PENDING_CONFIRMATION = "待确认"
+    CONFIRMED_PENDING_PROCESSING = "已确认待处理"
+    PROCESSED = "已处理"
+    UNABLE_TO_CONFIRM = "无法确认"
+    INVALID_FEEDBACK = "无效反馈"
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.value) for key in cls]
+
+
+class UserFeedback(models.Model):
+    """用户反馈模型"""
+    
+    # 反馈分类（必选）
+    category = models.CharField(
+        max_length=100,
+        choices=FeedbackCategoryChoices.choices(),
+        verbose_name="反馈分类"
+    )
+    
+    # 反馈内容
+    related_link = models.URLField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="相关链接"
+    )
+    content = models.TextField(
+        verbose_name="内容说明",
+        help_text="请详细描述您的问题或建议"
+    )
+    
+    # 联系方式（可选）
+    contact_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name="姓名"
+    )
+    contact_phone = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        verbose_name="电话"
+    )
+    contact_email = models.EmailField(
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name="邮箱"
+    )
+    
+    # 状态（仅管理员可见）
+    status = models.CharField(
+        max_length=100,
+        choices=FeedbackStatusChoices.choices(),
+        default=FeedbackStatusChoices.PENDING_CONFIRMATION.value,
+        verbose_name="状态"
+    )
+    
+    # 通知状态
+    is_notified = models.BooleanField(
+        default=False,
+        verbose_name="是否已通知用户"
+    )
+    
+    # 关联信息
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="feedback",
+        verbose_name="反馈用户"
+    )
+    
+    # 时间信息
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="创建时间"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="更新时间"
+    )
+    
+    class Meta:
+        verbose_name = "用户反馈"
+        verbose_name_plural = "用户反馈"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.category} - {self.created_at.strftime('%Y-%m-%d')}"
+
+
 class StyleLink(models.Model):
     """仕样链接模型，用于生成和管理特定的搜索链接"""
     

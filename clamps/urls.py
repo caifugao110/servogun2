@@ -51,6 +51,9 @@ urlpatterns = [
     path('management/import_csv/', views.import_csv, name='import_csv'),
     path('management/sync_files/', views.sync_files, name='sync_files'),
     path('management/analytics/', views.analytics_view, name='analytics'),
+    path('management/user_feedback/', views.manage_user_feedback, name='manage_user_feedback'),
+    path('management/user_feedback/update_status/<int:feedback_id>/', views.update_feedback_status, name='update_feedback_status'),
+    path('management/user_feedback/export/', views.export_user_feedback, name='export_user_feedback'),
     # 仕样管理
     path('management/style_links/create/', views.create_style_link, name='create_style_link'),
     path('management/style_links/my/', views.my_style_links, name='my_style_links'),
@@ -59,6 +62,10 @@ urlpatterns = [
     path('style-search/<str:unique_id>/', views.style_search, name='style_search'),
     re_path(r'^style-search/*/?$', views.empty_style_search, name='empty_style_search'),
     re_path(r'^style-search_en/*/?$', views.empty_style_search_en, name='empty_style_search_en'),
+    
+    # 用户反馈
+    path('feedback/', views.user_feedback, name='user_feedback'),
+    path('feedback_en/', views.user_feedback_en, name='user_feedback_en'),
     
     # API接口
     path('api/gitee/releases/latest/<str:owner>/<str:repo>/', views.gitee_releases_latest, name='gitee_releases_latest'),
