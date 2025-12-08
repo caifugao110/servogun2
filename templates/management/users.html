@@ -644,9 +644,16 @@
 
     // 导出用户信息功能
     function exportUsers() {
-        if (confirm('确定要导出所有用户信息吗？')) {
-            window.location.href = "{% url 'clamps:export_users' %}";
-        }
+        // 使用async/await确保确认弹窗阻塞执行
+        (async function() {
+            const confirmed = await new Promise((resolve) => {
+                resolve(confirm('确定要导出所有用户信息吗？'));
+            });
+            
+            if (confirmed) {
+                window.location.href = "{% url 'clamps:export_users' %}";
+            }
+        })();
     }
 	
 	// 检查密码是否匹配

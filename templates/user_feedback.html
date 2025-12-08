@@ -16,7 +16,7 @@
 
 {% extends 'base.html' %}
 
-{% block title %}鐢ㄦ埛鍙嶉 - 灏忓師鐒婃灙閫夊瀷鏁版嵁搴搟% endblock %}
+{% block title %}用户反馈 - 小原焊枪选型数据库{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -24,105 +24,105 @@
         <div class="card-header bg-gradient-primary text-white">
             <h3 class="mb-0">
                 <i class="bi bi-chat-dots me-2"></i>
-                鐢ㄦ埛鍙嶉
+                用户反馈
             </h3>
         </div>
         <div class="card-body p-5">
-            <p class="text-muted mb-4">鎰熻阿鎮ㄤ娇鐢ㄥ皬鍘熺剨鏋€夊瀷鏁版嵁搴擄紒鎴戜滑闈炲父閲嶈鎮ㄧ殑鍙嶉锛岃繖灏嗗府鍔╂垜浠笉鏂敼杩涗骇鍝佸拰鏈嶅姟銆?/p>
+            <p class="text-muted mb-4">感谢您使用小原焊枪选型数据库！我们非常重视您的反馈，这将帮助我们不断改进产品和服务。</p>
             
             <form method="post" class="needs-validation" novalidate>
                 {% csrf_token %}
                 
-                <!-- 鍙嶉鍒嗙被 -->
+                <!-- 反馈分类 -->
                 <div class="mb-4">
                     <label for="category" class="form-label required">
                         <i class="bi bi-tag text-primary me-2"></i>
-                        鍙嶉鍒嗙被
+                        反馈分类 <span class="text-danger">(必选)</span>
                     </label>
                     <select class="form-select" id="category" name="category" required>
-                        <option value="">璇烽€夋嫨鍙嶉鍒嗙被</option>
-                        <option value="鏁版嵁閿欒">鏁版嵁閿欒</option>
-                        <option value="鏁版嵁涓㈠け">鏁版嵁涓㈠け</option>
-                        <option value="绯荤粺閿欒">绯荤粺閿欒</option>
-                        <option value="鍔熻兘浼樺寲">鍔熻兘浼樺寲</option>
-                        <option value="鍏朵粬寤鸿">鍏朵粬寤鸿</option>
+                        <option value="">请选择反馈分类</option>
+                        <option value="数据错误">数据错误</option>
+                        <option value="数据丢失">数据丢失</option>
+                        <option value="系统错误">系统错误</option>
+                        <option value="功能优化">功能优化</option>
+                        <option value="其他建议">其他建议</option>
                     </select>
-                    <div class="invalid-feedback">璇烽€夋嫨鍙嶉鍒嗙被</div>
+                    <div class="invalid-feedback">请选择反馈分类</div>
                 </div>
                 
-                <!-- 鍙嶉鍐呭 -->
+                <!-- 反馈内容 -->
                 <div class="mb-4">
                     <label class="form-label">
                         <i class="bi bi-file-text text-primary me-2"></i>
-                        鍙嶉鍐呭
+                        反馈内容
                     </label>
                     <div class="p-4 rounded-3 border">
-                        <!-- 鐩稿叧閾炬帴 -->
+                        <!-- 相关链接 -->
                         <div class="mb-3">
                             <label for="related_link" class="form-label">
                                 <i class="bi bi-link text-secondary me-2"></i>
-                                鐩稿叧閾炬帴 <span class="text-muted">(鍙€?</span>
+                                相关链接 <span class="text-muted">(可选)</span>
                             </label>
-                            <input type="url" class="form-control" id="related_link" name="related_link" placeholder="璇疯緭鍏ョ浉鍏抽摼鎺ワ紙濡傞€傜敤锛?>
-                            <div class="invalid-feedback">璇疯緭鍏ユ湁鏁堢殑URL</div>
+                            <input type="url" class="form-control" id="related_link" name="related_link" placeholder="请输入相关链接(如果适用)">
+                            <div class="invalid-feedback">请输入有效的URL</div>
                         </div>
                         
-                        <!-- 鍐呭璇存槑 -->
+                        <!-- 内容说明 -->
                         <div class="mb-3">
                             <label for="content" class="form-label required">
-                                <i class="bi bi-pencil-square text-secondary me-2"></i>
-                                鍐呭璇存槑
-                            </label>
-                            <textarea class="form-control" id="content" name="content" rows="5" placeholder="璇疯缁嗘弿杩版偍鐨勯棶棰樻垨寤鸿" required></textarea>
-                            <div class="invalid-feedback">璇峰～鍐欏唴瀹硅鏄?/div>
+                        <i class="bi bi-pencil-square text-secondary me-2"></i>
+                        内容说明 <span class="text-danger">(必填)</span>
+                    </label>
+                            <textarea class="form-control" id="content" name="content" rows="5" placeholder="请详细描述您的问题或建议" required></textarea>
+                            <div class="invalid-feedback">请填写内容说明</div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 鑱旂郴鏂瑰紡 -->
+                <!-- 联系方式 -->
                 <div class="mb-4">
                     <label class="form-label">
                         <i class="bi bi-person text-primary me-2"></i>
-                        鑱旂郴鏂瑰紡 <span class="text-muted">(鍙€?</span>
+                        联系方式 <span class="text-muted">(可选)</span>
                     </label>
                     <div class="p-4 rounded-3 border">
                         <div class="row g-3">
-                            <!-- 濮撳悕 -->
+                            <!-- 姓名 -->
                             <div class="col-md-4">
                                 <label for="contact_name" class="form-label">
                                     <i class="bi bi-person-fill text-secondary me-2"></i>
-                                    濮撳悕
+                                    姓名
                                 </label>
-                                <input type="text" class="form-control" id="contact_name" name="contact_name" placeholder="璇疯緭鍏ユ偍鐨勫鍚?>
+                                <input type="text" class="form-control" id="contact_name" name="contact_name" placeholder="请输入您的姓名">
                             </div>
                             
-                            <!-- 鐢佃瘽 -->
+                            <!-- 电话 -->
                             <div class="col-md-4">
                                 <label for="contact_phone" class="form-label">
                                     <i class="bi bi-telephone-fill text-secondary me-2"></i>
-                                    鐢佃瘽
+                                    电话
                                 </label>
-                                <input type="tel" class="form-control" id="contact_phone" name="contact_phone" placeholder="璇疯緭鍏ユ偍鐨勭數璇?>
+                                <input type="tel" class="form-control" id="contact_phone" name="contact_phone" placeholder="请输入您的电话号码">
                             </div>
                             
-                            <!-- 閭 -->
+                            <!-- 邮箱 -->
                             <div class="col-md-4">
                                 <label for="contact_email" class="form-label">
                                     <i class="bi bi-envelope-fill text-secondary me-2"></i>
-                                    閭
+                                    邮箱
                                 </label>
-                                <input type="email" class="form-control" id="contact_email" name="contact_email" placeholder="璇疯緭鍏ユ偍鐨勯偖绠?>
-                                <div class="invalid-feedback">璇疯緭鍏ユ湁鏁堢殑閭鍦板潃</div>
+                                <input type="email" class="form-control" id="contact_email" name="contact_email" placeholder="请输入您的邮箱地址">
+                                <div class="invalid-feedback">请输入有效的邮箱地址</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 鎻愪氦鎸夐挳 -->
+                <!-- 提交按钮 -->
                 <div class="text-center mt-5">
                     <button type="submit" class="btn btn-primary btn-lg px-5 py-2" id="submit-btn" disabled>
                         <i class="bi bi-send me-2"></i>
-                        鎻愪氦鍙嶉
+                        提交反馈
                     </button>
                 </div>
             </form>
@@ -130,14 +130,14 @@
         <div class="card-footer text-center text-muted">
             <p class="mb-0">
                 <i class="bi bi-info-circle me-1"></i>
-                鎴戜滑灏嗗敖蹇鐞嗘偍鐨勫弽棣堬紝濡傛湁闇€瑕佷細涓庢偍鑱旂郴銆?
+                我们将尽快处理您的反馈，如有需要会与您联系。
             </p>
         </div>
     </div>
 </div>
 
 <script>
-    // 琛ㄥ崟楠岃瘉
+    // 表单验证
     (function () {
         'use strict'
         var forms = document.querySelectorAll('.needs-validation')
@@ -153,18 +153,18 @@
             })
     })()
     
-    // 鍔ㄦ€侀獙璇侊紝鍚敤/绂佺敤鎻愪氦鎸夐挳
+    // 动态验证，启用/禁用提交按钮
     document.addEventListener('DOMContentLoaded', function() {
         const categorySelect = document.getElementById('category');
         const contentTextarea = document.getElementById('content');
         const submitBtn = document.getElementById('submit-btn');
         
-        // 妫€鏌ュ瓧娈垫槸鍚﹀凡濉啓
+        // 检查字段是否已填写
         function checkFields() {
             const categoryValue = categorySelect.value.trim();
             const contentValue = contentTextarea.value.trim();
             
-            // 濡傛灉鍒嗙被鍜屽唴瀹归兘宸插～鍐欙紝鍒欏惎鐢ㄦ彁浜ゆ寜閽?
+            // 如果分类和内容都已填写，则启用提交按钮
             if (categoryValue && contentValue) {
                 submitBtn.disabled = false;
             } else {
@@ -172,11 +172,11 @@
             }
         }
         
-        // 鐩戝惉瀛楁鍙樺寲
+        // 监听字段变化
         categorySelect.addEventListener('change', checkFields);
         contentTextarea.addEventListener('input', checkFields);
         
-        // 鍒濆妫€鏌?
+        // 初始检查
         checkFields();
     });
 </script>

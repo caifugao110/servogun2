@@ -37,7 +37,7 @@
                 <div class="mb-4">
                     <label for="category" class="form-label required">
                         <i class="bi bi-tag text-primary me-2"></i>
-                        Feedback Category
+                        Feedback Category <span class="text-danger">(Required)</span>
                     </label>
                     <select class="form-select" id="category" name="category" required>
                         <option value="">Please select feedback category</option>
@@ -70,9 +70,9 @@
                         <!-- Content Description -->
                         <div class="mb-3">
                             <label for="content" class="form-label required">
-                                <i class="bi bi-pencil-square text-secondary me-2"></i>
-                                Content Description
-                            </label>
+                        <i class="bi bi-pencil-square text-secondary me-2"></i>
+                        Content Description <span class="text-danger">(Required)</span>
+                    </label>
                             <textarea class="form-control" id="content" name="content" rows="5" placeholder="Please describe your issue or suggestion in detail" required></textarea>
                             <div class="invalid-feedback">Please fill in the content description</div>
                         </div>

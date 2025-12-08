@@ -16,7 +16,7 @@
 
 {% extends 'base.html' %}
 
-{% block title %}鏁版嵁鍒嗘瀽 - 灏忓師鐒婃灙閫夊瀷鏁版嵁搴搟% endblock %}
+{% block title %}数据分析 - 小原焊枪选型数据库{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -24,56 +24,56 @@
         <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
             <h1 class="display-6 fw-bold">
                 <i class="bi bi-bar-chart me-2"></i>
-                鏁版嵁鍒嗘瀽涓績
+                数据分析中心
             </h1>
             <div>
                 <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-2"></i>
-                    杩斿洖浠〃鏉?
+                    返回仪表盘
                 </a>
             </div>
         </div>
         
-        <!-- 涓嬭浇鏁版嵁鍙鍖栧崱鐗?-->
+        <!-- 下载数据可视化卡片 -->
         <div class="card mb-4 fade-in-up">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="bi bi-bar-chart me-2"></i>
-                    涓嬭浇鏁版嵁鍙鍖?
+                    下载数据可视化
                 </h5>
             </div>
             <div class="card-body">
-                <!-- 鏃堕棿鑼冨洿閫夋嫨鍣?-->
+                <!-- 时间范围选择器 -->
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="timeRange" class="form-label">鏃堕棿鑼冨洿</label>
+                        <label for="timeRange" class="form-label">时间范围</label>
                         <select class="form-select" id="timeRange" onchange="updateDownloadChart()">
-                            <option value="1">浠婂ぉ</option>
-                            <option value="3">鏈€杩戜笁澶?/option>
-                            <option value="7">鏈€杩戜竴鍛?/option>
-							<option value="15">鏈€杩戝崐鏈?/option>
-							<option value="30">鏈€杩戜竴鏈?/option>
-							<option value="60">鏈€杩戜袱鏈?/option>
-							<option value="90">鏈€杩戜笁鏈?/option>
+                            <option value="1">今天</option>
+                            <option value="3">最近三天</option>
+                            <option value="7">最近一周</option>
+				<option value="15">最近半个月</option>
+				<option value="30">最近一个月</option>
+				<option value="60">最近两个月</option>
+				<option value="90">最近三个月</option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label for="userFilter" class="form-label">鐢ㄦ埛绛涢€?/label>
+                        <label for="userFilter" class="form-label">用户筛选</label>
                         <select class="form-select" id="userFilter" onchange="updateDownloadChart()">
-                            <option value="all">鍏ㄩ儴鐢ㄦ埛</option>
-                            <!-- 鐢ㄦ埛閫夐」灏嗛€氳繃JavaScript鍔ㄦ€佸～鍏?-->
+                            <option value="all">全部用户</option>
+                            <!-- 用户选项将通过JavaScript动态加载 -->
                         </select>
                     </div>
                 </div>
                 
-                <!-- 缁熻鍗＄墖 -->
+                <!-- 统计卡片 -->
                 <div class="row mb-4">
                     <div class="col-md-3">
                         <div class="card text-center card-stats">
                             <div class="card-body">
                                 <i class="bi bi-download text-primary" style="font-size: 2rem;"></i>
                                 <h4 class="mt-2" id="totalDownloads">-</h4>
-                                <p class="text-muted mb-0">鎬讳笅杞芥鏁?/p>
+                                <p class="text-muted mb-0">总下载次数</p>
                             </div>
                         </div>
                     </div>
@@ -82,7 +82,7 @@
                             <div class="card-body">
                                 <i class="bi bi-file-earmark text-success" style="font-size: 2rem;"></i>
                                 <h4 class="mt-2" id="totalFiles">-</h4>
-                                <p class="text-muted mb-0">鎬绘枃浠舵暟</p>
+                                <p class="text-muted mb-0">总文件数</p>
                             </div>
                         </div>
                     </div>
@@ -91,7 +91,7 @@
                             <div class="card-body">
                                 <i class="bi bi-hdd text-warning" style="font-size: 2rem;"></i>
                                 <h4 class="mt-2" id="totalSize">-</h4>
-                                <p class="text-muted mb-0">鎬讳笅杞藉ぇ灏?/p>
+                                <p class="text-muted mb-0">总下载大小</p>
                             </div>
                         </div>
                     </div>
@@ -100,23 +100,23 @@
                             <div class="card-body">
                                 <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
                                 <h4 class="mt-2" id="activeUsers">-</h4>
-                                <p class="text-muted mb-0">娲昏穬鐢ㄦ埛鏁?/p>
+                                <p class="text-muted mb-0">活跃用户数</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 鍥捐〃瀹瑰櫒 -->
+                <!-- 图表容器 -->
                 <div class="row">
                     <div class="col-md-8">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="mb-0">涓嬭浇瓒嬪娍鍥?/h6>
+                                <h6 class="mb-0">下载趋势图</h6>
                             </div>
                             <div class="card-body" id="trendChartContainer">
                                 <div class="text-center text-muted p-4">
                                     <i class="bi bi-bar-chart" style="font-size: 3rem;"></i>
-                                    <p class="mt-2">绛夊緟鏁版嵁鍔犺浇...</p>
+                                    <p class="mt-2">等待数据加载...</p>
                                 </div>
                             </div>
                         </div>
@@ -124,48 +124,48 @@
                     <div class="col-md-4">
                         <div class="card" style="height: 100%;">
                             <div class="card-header">
-                                <h6 class="mb-0">鐢ㄦ埛涓嬭浇鍒嗗竷</h6>
+                                <h6 class="mb-0">用户下载分布</h6>
                             </div>
                             <div class="card-body d-flex align-items-center justify-content-center" id="distributionChartContainer" style="min-height: 200px;">
                                 <div class="text-center text-muted">
                                     <i class="bi bi-pie-chart" style="font-size: 3rem;"></i>
-                                    <p class="mt-2">绛夊緟鏁版嵁鍔犺浇...</p>
+                                    <p class="mt-2">等待数据加载...</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 璇︾粏鏁版嵁琛ㄦ牸 -->
+                <!-- 详细数据表格 -->
                 <div class="row mt-4">
                     <div class="col-md-4">
-                        <!-- 鐢ㄦ埛淇℃伅渚ц竟鏍?-->
+                        <!-- 用户信息侧边栏 -->
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="mb-0">鐢ㄦ埛缁熻淇℃伅</h6>
+                                <h6 class="mb-0">用户统计信息</h6>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-muted">娲昏穬鐢ㄦ埛</span>
+                                        <span class="text-muted">活跃用户</span>
                                         <span class="badge bg-primary" id="sidebarActiveUsers">-</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-muted">骞冲潎涓嬭浇閲?/span>
+                                        <span class="text-muted">平均下载量</span>
                                         <span class="badge bg-info" id="avgDownloads">-</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-muted">鏈€楂樹笅杞界敤鎴?/span>
+                                        <span class="text-muted">最高下载用户</span>
                                         <span class="badge bg-success" id="topUser">-</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-muted">骞冲潎鏂囦欢澶у皬</span>
+                                        <span class="text-muted">平均文件大小</span>
                                         <span class="badge bg-warning" id="avgFileSize">-</span>
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="text-center">
-                                    <small class="text-muted">鏁版嵁鏇存柊鏃堕棿</small>
+                                    <small class="text-muted">数据更新时间</small>
                                     <div id="lastUpdateTime" class="fw-bold">-</div>
                                 </div>
                             </div>
@@ -174,24 +174,24 @@
                     <div class="col-md-8">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="mb-0">璇︾粏涓嬭浇鏁版嵁</h6>
+                                <h6 class="mb-0">详细下载数据</h6>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-hover" id="downloadDetailsTable">
                                         <thead>
                                             <tr>
-                                                <th>鐢ㄦ埛鍚?/th>
-                                                <th>涓嬭浇娆℃暟</th>
-                                                <th>鏂囦欢鏁伴噺</th>
-                                                <th>鎬诲ぇ灏?(MB)</th>
-                                                <th>骞冲潎鏂囦欢澶у皬 (MB)</th>
-                                                <th>鏈€鍚庝笅杞芥椂闂?/th>
+                                                <th>用户名</th>
+                                                <th>下载次数</th>
+                                                <th>文件数量</th>
+                                                <th>总大小(MB)</th>
+                                                <th>平均文件大小 (MB)</th>
+                                                <th>最后下载时间</th>
                                             </tr>
                                         </thead>
                                         <tbody id="downloadDetailsBody">
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted">绛夊緟鏁版嵁鍔犺浇...</td>
+                                                <td colspan="6" class="text-center text-muted">等待数据加载...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -278,9 +278,9 @@
         }
     }
 
-    // 鏄剧ず鍔犺浇鐘舵€?
+    // 显示加载状态
     function showLoading() {
-        const loadingHtml = '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">鍔犺浇涓?..</span></div><p class="mt-2">姝ｅ湪浠庢湇鍔″櫒鑾峰彇鏁版嵁...</p></div>';
+        const loadingHtml = '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">加载中...</span></div><p class="mt-2">正在从服务器获取数据...</p></div>';
         
         const trendContainer = document.getElementById('trendChartContainer');
         const distributionContainer = document.getElementById('distributionChartContainer');
@@ -293,13 +293,13 @@
         }
     }
 
-    // 鏄剧ず閿欒鐘舵€?
-    function showError(message = '鏁版嵁鑾峰彇澶辫触') {
+    // 显示错误状态
+    function showError(message = '数据获取失败') {
         const errorHtml = `<div class="text-center p-4 text-danger">
             <i class="bi bi-exclamation-triangle" style="font-size: 3rem;"></i>
             <p class="mt-2">${message}</p>
             <button class="btn btn-outline-primary btn-sm" onclick="updateDownloadChart()">
-                <i class="bi bi-arrow-clockwise me-1"></i>閲嶈瘯
+                <i class="bi bi-arrow-clockwise me-1"></i>重试
             </button>
         </div>`;
         
@@ -314,9 +314,9 @@
         }
     }
 
-    // 鏄剧ず鏃犳暟鎹姸鎬?
+    // 显示无数据状态
     function showNoData() {
-        const noDataHtml = '<div class="text-center p-4 text-muted"><i class="bi bi-inbox" style="font-size: 3rem;"></i><p class="mt-2">鏆傛棤鏁版嵁</p></div>';
+        const noDataHtml = '<div class="text-center p-4 text-muted"><i class="bi bi-inbox" style="font-size: 3rem;"></i><p class="mt-2">无数据</p></div>';
         
         const trendContainer = document.getElementById('trendChartContainer');
         const distributionContainer = document.getElementById('distributionChartContainer');
@@ -329,7 +329,7 @@
         }
     }
 
-    // 閲嶆柊鍒涘缓canvas鍏冪礌
+    // 重新创建canvas元素
     function recreateCanvas() {
         const trendContainer = document.getElementById('trendChartContainer');
         const distributionContainer = document.getElementById('distributionChartContainer');
@@ -342,21 +342,21 @@
         }
     }
 
-    // 鍒濆鍖栫敤鎴风瓫閫夊櫒
+    // 初始化用户筛选器
     async function initializeUserFilter(data, selectedUser = 'all') {
         const userFilter = document.getElementById('userFilter');
         
         if (!data || !data.users) {
-            userFilter.innerHTML = '<option value="all">鍏ㄩ儴鐢ㄦ埛</option>';
+            userFilter.innerHTML = '<option value="all">全部用户</option>';
             return;
         }
         
         const users = data.users || [];
         
-        // 娓呯┖鐜版湁閫夐」锛堜繚鐣?鍏ㄩ儴鐢ㄦ埛"锛?
-        userFilter.innerHTML = '<option value="all">鍏ㄩ儴鐢ㄦ埛</option>';
+        // 清空现有选项（保留"全部用户"）
+        userFilter.innerHTML = '<option value="all">全部用户</option>';
         
-        // 娣诲姞鐢ㄦ埛閫夐」
+        // 添加用户选项
         users.forEach(user => {
             const option = document.createElement('option');
             option.value = user;
@@ -368,34 +368,34 @@
         });
     }
 
-    // 鏇存柊涓嬭浇鍥捐〃
+    // 更新下载图表
     async function updateDownloadChart() {
         const timeRange = document.getElementById('timeRange').value;
         const userFilter = document.getElementById('userFilter').value;
         
-        // 鏄剧ず鍔犺浇鐘舵€?
+        // 显示加载状态
         showLoading();
         
         try {
-            // 鑾峰彇鏁版嵁
-            console.log('寮€濮嬭幏鍙栨暟鎹紝鍙傛暟:', { timeRange, userFilter });
+            // 获取数据
+            console.log('开始获取数据，参数:', { timeRange, userFilter });
             const data = await fetchDownloadData(timeRange, userFilter);
             
-            console.log('API杩斿洖鏁版嵁:', data);
+            console.log('API返回数据:', data);
             
             if (!data) {
-                // 鏁版嵁鑾峰彇澶辫触
-                showError('鏃犳硶杩炴帴鍒版湇鍔″櫒');
+                // 数据获取失败
+                showError('无法连接到服务器');
                 clearStatistics();
                 clearDetailsTable();
                 return;
             }
             
-            // 妫€鏌ユ暟鎹槸鍚︿负绌?
+            // 检查数据是否为空
             if (!data.summary || !data.downloads || Object.keys(data.downloads).length === 0) {
-                console.log('鏁版嵁涓虹┖锛屾樉绀?鏆傛棤鏁版嵁"');
+                console.log('数据为空，显示"无数据"');
                 showNoData();
-                // 鍗充娇鏁版嵁涓虹┖锛屼篃瑕佹洿鏂扮粺璁″崱鐗囨樉绀?鍊?
+                // 即使数据为空，也要更新统计卡片显示0
                 document.getElementById('totalDownloads').textContent = '0';
                 document.getElementById('totalFiles').textContent = '0';
                 document.getElementById('totalSize').textContent = '0.0 MB';
@@ -404,7 +404,7 @@
                 document.getElementById('avgDownloads').textContent = '0';
                 document.getElementById('topUser').textContent = '-';
                 document.getElementById('avgFileSize').textContent = '0.00 MB';
-                // 鏇存柊鏃堕棿
+                // 更新时间
                 const now = new Date();
                 const timeString = now.toLocaleString('zh-CN', {
                     year: 'numeric',
@@ -415,57 +415,57 @@
                 });
                 document.getElementById('lastUpdateTime').textContent = timeString;
                 
-                // 娓呯┖琛ㄦ牸
+                // 清空表格
                 const tbody = document.getElementById('downloadDetailsBody');
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">鏆傛棤鏁版嵁</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">无数据</td></tr>';
                 return;
             }
             
             downloadData = data;
             
-            // 閲嶆柊鍒涘缓canvas鍏冪礌
+            // 重新创建canvas元素
             recreateCanvas();
             
-            // 绛夊緟DOM鏇存柊
+            // 等待DOM更新
             await new Promise(resolve => setTimeout(resolve, 100));
             
-            // 鏇存柊鐢ㄦ埛绛涢€夊櫒
-            // 鏇存柊鐢ㄦ埛绛涢€夊櫒骞朵繚鎸佸綋鍓嶉€変腑鐘舵€?
+            // 更新用户筛选器
+            // 更新用户筛选器并保持当前选中状态
             await initializeUserFilter(data, userFilter);
             
-            // 鏇存柊缁熻鍗＄墖
+            // 更新统计卡片
             updateStatistics(data);
             
-            // 鏇存柊鍥捐〃
+            // 更新图表
             updateTrendChart(data.trend);
             updateDistributionChart(data, userFilter);
             
-            // 鏇存柊璇︾粏鏁版嵁琛ㄦ牸
+            // 更新详细数据表格
             updateDetailsTable(data, userFilter);
             
         } catch (error) {
-            console.error('鏇存柊鍥捐〃澶辫触:', error);
-            showError('鏁版嵁澶勭悊澶辫触');
+            console.error('更新图表失败:', error);
+            showError('数据处理失败');
             clearStatistics();
             clearDetailsTable();
         }
     }
 
-    // 鍒濆鍖栭〉闈?
+    // 初始化页面
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('椤甸潰鍔犺浇瀹屾垚锛屽紑濮嬪垵濮嬪寲...');
+        console.log('页面加载完成，开始初始化...');
         
-        // 妫€鏌ユ槸鍚︾櫥褰?
-        console.log('褰撳墠椤甸潰URL:', window.location.href);
-        console.log('CSRF浠ょ墝:', getCookie('csrftoken'));
+        // 检查是否登录
+        console.log('当前页面URL:', window.location.href);
+        console.log('CSRF令牌:', getCookie('csrftoken'));
         
-        // 寤惰繜鍒濆鍖栦互纭繚鎵€鏈夎祫婧愬姞杞藉畬鎴?
+        // 延迟初始化以确保所有资源加载完成
         setTimeout(() => {
             updateDownloadChart();
         }, 500);
     });
 
-    // 娓呯┖缁熻鏁版嵁
+    // 清空统计数据
     function clearStatistics() {
         document.getElementById('totalDownloads').textContent = '-';
         document.getElementById('totalFiles').textContent = '-';
@@ -479,13 +479,13 @@
         document.getElementById('lastUpdateTime').textContent = '-';
     }
 
-    // 娓呯┖璇︾粏鏁版嵁琛ㄦ牸
+    // 清空详细数据表格
     function clearDetailsTable() {
         const tbody = document.getElementById('downloadDetailsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">鏆傛棤鏁版嵁</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">无数据</td></tr>';
     }
 
-    // 鏇存柊缁熻鍗＄墖
+    // 更新统计卡片
     function updateStatistics(data) {
         const summary = data.summary || {};
         const downloads = data.downloads || {};
@@ -495,24 +495,24 @@
         document.getElementById('totalSize').textContent = (summary.totalSize || 0).toFixed(1) + ' MB';
         document.getElementById('activeUsers').textContent = summary.activeUsers || 0;
         
-        // 鏇存柊渚ц竟鏍忕敤鎴蜂俊鎭?
+        // 更新侧边栏用户信息
         updateSidebarInfo(data);
     }
 
-    // 鏇存柊渚ц竟鏍忕敤鎴蜂俊鎭?
+    // 更新侧边栏用户信息
     function updateSidebarInfo(data) {
         const summary = data.summary || {};
         const downloads = data.downloads || {};
         
-        // 娲昏穬鐢ㄦ埛鏁?
+        // 活跃用户数
         document.getElementById('sidebarActiveUsers').textContent = summary.activeUsers || 0;
         
-        // 璁＄畻骞冲潎涓嬭浇閲?
+        // 计算平均下载量
         const totalUsers = Object.keys(downloads).length;
         const avgDownloads = totalUsers > 0 ? Math.round((summary.totalDownloads || 0) / totalUsers) : 0;
         document.getElementById('avgDownloads').textContent = avgDownloads;
         
-        // 鎵惧嚭鏈€楂樹笅杞界敤鎴?
+        // 找出最高下载用户
         let topUser = '-';
         let maxDownloads = 0;
         Object.keys(downloads).forEach(username => {
@@ -523,12 +523,12 @@
         });
         document.getElementById('topUser').textContent = topUser;
         
-        // 璁＄畻骞冲潎鏂囦欢澶у皬
+        // 计算平均文件大小
         const avgFileSize = (summary.totalFiles || 0) > 0 ? 
             ((summary.totalSize || 0) / (summary.totalFiles || 0)).toFixed(2) : '0.00';
         document.getElementById('avgFileSize').textContent = avgFileSize + ' MB';
         
-        // 鏇存柊鏃堕棿
+        // 更新时间
         const now = new Date();
         const timeString = now.toLocaleString('zh-CN', {
             year: 'numeric',
@@ -540,11 +540,11 @@
         document.getElementById('lastUpdateTime').textContent = timeString;
     }
 
-    // 鏇存柊瓒嬪娍鍥捐〃
+    // 更新趋势图表
     function updateTrendChart(trendData) {
         const canvas = document.getElementById('downloadTrendChart');
         if (!canvas) {
-            console.error('鎵句笉鍒拌秼鍔垮浘canvas鍏冪礌');
+            console.error('找不到趋势图canvas元素');
             return;
         }
         
@@ -564,14 +564,14 @@
             data: {
                 labels: trendData.map(item => item.date),
                 datasets: [{
-                    label: '涓嬭浇娆℃暟',
+                    label: '下载次数',
                     data: trendData.map(item => item.downloads),
                     borderColor: '#0066cc',
                     backgroundColor: 'rgba(0, 102, 204, 0.1)',
                     tension: 0.4,
                     yAxisID: 'y'
                 }, {
-                    label: '涓嬭浇澶у皬 (MB)',
+                    label: '下载大小 (MB)',
                     data: trendData.map(item => item.size),
                     borderColor: '#ff6b35',
                     backgroundColor: 'rgba(255, 107, 53, 0.1)',
@@ -590,7 +590,7 @@
                         display: true,
                         title: {
                             display: true,
-                            text: '鏃ユ湡'
+                            text: '日期'
                         }
                     },
                     y: {
@@ -599,7 +599,7 @@
                         position: 'left',
                         title: {
                             display: true,
-                            text: '涓嬭浇娆℃暟'
+                            text: '下载次数'
                         }
                     },
                     y1: {
@@ -608,7 +608,7 @@
                         position: 'right',
                         title: {
                             display: true,
-                            text: '涓嬭浇澶у皬 (MB)'
+                            text: '下载大小 (MB)'
                         },
                         grid: {
                             drawOnChartArea: false,
@@ -624,11 +624,11 @@
         });
     }
 
-    // 鏇存柊鍒嗗竷鍥捐〃
+    // 更新分布图表
     function updateDistributionChart(data, userFilter) {
         const canvas = document.getElementById('userDistributionChart');
         if (!canvas) {
-            console.error('鎵句笉鍒板垎甯冨浘canvas鍏冪礌');
+            console.error('找不到分布图canvas元素');
             return;
         }
         
@@ -647,7 +647,7 @@
         } else {
             const user = downloads[userFilter];
             if (user) {
-                labels = ['涓嬭浇娆℃暟', '鏂囦欢鏁伴噺'];
+                labels = ['下载次数', '文件数量'];
                 chartData = [user.count, user.files];
             } else {
                 labels = [];
@@ -694,7 +694,7 @@
         });
     }
 
-    // 鏇存柊璇︾粏鏁版嵁琛ㄦ牸
+    // 更新详细数据表格
     function updateDetailsTable(data, userFilter) {
         const tbody = document.getElementById('downloadDetailsBody');
         tbody.innerHTML = '';
@@ -710,7 +710,7 @@
         
         if (users.length === 0) {
             const row = document.createElement('tr');
-            row.innerHTML = '<td colspan="6" class="text-center text-muted">鏆傛棤鏁版嵁</td>';
+            row.innerHTML = '<td colspan="6" class="text-center text-muted">无数据</td>';
             tbody.appendChild(row);
             return;
         }

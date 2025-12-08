@@ -1075,6 +1075,15 @@ def add_user(request):
 @login_required
 @user_passes_test(is_staff_or_superuser)
 def export_users(request):
+    # 记录导出数据日志
+    Log.objects.create(
+        user=request.user, 
+        action_type='export_data', 
+        details='导出用户信息数据',
+        ip_address=request.META.get('REMOTE_ADDR'), 
+        user_agent=request.META.get('HTTP_USER_AGENT', '')
+    )
+    
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="users.csv"'
 
@@ -1505,16 +1514,18 @@ def sync_files_core():
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def sync_files(request):
-    if request.method != 'POST':
-        return render(request, 'management/sync_files.html')
-
-    success, msg = sync_files_core()
-    
-    if success:
-        messages.success(request, msg)
-    else:
-        messages.error(request, msg)
+    if request.method == 'POST':
+        # 执行同步操作
+        success, msg = sync_files_core()
         
+        if success:
+            messages.success(request, msg)
+        else:
+            messages.error(request, msg)
+        
+        return redirect('clamps:management_dashboard')
+    
+    # GET请求，直接返回仪表板，不执行同步操作
     return redirect('clamps:management_dashboard')
 
 
@@ -2275,6 +2286,7 @@ def get_user_profile_data(request):
 
 
 # 用户反馈相关视图函数
+@login_required
 def user_feedback(request):
     """用户反馈收集页面（中文）"""
     if request.method == 'POST':
@@ -2311,6 +2323,7 @@ def user_feedback(request):
     return render(request, 'user_feedback.html')
 
 
+@login_required
 def user_feedback_en(request):
     """用户反馈收集页面（英文）"""
     if request.method == 'POST':
