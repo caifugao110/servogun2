@@ -23,6 +23,5 @@ class ClampsConfig(AppConfig):
     name = 'clamps'
 
     def ready(self):
-        # 在应用启动时自动启动备份调度器
-        from backup import start_scheduler
-        threading.Thread(target=start_scheduler, daemon=True).start()
+        # 调度器不再自动启动，需通过命令行参数 --scheduler 手动启动
+        pass

@@ -72,10 +72,18 @@
         cursor: pointer;
     }
     
-    /* 优化行内复选框的间距 */
+    /* 优化行内复选框的间距和对齐 */
     .form-check-inline {
         margin-right: 1.5rem;
         margin-bottom: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
+    }
+    
+    /* 调整全选复选框的垂直对齐 */
+    .form-label .form-check-inline {
+        margin-top: -0.25rem;
     }
     
     /* 优化普通复选框的间距 */
@@ -207,30 +215,34 @@
                             <label class="form-label">
                                 <i class="bi bi-folder2 me-2"></i>
                                 产品分类（可多选，未勾选的将不会显示）
+                                <div class="form-check form-check-inline ms-3">
+                                    <input class="form-check-input" type="checkbox" id="select_all_product_categories">
+                                    <label class="form-check-label">全选/取消全选</label>
+                                </div>
                             </label>
                             <div class="border p-3 rounded">
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" name="product_categories[]" value="X2C-C_recommended" {% if 'X2C-C_recommended' in style_link.search_config.product_categories %}checked{% endif %}>
+                                    <input class="form-check-input product_category_checkbox" type="checkbox" name="product_categories[]" value="X2C-C_recommended" {% if 'X2C-C_recommended' in style_link.search_config.product_categories %}checked{% endif %}>
                                     <label class="form-check-label">X2C-C(推荐)</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" name="product_categories[]" value="X2C-X_recommended" {% if 'X2C-X_recommended' in style_link.search_config.product_categories %}checked{% endif %}>
+                                    <input class="form-check-input product_category_checkbox" type="checkbox" name="product_categories[]" value="X2C-X_recommended" {% if 'X2C-X_recommended' in style_link.search_config.product_categories %}checked{% endif %}>
                                     <label class="form-check-label">X2C-X(推荐)</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" name="product_categories[]" value="X2C-V2-C" {% if 'X2C-V2-C' in style_link.search_config.product_categories %}checked{% endif %}>
+                                    <input class="form-check-input product_category_checkbox" type="checkbox" name="product_categories[]" value="X2C-V2-C" {% if 'X2C-V2-C' in style_link.search_config.product_categories %}checked{% endif %}>
                                     <label class="form-check-label">X2C-V2-C</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" name="product_categories[]" value="X2C-V2-X" {% if 'X2C-V2-X' in style_link.search_config.product_categories %}checked{% endif %}>
+                                    <input class="form-check-input product_category_checkbox" type="checkbox" name="product_categories[]" value="X2C-V2-X" {% if 'X2C-V2-X' in style_link.search_config.product_categories %}checked{% endif %}>
                                     <label class="form-check-label">X2C-V2-X</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" name="product_categories[]" value="X2C-V3-C" {% if 'X2C-V3-C' in style_link.search_config.product_categories %}checked{% endif %}>
+                                    <input class="form-check-input product_category_checkbox" type="checkbox" name="product_categories[]" value="X2C-V3-C" {% if 'X2C-V3-C' in style_link.search_config.product_categories %}checked{% endif %}>
                                     <label class="form-check-label">X2C-V3-C</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" name="product_categories[]" value="X2C-V3-X" {% if 'X2C-V3-X' in style_link.search_config.product_categories %}checked{% endif %}>
+                                    <input class="form-check-input product_category_checkbox" type="checkbox" name="product_categories[]" value="X2C-V3-X" {% if 'X2C-V3-X' in style_link.search_config.product_categories %}checked{% endif %}>
                                     <label class="form-check-label">X2C-V3-X</label>
                                 </div>
                             </div>
@@ -252,19 +264,23 @@
                         <div class="col-md-12">
                             <label class="form-label">
                                 <i class="bi bi-gear me-2"></i>
-                                变压器类型（可多选，必须至少选择一项，未勾选的将不会显示）
+                                变压器类型（可多选，未勾选的将不会显示）
+                                <div class="form-check form-check-inline ms-3">
+                                    <input class="form-check-input" type="checkbox" id="select_all_transformers">
+                                    <label class="form-check-label">全选/取消全选</label>
+                                </div>
                             </label>
                             <div class="border p-3 rounded">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="ITS85" {% if 'ITS85' in style_link.search_config.transformers %}checked{% endif %}>
+                                            <input class="form-check-input transformer_checkbox" type="checkbox" name="transformers[]" value="ITS85" {% if 'ITS85' in style_link.search_config.transformers %}checked{% endif %}>
                                             <label class="form-check-label">ITS85</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="transformers[]" value="DB6-100R1" id="db6-100r1" {% if 'DB6-100R1' in style_link.search_config.transformers %}checked{% endif %}>
+                                            <input class="form-check-input transformer_checkbox" type="checkbox" name="transformers[]" value="DB6-100R1" id="db6-100r1" {% if 'DB6-100R1' in style_link.search_config.transformers %}checked{% endif %}>
                                             <label class="form-check-label">DB6-100R1</label>
                                         </div>
                                     </div>
@@ -372,13 +388,17 @@
                         <div class="col-md-12">
                             <label class="form-label">
                                 <i class="bi bi-gear-wide-connected me-2"></i>
-                                MOTOR厂家类型（可多选，必须至少选择一项，未勾选的将不会显示）
+                                MOTOR厂家类型（可多选，未勾选的将不会显示）
+                                <div class="form-check form-check-inline ms-3">
+                                    <input class="form-check-input" type="checkbox" id="select_all_motor_manufacturers">
+                                    <label class="form-check-label">全选/取消全选</label>
+                                </div>
                             </label>
                             <div class="border p-3 rounded">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="motor_manufacturers[]" value="FANUC" {% if 'FANUC' in style_link.search_config.motor_manufacturers %}checked{% endif %}>
+                                            <input class="form-check-input motor_manufacturer_checkbox" type="checkbox" name="motor_manufacturers[]" value="FANUC" {% if 'FANUC' in style_link.search_config.motor_manufacturers %}checked{% endif %}>
                                             <label class="form-check-label">FANUC</label>
                                         </div>
                                     </div>
@@ -450,13 +470,17 @@
                         <div class="col-md-12">
                             <label class="form-label">
                                 <i class="bi bi-cog me-2"></i>
-                                齿轮箱型式（可多选，必须至少选择一项，未勾选的将不会显示）
+                                齿轮箱型式（可多选，未勾选的将不会显示）
+                                <div class="form-check form-check-inline ms-3">
+                                    <input class="form-check-input" type="checkbox" id="select_all_gearbox_types">
+                                    <label class="form-check-label">全选/取消全选</label>
+                                </div>
                             </label>
                             <div class="border p-3 rounded">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="gearbox_types[]" value="低压" {% if '低压' in style_link.search_config.gearbox_types %}checked{% endif %}>
+                                            <input class="form-check-input gearbox_type_checkbox" type="checkbox" name="gearbox_types[]" value="低压" {% if '低压' in style_link.search_config.gearbox_types %}checked{% endif %}>
                                             <label class="form-check-label">低压</label>
                                         </div>
                                     </div>
@@ -553,12 +577,16 @@
                             <label class="form-label">
                                 <i class="bi bi-eye me-2"></i>
                                 其他搜索字段显示控制（取消勾选的字段将不在搜索页面中显示）
+                                <div class="form-check form-check-inline ms-3">
+                                    <input class="form-check-input" type="checkbox" id="select_all_enabled_fields">
+                                    <label class="form-check-label">全选/取消全选</label>
+                                </div>
                             </label>
                             <div class="border p-3 rounded">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="enabled_fields[]" value="transformer_placement" {% if 'transformer_placement' in style_link.search_config.enabled_fields %}checked{% endif %}>
+                                            <input class="form-check-input enabled_field_checkbox" type="checkbox" name="enabled_fields[]" value="transformer_placement" {% if 'transformer_placement' in style_link.search_config.enabled_fields %}checked{% endif %}>
                                             <label class="form-check-label">变压器放置方向</label>
                                         </div>
                                     </div>
@@ -680,6 +708,40 @@
                 });
             });
         }
+        
+        // 全选/取消全选功能
+        function setupSelectAll(selectAllId, checkboxClass) {
+            const selectAllCheckbox = document.getElementById(selectAllId);
+            const checkboxes = document.querySelectorAll(`.${checkboxClass}`);
+            
+            if (selectAllCheckbox && checkboxes.length > 0) {
+                // 全选/取消全选逻辑
+                selectAllCheckbox.addEventListener('change', function() {
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
+                
+                // 子复选框变化时更新全选状态
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                        selectAllCheckbox.checked = allChecked;
+                    });
+                });
+                
+                // 初始化全选状态
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                selectAllCheckbox.checked = allChecked;
+            }
+        }
+        
+        // 为每个分组设置全选/取消全选功能
+        setupSelectAll('select_all_product_categories', 'product_category_checkbox');
+        setupSelectAll('select_all_transformers', 'transformer_checkbox');
+        setupSelectAll('select_all_motor_manufacturers', 'motor_manufacturer_checkbox');
+        setupSelectAll('select_all_gearbox_types', 'gearbox_type_checkbox');
+        setupSelectAll('select_all_enabled_fields', 'enabled_field_checkbox');
     });
 </script>
 {% endblock %}
