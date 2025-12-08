@@ -2026,22 +2026,13 @@ def download_analytics_api(request):
     提供下载数据分析的API接口
     已修改：删除匿名用户统计，不允许有空用户名
     """
-    print(f"API请求用户: {request.user.username}")
-    print(f"用户是否登录: {request.user.is_authenticated}")
-    print(f"用户是否是管理员: {request.user.is_staff}")
-    print(f"用户是否是超级管理员: {request.user.is_superuser}")
-    
     # 获取参数
     days = int(request.GET.get('days', 7))  # 默认7天
     user_filter = request.GET.get('user', 'all')  # 默认全部用户
     
-    print(f"请求参数: days={days}, user_filter={user_filter}")
-    
     # 计算时间范围
     end_date = timezone.now()
     start_date = end_date - timedelta(days=days)
-    
-    print(f"时间范围: {start_date} 到 {end_date}")
     
     # 基础查询：下载相关的日志
     # 只查询有用户关联的日志（排除匿名用户）
@@ -2050,7 +2041,7 @@ def download_analytics_api(request):
         timestamp__gte=start_date,
         timestamp__lte=end_date,
         user__isnull=False  # 排除匿名用户
-    )
+    ).select_related('user')  # 预加载user，减少数据库查询
     
     # 用户筛选
     if user_filter != 'all':
@@ -2060,12 +2051,20 @@ def download_analytics_api(request):
     download_logs = base_query.order_by('timestamp')
     
     # 解析下载数据
-    user_stats = {}
-    daily_stats = {}
+    user_stats = defaultdict(lambda: {
+        'count': 0,
+        'files': 0,
+        'size': 0.0,
+        'lastDownload': ''
+    })
+    
+    # 初始化日期统计字典
+    daily_stats = defaultdict(lambda: {
+        'downloads': 0,
+        'size': 0.0
+    })
     
     for log in download_logs:
-        username = None
-        
         username = log.user.username.strip()
         
         # 过滤掉空用户名
@@ -2073,22 +2072,6 @@ def download_analytics_api(request):
             continue
         
         log_date = log.timestamp.date().isoformat()
-        
-        # 初始化用户统计
-        if username not in user_stats:
-            user_stats[username] = {
-                'count': 0,
-                'files': 0,
-                'size': 0.0,
-                'lastDownload': log.timestamp.strftime('%Y-%m-%d %H:%M:%S')
-            }
-        
-        # 初始化日期统计
-        if log_date not in daily_stats:
-            daily_stats[log_date] = {
-                'downloads': 0,
-                'size': 0.0
-            }
         
         # 解析details字段获取文件信息
         size_mb = parse_download_size(log.details)
@@ -2098,7 +2081,11 @@ def download_analytics_api(request):
         user_stats[username]['count'] += 1
         user_stats[username]['files'] += file_count
         user_stats[username]['size'] += size_mb
-        user_stats[username]['lastDownload'] = timezone.localtime(log.timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 更新最后下载时间
+        log_time_str = timezone.localtime(log.timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        if not user_stats[username]['lastDownload'] or log_time_str > user_stats[username]['lastDownload']:
+            user_stats[username]['lastDownload'] = log_time_str
         
         # 更新日期统计
         daily_stats[log_date]['downloads'] += 1
@@ -2111,8 +2098,8 @@ def download_analytics_api(request):
         date_str = current_date.isoformat()
         trend_data.append({
             'date': date_str,
-            'downloads': daily_stats.get(date_str, {}).get('downloads', 0),
-            'size': round(daily_stats.get(date_str, {}).get('size', 0.0), 1)
+            'downloads': daily_stats[date_str]['downloads'],
+            'size': round(daily_stats[date_str]['size'], 1)
         })
         current_date += timedelta(days=1)
     
@@ -2127,7 +2114,7 @@ def download_analytics_api(request):
     
     return JsonResponse({
         'users': active_users,
-        'downloads': user_stats,
+        'downloads': dict(user_stats),
         'trend': trend_data,
         'summary': {
             'totalDownloads': total_downloads,
@@ -2135,7 +2122,7 @@ def download_analytics_api(request):
             'totalSize': round(total_size, 1),
             'activeUsers': active_user_count
         }
-    })
+    }, json_dumps_params={'ensure_ascii': False})
 
 
 def parse_download_size(details):
@@ -2144,9 +2131,11 @@ def parse_download_size(details):
         size_match = re.search(r'File Size: ([\d.]+) MB', details)
         if size_match:
             return float(size_match.group(1))
-    except Exception as e:
-        print(f"解析下载大小失败: {e}")
+    except Exception:
+        # 静默处理异常，提高性能
+        pass
     return 0.0
+
 
 
 def parse_file_count(details):
@@ -2160,8 +2149,9 @@ def parse_file_count(details):
             ids_match = re.search(r'Product IDs: ([\d,]+)', details)
             if ids_match:
                 return len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
-    except Exception as e:
-        print(f"解析文件数量失败: {e}")
+    except Exception:
+        # 静默处理异常，提高性能
+        pass
     return 0
 
 
