@@ -67,6 +67,10 @@ urlpatterns = [
     path('feedback/', views.user_feedback, name='user_feedback'),
     path('feedback_en/', views.user_feedback_en, name='user_feedback_en'),
     
+    # 个人中心
+    path('profile/', views.profile, name='profile'),
+    path('profile_en/', views.profile_en, name='profile_en'),
+    
     # API接口
     path('api/gitee/releases/latest/<str:owner>/<str:repo>/', views.gitee_releases_latest, name='gitee_releases_latest'),
     path('api/download-analytics/', views.download_analytics_api, name='download_analytics_api'),

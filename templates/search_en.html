@@ -71,10 +71,17 @@
                 
                 <!-- Loading Status -->
                 <div id="ai_search_loading" class="mt-3 text-center" style="display: none;">
-                    <div class="spinner-border text-primary" role="status">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                         <span class="visually-hidden">Searching...</span>
                     </div>
-                    <p class="mt-2 text-muted">AI is analyzing your requirements,Waiting time is approximately 10 seconds, please wait...</p>
+                    <p class="mt-3 text-muted">AI is analyzing your requirements</p>
+                    <div class="progress mt-3" style="max-width: 400px; margin: 0 auto;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <p class="mt-2 text-sm text-muted">(Smart search may take 3-8 seconds, please wait)</p>
+                    <button type="button" class="btn btn-outline-secondary btn-sm mt-3" id="cancel_ai_search">
+                        <i class="bi bi-x me-1"></i>Cancel Search
+                    </button>
                 </div>
             </div>
         </div>
@@ -698,6 +705,17 @@
         }
 
         // AI Search functionality
+        let currentAiSearchAbortController = null;
+        
+        // Cancel search button event
+        document.getElementById('cancel_ai_search').addEventListener('click', function() {
+            if (currentAiSearchAbortController) {
+                currentAiSearchAbortController.abort();
+                document.getElementById('ai_search_loading').style.display = 'none';
+                alert('Search cancelled');
+            }
+        });
+        
         document.getElementById('ai_search_btn').addEventListener('click', function() {
             const query = document.getElementById('ai_query').value.trim();
             if (!query) {
@@ -709,6 +727,10 @@
             document.getElementById('ai_search_loading').style.display = 'block';
             document.getElementById('ai_search_result').style.display = 'none';
             
+            // Create AbortController for canceling requests
+            currentAiSearchAbortController = new AbortController();
+            const signal = currentAiSearchAbortController.signal;
+            
             // Send AJAX request
             fetch('/api/ai_search/', {
                 method: 'POST',
@@ -718,9 +740,15 @@
                 },
                 body: JSON.stringify({
                     query: query
-                })
+                }),
+                signal: signal // Add cancel signal
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network request failed');
+                }
+                return response.json();
+            })
             .then(data => {
                 // Hide loading state
                 document.getElementById('ai_search_loading').style.display = 'none';
@@ -734,7 +762,9 @@
                         resultContent.innerHTML = '<strong>Search Result:</strong> No suitable welding gun found<br><small class="text-muted">Please adjust your search criteria and try again</small>';
                         resultActions.style.display = 'none';
                     } else {
-                        resultContent.innerHTML = '<strong>Found the following part numbers:</strong><br>' + data.data;
+                        // Format results, each part number on a new line
+                        const formattedResult = data.data.split(',').map(item => item.trim()).join('<br>');
+                        resultContent.innerHTML = '<strong>Found the following part numbers:</strong><br>' + formattedResult;
                         resultActions.style.display = 'block';
                         
                         // Store part number data for later use
@@ -748,8 +778,13 @@
             })
             .catch(error => {
                 document.getElementById('ai_search_loading').style.display = 'none';
-                alert('Network error, please try again later');
-                console.error('Error:', error);
+                if (error.name !== 'AbortError') {
+                    alert('Network error or request timeout, please try again later');
+                    console.error('Error:', error);
+                }
+            })
+            .finally(() => {
+                currentAiSearchAbortController = null;
             });
         });
         

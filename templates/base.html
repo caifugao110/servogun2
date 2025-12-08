@@ -598,6 +598,11 @@
                                 <i class="bi bi-chat-dots text-primary me-1"></i>用户反馈
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'clamps:profile' %}">
+                                <i class="bi bi-person-circle text-primary me-1"></i>个人中心
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
                 
@@ -742,18 +747,20 @@
             let newPath = currentPath;
 
             // 定义中英文页面的URL映射关系
-            const translatablePaths = [
-                { zh: "/", en: "/_en/" },
-                { zh: "/login/", en: "/login_en/" },
-                { zh: "/search/", en: "/search_en/" },
-                { zh: "/search/results/", en: "/search/results_en/" },
-                { zh: "/feedback/", en: "/feedback_en/" },
-                { en: "/feedback_en/", zh: "/feedback/" },
-                { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
-                { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" },
-                { zh: /^\/style-search\/([a-zA-Z0-9]+)\/$/, en: "/style-search/$1_en/" },
-                { en: /^\/style-search\/([a-zA-Z0-9]+)_en\/$/, zh: "/style-search/$1/" }
-            ];
+        const translatablePaths = [
+            { zh: "/", en: "/_en/" },
+            { zh: "/login/", en: "/login_en/" },
+            { zh: "/search/", en: "/search_en/" },
+            { zh: "/search/results/", en: "/search/results_en/" },
+            { zh: "/feedback/", en: "/feedback_en/" },
+            { en: "/feedback_en/", zh: "/feedback/" },
+            { zh: "/profile/", en: "/profile_en/" },
+            { en: "/profile_en/", zh: "/profile/" },
+            { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
+            { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" },
+            { zh: /^\/style-search\/([a-zA-Z0-9]+)\/$/, en: "/style-search/$1_en/" },
+            { en: /^\/style-search\/([a-zA-Z0-9]+)_en\/$/, zh: "/style-search/$1/" }
+        ];
 
             // 判断当前是在中文页还是英文页
             const isEnglishPage = currentPath.includes('_en/') || translatablePaths.some(p => p.en instanceof RegExp && p.en.test(currentPath));

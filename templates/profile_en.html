@@ -1,0 +1,243 @@
+{% extends 'base_en.html' %}
+{% load static %}
+
+{% block title %}Profile - OBARA Welding Gun Selection Database{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="fade-in-up">
+        <div class="row">
+            <!-- Left Side Navigation -->
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Profile</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="#download-records" class="list-group-item list-group-item-action active" onclick="switchTab('download-records', this); return false;">
+                            <i class="bi bi-download me-2"></i>Download Records
+                        </a>
+                        <a href="#my-feedback" class="list-group-item list-group-item-action" onclick="switchTab('my-feedback', this); return false;">
+                            <i class="bi bi-chat-dots me-2"></i>My Feedback
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side Content -->
+            <div class="col-md-9">
+                <!-- Download Records -->
+                <section id="download-records" class="module-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-download text-primary me-2"></i>Download Records
+                                <span class="badge bg-secondary float-end">{{ download_logs.paginator.count }} records</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if download_logs %} 
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Download Time</th>
+                                                <th scope="col">Drawing No.</th>
+                                                <th scope="col">File Type</th>
+                                                <th scope="col">File Size</th>
+                                                <th scope="col">Download Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for log in download_logs %} 
+                                                <tr>
+                                                    <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                                    <td>
+                                                        {% if log.action_type == 'batch_download' %}
+                                                            <span class="badge bg-info me-1">Batch Download</span>
+                                                        {% endif %}
+                                                        {{ log.product_id }}
+                                                    </td>
+                                                    <td>{{ log.file_type }}</td>
+                                                    <td>{{ log.file_size }}</td>
+                                                    <td>
+                                                        {% if log.action_type == 'batch_download' %}
+                                                            <span class="badge bg-warning">Batch Download</span>
+                                                        {% else %}
+                                                            <span class="badge bg-success">Single Download</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Pagination -->
+                                {% if download_logs.has_other_pages %} 
+                                    <nav aria-label="Download records pagination" class="mt-4">
+                                        <ul class="pagination justify-content-center">
+                                            {% if download_logs.has_previous %} 
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?download_page={{ download_logs.previous_page_number }}&feedback_page={{ user_feedbacks.number }}" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            {% for i in download_logs.paginator.page_range %} 
+                                                {% if download_logs.number == i %} 
+                                                    <li class="page-item active">
+                                                        <a class="page-link" href="#">{{ i }}</a>
+                                                    </li>
+                                                {% else %} 
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?download_page={{ i }}&feedback_page={{ user_feedbacks.number }}">{{ i }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if download_logs.has_next %} 
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?download_page={{ download_logs.next_page_number }}&feedback_page={{ user_feedbacks.number }}" aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                {% endif %}
+                            {% else %} 
+                                <div class="alert alert-info text-center">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No download records available
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- My Feedback -->
+                <section id="my-feedback" class="module-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-chat-dots text-primary me-2"></i>My Feedback
+                                <span class="badge bg-secondary float-end">{{ user_feedbacks.paginator.count }} records</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if user_feedbacks %} 
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Feedback Time</th>
+                                                <th scope="col">Feedback Category</th>
+                                                <th scope="col">Feedback Content</th>
+                                                <th scope="col">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for feedback in user_feedbacks %} 
+                                                <tr>
+                                                    <td>{{ feedback.created_at|date:"Y-m-d H:i:s" }}</td>
+                                                    <td>
+                                                        <span class="badge bg-primary">
+                                                            {{ feedback.category }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {{ feedback.content }}
+                                                    </td>
+                                                    <td>
+                                                        {% if feedback.status == '已处理' %}
+                                                            <span class="badge bg-success">Processed</span>
+                                                        {% elif feedback.status == '待确认' %}
+                                                            <span class="badge bg-warning">Pending Confirmation</span>
+                                                        {% elif feedback.status == '已确认待处理' %}
+                                                            <span class="badge bg-warning">Confirmed Pending Processing</span>
+                                                        {% elif feedback.status == '无法确认' %}
+                                                            <span class="badge bg-secondary">Unable to Confirm</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">Invalid Feedback</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Feedback pagination -->
+                                {% if user_feedbacks.has_other_pages %} 
+                                    <nav aria-label="Feedback records pagination" class="mt-4">
+                                        <ul class="pagination justify-content-center">
+                                            {% if user_feedbacks.has_previous %} 
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.previous_page_number }}" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            {% for i in user_feedbacks.paginator.page_range %} 
+                                                {% if user_feedbacks.number == i %} 
+                                                    <li class="page-item active">
+                                                        <a class="page-link" href="#">{{ i }}</a>
+                                                    </li>
+                                                {% else %} 
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ i }}">{{ i }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if user_feedbacks.has_next %} 
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.next_page_number }}" aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                {% endif %}
+                            {% else %} 
+                                <div class="alert alert-info text-center">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No feedback records available
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 模块切换功能
+    function switchTab(tabId, element) {
+        // 隐藏所有模块
+        const sections = document.querySelectorAll('.module-section');
+        sections.forEach(section => {
+            section.style.display = 'none';
+        });
+        
+        // 移除所有导航项的active类
+        const navItems = document.querySelectorAll('.list-group-item');
+        navItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // 显示当前模块
+        const currentSection = document.getElementById(tabId);
+        currentSection.style.display = 'block';
+        
+        // 为当前导航项添加active类
+        element.classList.add('active');
+    }
+</script>
+{% endblock %}

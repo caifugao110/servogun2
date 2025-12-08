@@ -2019,8 +2019,28 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import Log, UserProfile
 
-@login_required
-@user_passes_test(is_staff_or_superuser)
+def api_login_required(view_func):
+    """
+    自定义API登录装饰器，返回JSON错误而不是HTML重定向
+    """
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': '未登录', 'message': '请先登录'}, status=401)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+def api_staff_required(view_func):
+    """
+    自定义API权限装饰器，返回JSON错误而不是HTML重定向
+    """
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_staff and not request.user.is_superuser:
+            return JsonResponse({'error': '权限不足', 'message': '需要管理员权限'}, status=403)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+@api_login_required
+@api_staff_required
 def download_analytics_api(request):
     """
     提供下载数据分析的API接口
@@ -2290,10 +2310,10 @@ def user_feedback(request):
         # 验证必填字段
         if not category:
             messages.error(request, '请选择反馈分类')
-            return render(request, 'user_feedback.html')
+            return render(request, 'user_feedback.html', {'is_style_search': request.session.get('from_style_search', False)})
         if not content:
             messages.error(request, '请填写内容说明')
-            return render(request, 'user_feedback.html')
+            return render(request, 'user_feedback.html', {'is_style_search': request.session.get('from_style_search', False)})
         
         # 创建反馈记录
         feedback = UserFeedback(
@@ -2310,12 +2330,14 @@ def user_feedback(request):
         messages.success(request, '您的反馈已提交成功，感谢您的支持！')
         return redirect('clamps:user_feedback')
     
-    return render(request, 'user_feedback.html')
+    return render(request, 'user_feedback.html', {'is_style_search': request.session.get('from_style_search', False)})
 
 
 @login_required
 def user_feedback_en(request):
     """用户反馈收集页面（英文）"""
+    is_style_search = request.session.get('from_style_search', False)
+    
     if request.method == 'POST':
         category = request.POST.get('category')
         related_link = request.POST.get('related_link')
@@ -2327,10 +2349,10 @@ def user_feedback_en(request):
         # 验证必填字段
         if not category:
             messages.error(request, 'Please select feedback category')
-            return render(request, 'user_feedback_en.html')
+            return render(request, 'user_feedback_en.html', {'is_style_search': is_style_search})
         if not content:
             messages.error(request, 'Please fill in content description')
-            return render(request, 'user_feedback_en.html')
+            return render(request, 'user_feedback_en.html', {'is_style_search': is_style_search})
         
         # 创建反馈记录
         feedback = UserFeedback(
@@ -2347,7 +2369,221 @@ def user_feedback_en(request):
         messages.success(request, 'Your feedback has been submitted successfully, thank you for your support!')
         return redirect('clamps:user_feedback_en')
     
-    return render(request, 'user_feedback_en.html')
+    return render(request, 'user_feedback_en.html', {'is_style_search': is_style_search})
+
+
+@login_required
+def profile(request):
+    """个人中心页面"""
+    # 获取用户的下载记录，最近100条
+    download_logs = Log.objects.filter(
+        user=request.user,
+        action_type__in=['download', 'batch_download']
+    ).order_by('-timestamp')[:100]
+    
+    # 预处理下载日志数据，先收集所有需要查询的产品ID
+    temp_logs = []
+    product_ids_to_query = []
+    
+    for log in download_logs:
+        log_data = {
+            'timestamp': log.timestamp,
+            'action_type': log.action_type,
+            'details': log.details
+        }
+        
+        # 解析日志详情
+        if 'Product IDs:' in log.details:
+            log_data['product_id'] = '多个产品'
+            log_data['file_type'] = '- 多个文件'
+            log_data['file_size'] = '未知'
+        elif 'File Type:' in log.details:
+            # 解析单个下载记录
+            details = log.details
+            
+            # 提取产品ID
+            if 'Product ID:' in details:
+                product_id_part = details.split(',')[0]
+                product_id = product_id_part.split(':')[1].strip()
+                if product_id != '未知':
+                    product_ids_to_query.append(product_id)
+            else:
+                product_id = '未知'
+            log_data['product_id'] = product_id
+            
+            # 提取文件类型
+            if 'File Type:' in details:
+                file_type_part = [part for part in details.split(',') if 'File Type:' in part][0]
+                file_type = file_type_part.split(':')[1].strip().upper()
+            else:
+                file_type = '未知'
+            log_data['file_type'] = file_type
+            
+            # 提取文件大小
+            if 'File Size:' in details:
+                file_size_part = [part for part in details.split(',') if 'File Size:' in part][0]
+                file_size = file_size_part.split(':')[1].strip()
+            else:
+                file_size = '未知'
+            log_data['file_size'] = file_size
+        else:
+            log_data['product_id'] = '未知'
+            log_data['file_type'] = '未知'
+            log_data['file_size'] = '未知'
+        
+        temp_logs.append(log_data)
+    
+    # 批量查询产品图号
+    product_id_to_drawing_no = {}
+    if product_ids_to_query:
+        # 转换为整数列表，排除非数字ID
+        valid_product_ids = []
+        for pid in product_ids_to_query:
+            if pid.isdigit():
+                valid_product_ids.append(int(pid))
+        
+        # 查询所有产品
+        products = Product.objects.filter(id__in=valid_product_ids)
+        # 创建产品ID到图号的映射
+        for product in products:
+            product_id_to_drawing_no[str(product.id)] = product.drawing_no_1 or str(product.id)
+    
+    # 替换产品ID为图号
+    processed_download_logs = []
+    for log_data in temp_logs:
+        pid = log_data['product_id']
+        if pid.isdigit() and pid in product_id_to_drawing_no:
+            log_data['product_id'] = product_id_to_drawing_no[pid]
+        processed_download_logs.append(log_data)
+    
+    # 获取用户的反馈记录，最近100条
+    user_feedbacks = UserFeedback.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:100]
+    
+    # 分页处理下载记录，默认每页10条
+    download_paginator = Paginator(processed_download_logs, 10)
+    download_page_number = request.GET.get('download_page')
+    download_page_obj = download_paginator.get_page(download_page_number)
+    
+    # 分页处理反馈记录，默认每页10条
+    feedback_paginator = Paginator(user_feedbacks, 10)
+    feedback_page_number = request.GET.get('feedback_page')
+    feedback_page_obj = feedback_paginator.get_page(feedback_page_number)
+    
+    context = {
+        'download_logs': download_page_obj,
+        'user_feedbacks': feedback_page_obj,
+        'is_style_search': request.session.get('from_style_search', False)
+    }
+    return render(request, 'profile.html', context)
+
+
+@login_required
+def profile_en(request):
+    """个人中心页面（英文）"""
+    # 获取用户的下载记录，最近100条
+    download_logs = Log.objects.filter(
+        user=request.user,
+        action_type__in=['download', 'batch_download']
+    ).order_by('-timestamp')[:100]
+    
+    # 预处理下载日志数据，先收集所有需要查询的产品ID
+    temp_logs = []
+    product_ids_to_query = []
+    
+    for log in download_logs:
+        log_data = {
+            'timestamp': log.timestamp,
+            'action_type': log.action_type,
+            'details': log.details
+        }
+        
+        # 解析日志详情
+        if 'Product IDs:' in log.details:
+            log_data['product_id'] = 'Multiple Products'
+            log_data['file_type'] = '- Multiple Files'
+            log_data['file_size'] = 'Unknown'
+        elif 'File Type:' in log.details:
+            # 解析单个下载记录
+            details = log.details
+            
+            # 提取产品ID
+            if 'Product ID:' in details:
+                product_id_part = details.split(',')[0]
+                product_id = product_id_part.split(':')[1].strip()
+                if product_id != 'Unknown':
+                    product_ids_to_query.append(product_id)
+            else:
+                product_id = 'Unknown'
+            log_data['product_id'] = product_id
+            
+            # 提取文件类型
+            if 'File Type:' in details:
+                file_type_part = [part for part in details.split(',') if 'File Type:' in part][0]
+                file_type = file_type_part.split(':')[1].strip().upper()
+            else:
+                file_type = 'Unknown'
+            log_data['file_type'] = file_type
+            
+            # 提取文件大小
+            if 'File Size:' in details:
+                file_size_part = [part for part in details.split(',') if 'File Size:' in part][0]
+                file_size = file_size_part.split(':')[1].strip()
+            else:
+                file_size = 'Unknown'
+            log_data['file_size'] = file_size
+        else:
+            log_data['product_id'] = 'Unknown'
+            log_data['file_type'] = 'Unknown'
+            log_data['file_size'] = 'Unknown'
+        
+        temp_logs.append(log_data)
+    
+    # 批量查询产品图号
+    product_id_to_drawing_no = {}
+    if product_ids_to_query:
+        # 转换为整数列表，排除非数字ID
+        valid_product_ids = []
+        for pid in product_ids_to_query:
+            if pid.isdigit():
+                valid_product_ids.append(int(pid))
+        
+        # 查询所有产品
+        products = Product.objects.filter(id__in=valid_product_ids)
+        # 创建产品ID到图号的映射
+        for product in products:
+            product_id_to_drawing_no[str(product.id)] = product.drawing_no_1 or str(product.id)
+    
+    # 替换产品ID为图号
+    processed_download_logs = []
+    for log_data in temp_logs:
+        pid = log_data['product_id']
+        if pid.isdigit() and pid in product_id_to_drawing_no:
+            log_data['product_id'] = product_id_to_drawing_no[pid]
+        processed_download_logs.append(log_data)
+    
+    # 获取用户的反馈记录，最近100条
+    user_feedbacks = UserFeedback.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:100]
+    
+    # 分页处理下载记录，默认每页10条
+    download_paginator = Paginator(processed_download_logs, 10)
+    download_page_number = request.GET.get('download_page')
+    download_page_obj = download_paginator.get_page(download_page_number)
+    
+    # 分页处理反馈记录，默认每页10条
+    feedback_paginator = Paginator(user_feedbacks, 10)
+    feedback_page_number = request.GET.get('feedback_page')
+    feedback_page_obj = feedback_paginator.get_page(feedback_page_number)
+    
+    context = {
+        'download_logs': download_page_obj,
+        'user_feedbacks': feedback_page_obj,
+        'is_style_search': request.session.get('from_style_search', False)
+    }
+    return render(request, 'profile_en.html', context)
 
 
 @login_required

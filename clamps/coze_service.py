@@ -22,6 +22,7 @@ import time
 import re
 import requests
 from django.conf import settings
+from django.core.cache import cache
 
 
 def get_config():
@@ -131,6 +132,14 @@ def process_result(raw_result):
 
 def query_coze(query_text):
     """查询Coze API并返回处理后的结果"""
+    # 缓存键名，使用查询文本的MD5哈希值作为唯一标识
+    cache_key = f"coze_query_{query_text}"
+    
+    # 检查缓存中是否已有结果
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return cached_result
+    
     config = get_config()
     headers = get_headers(config)
     
@@ -155,36 +164,40 @@ def query_coze(query_text):
             config["api_url"],
             headers=headers,
             json=payload,
-            timeout=30
+            timeout=20  # 减少超时时间
         )
         
         if response.status_code != 200:
-            return {
+            result = {
                 "success": False,
                 "error": f"查询失败，状态码: {response.status_code}，响应内容: {response.text}"
             }
+            return result
         
         response_data = response.json()
         
         if "data" not in response_data:
-            return {
+            result = {
                 "success": False,
                 "error": "响应格式错误，缺少data字段"
             }
+            return result
         
         data = response_data["data"]
         conversation_id = data.get("conversation_id")
         chat_id = data.get("id")
         
         if not conversation_id or not chat_id:
-            return {
+            result = {
                 "success": False,
                 "error": "响应中缺少必要的ID信息"
             }
+            return result
         
-        # 等待处理完成并获取结果
-        max_retries = 20
+        # 等待处理完成并获取结果 - 优化轮询机制
+        max_retries = 10  # 减少重试次数
         retry_count = 0
+        retry_delay = 1.5  # 减少等待时间，改为1.5秒
         
         while retry_count < max_retries:
             # 获取对话详情
@@ -202,27 +215,33 @@ def query_coze(query_text):
                                 raw_content = msg.get("content", "")
                                 # 处理原始内容
                                 processed_result = process_result(raw_content)
-                                return {
+                                result = {
                                     "success": True,
                                     "data": processed_result,
                                     "raw_content": raw_content
                                 }
+                                # 将结果存入缓存，有效期30分钟
+                                cache.set(cache_key, result, timeout=1800)
+                                return result
                 elif status == "failed":
-                    return {
+                    result = {
                         "success": False,
                         "error": "对话处理失败"
                     }
+                    return result
             
-            time.sleep(3)
+            time.sleep(retry_delay)
             retry_count += 1
         
-        return {
+        result = {
             "success": False,
             "error": "等待超时，未收到AI回复"
         }
+        return result
         
     except Exception as e:
-        return {
+        result = {
             "success": False,
             "error": f"查询过程异常: {str(e)}"
         }
+        return result

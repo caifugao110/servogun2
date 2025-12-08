@@ -54,10 +54,17 @@
                 
                 <!-- 加载状态 -->
                 <div id="ai_search_loading" class="mt-3 text-center" style="display: none;">
-                    <div class="spinner-border text-primary" role="status">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                         <span class="visually-hidden">正在搜索...</span>
                     </div>
-                    <p class="mt-2 text-muted">AI正在分析您的需求，等待时间大约10秒，请稍候...</p>
+                    <p class="mt-3 text-muted">AI正在分析您的需求</p>
+                    <div class="progress mt-3" style="max-width: 400px; margin: 0 auto;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <p class="mt-2 text-sm text-muted">（智能搜索可能需要3-8秒，请稍候）</p>
+                    <button type="button" class="btn btn-outline-secondary btn-sm mt-3" id="cancel_ai_search">
+                        <i class="bi bi-x me-1"></i>取消搜索
+                    </button>
                 </div>
             </div>
         </div>
@@ -543,6 +550,17 @@
         }
 
         // AI搜索功能
+        let currentAiSearchAbortController = null;
+        
+        // 取消搜索按钮事件
+        document.getElementById('cancel_ai_search').addEventListener('click', function() {
+            if (currentAiSearchAbortController) {
+                currentAiSearchAbortController.abort();
+                document.getElementById('ai_search_loading').style.display = 'none';
+                alert('搜索已取消');
+            }
+        });
+        
         document.getElementById('ai_search_btn').addEventListener('click', function() {
             const query = document.getElementById('ai_query').value.trim();
             if (!query) {
@@ -554,6 +572,10 @@
             document.getElementById('ai_search_loading').style.display = 'block';
             document.getElementById('ai_search_result').style.display = 'none';
             
+            // 创建AbortController用于取消请求
+            currentAiSearchAbortController = new AbortController();
+            const signal = currentAiSearchAbortController.signal;
+            
             // 发送AJAX请求
             fetch('/api/ai_search/', {
                 method: 'POST',
@@ -563,9 +585,15 @@
                 },
                 body: JSON.stringify({
                     query: query
-                })
+                }),
+                signal: signal // 添加取消信号
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络请求失败');
+                }
+                return response.json();
+            })
             .then(data => {
                 // 隐藏加载状态
                 document.getElementById('ai_search_loading').style.display = 'none';
@@ -579,7 +607,9 @@
                         resultContent.innerHTML = '<strong>搜索结果：</strong>' + data.data + '<br><small class="text-muted">建议您调整搜索条件后重试</small>';
                         resultActions.style.display = 'none';
                     } else {
-                        resultContent.innerHTML = '<strong>找到以下图号：</strong><br>' + data.data;
+                        // 格式化结果，每个图号占一行
+                        const formattedResult = data.data.split(',').map(item => item.trim()).join('<br>');
+                        resultContent.innerHTML = '<strong>找到以下图号：</strong><br>' + formattedResult;
                         resultActions.style.display = 'block';
                         
                         // 存储图号数据供后续使用
@@ -593,8 +623,13 @@
             })
             .catch(error => {
                 document.getElementById('ai_search_loading').style.display = 'none';
-                alert('网络错误，请稍后重试');
-                console.error('Error:', error);
+                if (error.name !== 'AbortError') {
+                    alert('网络错误或请求超时，请稍后重试');
+                    console.error('Error:', error);
+                }
+            })
+            .finally(() => {
+                currentAiSearchAbortController = null;
             });
         });
         

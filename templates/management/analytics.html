@@ -1,4 +1,4 @@
-﻿<!--
+<!--
   Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
 
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -280,7 +280,7 @@
 
     // 显示加载状态
     function showLoading() {
-        const loadingHtml = '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">加载中...</span></div><p class="mt-2">正在从服务器获取数据...</p></div>';
+        const loadingHtml = `<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">加载中...</span></div><p class="mt-2">正在从服务器获取数据...</p></div>`;
         
         const trendContainer = document.getElementById('trendChartContainer');
         const distributionContainer = document.getElementById('distributionChartContainer');
@@ -316,7 +316,7 @@
 
     // 显示无数据状态
     function showNoData() {
-        const noDataHtml = '<div class="text-center p-4 text-muted"><i class="bi bi-inbox" style="font-size: 3rem;"></i><p class="mt-2">无数据</p></div>';
+        const noDataHtml = `<div class="text-center p-4 text-muted"><i class="bi bi-inbox" style="font-size: 3rem;"></i><p class="mt-2">无数据</p></div>`;
         
         const trendContainer = document.getElementById('trendChartContainer');
         const distributionContainer = document.getElementById('distributionChartContainer');
@@ -385,7 +385,7 @@
             
             if (!data) {
                 // 数据获取失败
-                showError('无法连接到服务器');
+                showError('无法连接到服务器或登录会话已过期');
                 clearStatistics();
                 clearDetailsTable();
                 return;
