@@ -2148,9 +2148,14 @@ def download_analytics_api(request):
 def parse_download_size(details):
     """从日志详情中解析下载大小（MB）"""
     try:
+        # 匹配单个下载的格式: "File Size: 0.03 MB"
         size_match = re.search(r'File Size: ([\d.]+) MB', details)
         if size_match:
             return float(size_match.group(1))
+        # 匹配批量下载的格式: "Total Size: 24.54 MB"
+        total_size_match = re.search(r'Total Size: ([\d.]+) MB', details)
+        if total_size_match:
+            return float(total_size_match.group(1))
     except Exception:
         # 静默处理异常，提高性能
         pass
@@ -2162,13 +2167,19 @@ def parse_file_count(details):
     """从日志详情中解析下载文件数量"""
     try:
         # 单个文件下载
-        if 'File Type:' in details:
+        if 'File Type:' in details and 'Product IDs:' not in details:
             return 1
         # 批量下载
         elif 'Product IDs:' in details:
             ids_match = re.search(r'Product IDs: ([\d,]+)', details)
             if ids_match:
-                return len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
+                product_ids = [id.strip() for id in ids_match.group(1).split(',') if id.strip().isdigit()]
+                # 检查是否下载多种文件类型（both = pdf + step）
+                if 'File Type: both' in details:
+                    return len(product_ids) * 2
+                # 只下载一种文件类型
+                else:
+                    return len(product_ids)
     except Exception:
         # 静默处理异常，提高性能
         pass

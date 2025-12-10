@@ -50,11 +50,7 @@
                         <select class="form-select" id="timeRange" onchange="updateDownloadChart()">
                             <option value="1">今天</option>
                             <option value="3">最近三天</option>
-                            <option value="7">最近一周</option>
-				<option value="15">最近半个月</option>
-				<option value="30">最近一个月</option>
-				<option value="60">最近两个月</option>
-				<option value="90">最近三个月</option>
+                            <option value="7">最近一周</option>			<option value="15">最近半个月</option>			<option value="30">最近一个月</option>			<option value="60">最近两个月</option>			<option value="90">最近三个月</option>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -223,19 +219,21 @@
         return '';
     }
     
-    // 浠嶢PI鑾峰彇涓嬭浇鏁版嵁锛堝彧浣跨敤鐪熷疄鏁版嵁锛?
+    // 从API获取下载数据（只使用真实数据）
     async function fetchDownloadData(days, user = 'all') {
         try {
-            // 鏋勫缓API URL
+            // 构建API URL
             const url = new URL('/api/download-analytics/', window.location.origin);
             url.searchParams.append('days', days);
             if (user !== 'all') {
                 url.searchParams.append('user', user);
             }
             
-            console.log('鍙戦€佽姹傚埌:', url);
+            console.log('发送请求到:', url);
+            console.log('CSRF令牌:', getCookie('csrftoken'));
+            console.log('Cookie:', document.cookie);
             
-            // 鍙戦€佽姹傚埌鍚庣API
+            // 发送请求到后端API
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -245,35 +243,56 @@
                 credentials: 'same-origin'
             });
             
-            console.log('鍝嶅簲鐘舵€?', response.status);
+            console.log('响应状态:', response.status);
+            console.log('响应状态文本:', response.statusText);
+            console.log('响应头:', JSON.stringify(Object.fromEntries(response.headers.entries())));
             
             if (!response.ok) {
-                // 妫€鏌ユ槸鍚︽槸閲嶅畾鍚?
+                // 检查是否是重定向
                 if (response.redirected) {
-                    console.error('API璇锋眰琚噸瀹氬悜锛屽彲鑳芥槸鐧诲綍浼氳瘽杩囨湡');
-                    showToast('鐧诲綍浼氳瘽宸茶繃鏈燂紝璇烽噸鏂扮櫥褰?, 'danger');
+                    console.error('API请求被重定向，可能是登录会话过期');
+                    showToast('登录会话已过期，请重新登录', 'danger');
                     return null;
                 }
-                throw new Error(`HTTP error! status: ${response.status}`);
+                
+                // 获取错误响应的内容
+                let errorContent;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    try {
+                        errorContent = await response.json();
+                        console.error('API返回错误JSON:', errorContent);
+                    } catch (e) {
+                        errorContent = await response.text();
+                        console.error('API返回错误文本:', errorContent);
+                    }
+                } else {
+                    errorContent = await response.text();
+                    console.error('API返回错误文本:', errorContent);
+                }
+                
+                showToast(`API请求失败: ${response.status} - ${JSON.stringify(errorContent)}`, 'danger');
+                return null;
             }
             
-            // 妫€鏌ュ搷搴斿唴瀹圭被鍨?
+            // 检查响应内容类型
             const contentType = response.headers.get('content-type');
-            console.log('鍝嶅簲鍐呭绫诲瀷:', contentType);
+            console.log('响应内容类型:', contentType);
             
             if (!contentType || !contentType.includes('application/json')) {
                 const text = await response.text();
-                console.error('鍝嶅簲涓嶆槸JSON鏍煎紡:', text.substring(0, 100) + '...');
-                showToast('鏈嶅姟鍣ㄨ繑鍥炰簡闈濲SON鍝嶅簲锛岃妫€鏌ユ湇鍔″櫒鏃ュ織', 'danger');
+                console.error('响应不是JSON格式:', text.substring(0, 200) + '...');
+                showToast('服务器返回了非JSON响应，请检查服务器日志', 'danger');
                 return null;
             }
             
             const data = await response.json();
-            console.log('鑾峰彇鍒扮殑鏁版嵁:', data);
+            console.log('获取到的数据:', data);
             return data;
         } catch (error) {
-            console.error('鑾峰彇涓嬭浇鏁版嵁澶辫触:', error);
-            showToast('鑾峰彇涓嬭浇鏁版嵁澶辫触锛岃妫€鏌ョ綉缁滆繛鎺ユ垨鑱旂郴绠＄悊鍛?, 'danger');
+            console.error('获取下载数据失败:', error);
+            console.error('错误堆栈:', error.stack);
+            showToast(`获取下载数据失败: ${error.message}`, 'danger');
             return null;
         }
     }
@@ -391,8 +410,13 @@
                 return;
             }
             
-            // 检查数据是否为空
-            if (!data.summary || !data.downloads || Object.keys(data.downloads).length === 0) {
+            // 检查数据是否为空 - 修改：只有当所有关键数据都为空时才显示"无数据"
+            const isSummaryEmpty = !data.summary || Object.keys(data.summary).length === 0;
+            const isDownloadsEmpty = !data.downloads || Object.keys(data.downloads).length === 0;
+            const isTrendEmpty = !data.trend || data.trend.length === 0;
+            
+            // 只有当所有字段都为空时，才认为数据为空
+            if (isSummaryEmpty && isDownloadsEmpty && isTrendEmpty) {
                 console.log('数据为空，显示"无数据"');
                 showNoData();
                 // 即使数据为空，也要更新统计卡片显示0
@@ -459,10 +483,36 @@
         console.log('当前页面URL:', window.location.href);
         console.log('CSRF令牌:', getCookie('csrftoken'));
         
-        // 延迟初始化以确保所有资源加载完成
-        setTimeout(() => {
+        // 检查Chart.js是否已加载
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js尚未加载，将在3秒后重试...');
+            
+            // 等待3秒后重试，确保Chart.js有足够时间加载
+            setTimeout(() => {
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js加载失败，尝试使用本地备份...');
+                    
+                    // 尝试重新加载Chart.js
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                    script.onload = function() {
+                        console.log('Chart.js重新加载成功！');
+                        updateDownloadChart();
+                    };
+                    script.onerror = function() {
+                        console.error('Chart.js重新加载失败，无法创建图表');
+                        showError('Chart.js加载失败，无法创建图表，请检查网络连接');
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    console.log('Chart.js已加载，开始初始化图表...');
+                    updateDownloadChart();
+                }
+            }, 3000);
+        } else {
+            console.log('Chart.js已加载，开始初始化图表...');
             updateDownloadChart();
-        }, 500);
+        }
     });
 
     // 清空统计数据
@@ -542,6 +592,13 @@
 
     // 更新趋势图表
     function updateTrendChart(trendData) {
+        // 检查Chart对象是否存在
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js未加载，无法创建图表');
+            showError('Chart.js库未加载，无法创建图表');
+            return;
+        }
+        
         const canvas = document.getElementById('downloadTrendChart');
         if (!canvas) {
             console.error('找不到趋势图canvas元素');
@@ -559,7 +616,8 @@
             return;
         }
         
-        downloadTrendChart = new Chart(ctx, {
+        try {
+            downloadTrendChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: trendData.map(item => item.date),
@@ -622,10 +680,21 @@
                 }
             }
         });
+        } catch (error) {
+            console.error('创建趋势图表失败:', error);
+            showError('创建趋势图表失败: ' + error.message);
+        }
     }
 
     // 更新分布图表
     function updateDistributionChart(data, userFilter) {
+        // 检查Chart对象是否存在
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js未加载，无法创建图表');
+            showError('Chart.js库未加载，无法创建图表');
+            return;
+        }
+        
         const canvas = document.getElementById('userDistributionChart');
         if (!canvas) {
             console.error('找不到分布图canvas元素');
@@ -665,7 +734,8 @@
             '#dc3545', '#6f42c1', '#20c997', '#fd7e14'
         ];
         
-        userDistributionChart = new Chart(ctx, {
+        try {
+            userDistributionChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: labels,
@@ -692,6 +762,10 @@
                 }
             }
         });
+        } catch (error) {
+            console.error('创建分布图表失败:', error);
+            showError('创建分布图表失败: ' + error.message);
+        }
     }
 
     // 更新详细数据表格
@@ -731,6 +805,8 @@
             tbody.appendChild(row);
         });
     }
+
+
 
     function showToast(message, type = 'info') {
         const toastHtml = `
