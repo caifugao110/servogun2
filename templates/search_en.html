@@ -39,14 +39,40 @@
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-9">
+                <div class="row mb-3">
+                    <div class="col-12">
                         <label for="ai_query" class="form-label">
                             <i class="bi bi-chat-dots me-2"></i>
                             Please describe your welding gun requirements in natural language, AI will intelligently match suitable product numbers
+                            <button class="btn btn-outline-info btn-sm ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#aiWorkflow" aria-expanded="false" aria-controls="aiWorkflow">
+                                <i class="bi bi-info-circle me-1"></i>View Workflow
+                            </button>
                         </label>
+                        <div class="collapse mt-2" id="aiWorkflow">
+                            <div class="card card-body">
+                                <h6 class="fw-bold mb-2">AI Search Workflow</h6>
+                                <ol class="mb-0">
+                                    <li>Accurately identify the gun type (C gun or X gun) in user requirements to determine the knowledge base to call.</li>
+                                    <li>Extract key parameters from user requirements: throat depth, throat width, pressure, transformer type (if mentioned), gun type, eccentricity distance (if mentioned).</li>
+                                    <li>Analyze fuzzy concept words in user requirements, generate a range of ±500 for pressure, ±20 for eccentricity distance, and ±50 for throat depth and throat width.</li>
+                                    <li>Perform comprehensive, in-depth, and precise matching searches in multiple knowledge bases:
+                                        <ul class="mt-1 mb-1 ms-4">
+                                            <li>Throat depth, throat width, and pressure parameters are precisely matched within the generated range</li>
+                                            <li>Transformer type (if mentioned) is fuzzily matched (contains keywords)</li>
+                                            <li>Customer field is fuzzily matched (if customer is mentioned, contains keywords)</li>
+                                            <li>Eccentricity distance (if mentioned) is precisely matched (within the generated range)</li>
+                                        </ul>
+                                    </li>
+                                    <li>Collect all qualified welding gun drawing numbers.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-9">
                         <textarea class="form-control" id="ai_query" rows="1" style="resize: none;" 
-                                placeholder="e.g.: Throat depth around 300, throat width around 450, 85 transformer, pressure around 4500 C gun"></textarea>
+                                placeholder="e.g.: Throat depth around 300, throat width around 450, 85 transformer, pressure around 4500 C gun">Throat depth around 300, throat width around 450, 85 transformer, pressure around 4500 C gun</textarea>
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-primary w-100" id="ai_search_btn">

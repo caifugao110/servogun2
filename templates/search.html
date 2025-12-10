@@ -22,14 +22,40 @@
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-9">
+                <div class="row mb-3">
+                    <div class="col-12">
                         <label for="ai_query" class="form-label">
                             <i class="bi bi-chat-dots me-2"></i>
                             请用自然语言描述您的焊枪需求，AI将为您智能匹配合适的产品图号
+                            <button class="btn btn-outline-info btn-sm ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#aiWorkflow" aria-expanded="false" aria-controls="aiWorkflow">
+                                <i class="bi bi-info-circle me-1"></i>查看工作流程
+                            </button>
                         </label>
+                        <div class="collapse mt-2" id="aiWorkflow">
+                            <div class="card card-body">
+                                <h6 class="fw-bold mb-2">AI搜索工作流程</h6>
+                                <ol class="mb-0">
+                                    <li>精确识别用户需求中的枪型（C枪或X枪），确定需要调用的知识库。</li>
+                                    <li>准确提取用户需求中的关键参数：喉深、喉宽、压力、变压器类型（若提到）、枪型、偏心距离（若提到）。</li>
+                                    <li>分析用户需求中的模糊概念词，为压力生成 ±500的范围，为偏心距离 ±20的范围，为喉深和喉宽生成 ±50的范围。</li>
+                                    <li>在调用的多个知识库中，进行全面、深度、精准的匹配检索：
+                                        <ul class="mt-1 mb-1 ms-4">
+                                            <li>喉深、喉宽、压力参数在生成的范围内精确匹配</li>
+                                            <li>变压器类型（若提到）进行模糊匹配（包含关键词即可）</li>
+                                            <li>客户字段进行模糊匹配（如果提到客户，包含关键词即可）</li>
+                                            <li>偏心距离（若提到）进行精准匹配（在生成的范围内）</li>
+                                        </ul>
+                                    </li>
+                                    <li>收集所有符合要求的焊枪图号。</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-9">
                         <textarea class="form-control" id="ai_query" rows="1" style="resize: none;" 
-                                placeholder="例如：喉深 300 左右，喉宽 450 左右，85 变压器，压力 4500 左右的 C 枪"></textarea>
+                                    placeholder="例如：喉深 300 左右，喉宽 450 左右，85 变压器，压力 4500 左右的 C 枪">喉深 300 左右，喉宽 450 左右，85 变压器，压力 4500 左右的 C 枪</textarea>
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-primary w-100" id="ai_search_btn">

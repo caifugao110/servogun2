@@ -25,6 +25,7 @@ os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 SECRET_KEY = 'django-insecure-your-secret-key-here-change-in-production'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['http://gun.obara.com.cn']
 
 # 应用配置
 INSTALLED_APPS = [
