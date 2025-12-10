@@ -16,6 +16,7 @@
 
 from django.apps import AppConfig
 import threading
+import os
 
 
 class ClampsConfig(AppConfig):
@@ -23,5 +24,12 @@ class ClampsConfig(AppConfig):
     name = 'clamps'
 
     def ready(self):
-        # 调度器不再自动启动，需通过命令行参数 --scheduler 手动启动
-        pass
+        # 只在主进程中启动调度器（避免runserver的辅助进程重复启动）
+        if os.environ.get('RUN_MAIN') == 'true':
+            # 导入备份模块并启动调度器
+            import threading
+            from .backup import start_scheduler
+            
+            # 在后台线程中启动调度器
+            scheduler_thread = threading.Thread(target=start_scheduler, daemon=True)
+            scheduler_thread.start()

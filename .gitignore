@@ -3,3 +3,12 @@ media/
 venv/
 logs/
 backups/
+
+# Ignore Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore SQLite database files
+*.db
+*.sqlite3

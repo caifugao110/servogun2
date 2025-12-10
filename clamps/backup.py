@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 """
-备份脚本：定时备份数据库和media文件夹
+备份脚本：定时备份数据库文件db.sqlite3
 - 每天10点执行备份
 - 备份文件为压缩包，包含详细时间戳
 - 自动清理30天前的备份文件
 """
 
 import os
-import shutil
 import zipfile
 import datetime
 import schedule
@@ -15,8 +14,8 @@ import time
 import logging
 from pathlib import Path
 
-# 获取项目根目录
-BASE_DIR = Path(__file__).resolve().parent
+# 获取项目根目录（因为文件在clamps目录下，所以需要上一级）
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 配置日志
 logging.basicConfig(
@@ -31,10 +30,9 @@ logger = logging.getLogger(__name__)
 
 # 备份配置
 BACKUP_DIR = BASE_DIR / 'backups'
-MEDIA_DIR = BASE_DIR / 'media'
 DB_FILE = BASE_DIR / 'db.sqlite3'
 RETENTION_DAYS = 30
-BACKUP_TIME = "10:00"
+BACKUP_TIME = "00:01"
 
 
 def create_backup():
@@ -63,42 +61,11 @@ def create_backup():
         logger.error(f"备份失败: {str(e)}")
 
 
-def sync_files():
-    """执行文件同步"""
-    try:
-        # 确保Django环境已初始化
-        import os
-        import sys
-        
-        # 添加项目根目录到Python路径
-        sys.path.append(str(BASE_DIR))
-        
-        # 设置Django环境变量
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'welding_clamp_db.settings')
-        
-        # 初始化Django
-        import django
-        django.setup()
-        
-        # 导入并调用文件同步核心函数
-        from clamps.views import sync_files_core
-        success, msg = sync_files_core()
-        
-        if success:
-            logger.info(f"文件同步成功: {msg}")
-        else:
-            logger.error(f"文件同步失败: {msg}")
-            
-    except Exception as e:
-        logger.error(f"文件同步执行失败: {str(e)}")
-
-
 def daily_task():
-    """每日任务：备份数据库和同步文件"""
-    logger.info("开始执行每日任务")
+    """每日任务：备份数据库"""
+    logger.info("开始执行每日备份任务")
     create_backup()
-    sync_files()
-    logger.info("每日任务执行完成")
+    logger.info("每日备份任务执行完成")
 
 
 def cleanup_old_backups():
@@ -124,21 +91,17 @@ def cleanup_old_backups():
 
 
 def run_backup():
-    """运行备份和文件同步，用于手动执行或系统定时任务调用"""
-    logger.info("开始执行备份和文件同步任务")
-    daily_task()
-    logger.info("备份和文件同步任务执行完成")
+    """运行备份，用于手动执行或系统定时任务调用"""
+    logger.info("开始执行数据库备份任务")
+    create_backup()
+    logger.info("数据库备份任务执行完成")
 
 
 def start_scheduler():
     """启动调度器"""
-    # 每天10点执行备份和文件同步
+    # 每天10点执行数据库备份
     schedule.every().day.at(BACKUP_TIME).do(daily_task)
-    logger.info(f"调度器已启动，每天{BACKUP_TIME}执行数据库备份和文件同步")
-    
-    # 立即执行一次备份和文件同步
-    logger.info("立即执行一次数据库备份和文件同步")
-    daily_task()
+    logger.info(f"调度器已启动，每天{BACKUP_TIME}执行数据库备份")
     
     # 循环执行调度任务
     while True:
