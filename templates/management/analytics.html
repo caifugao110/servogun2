@@ -203,15 +203,16 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- 寮曞叆Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% load static %}
+<!-- 引入Chart.js -->
+<script src="{% static 'js/chart.js' %}"></script>
 
 <script>
     let downloadTrendChart = null;
     let userDistributionChart = null;
     let downloadData = {};
 
-    // 浠巆ookie涓幏鍙朇SRF浠ょ墝
+    // 从cookie中获取CSRF令牌
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -494,7 +495,7 @@
                     
                     // 尝试重新加载Chart.js
                     const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                    script.src = '/static/js/chart.js';
                     script.onload = function() {
                         console.log('Chart.js重新加载成功！');
                         updateDownloadChart();
