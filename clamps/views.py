@@ -43,7 +43,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, F
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils import timezone
@@ -123,7 +123,7 @@ def add_watermark_to_pdf(input_pdf_path, output_pdf_path, watermark_text):
 
 
 
-from .models import Category, Log, UserProfile, StyleLink, UserFeedback
+from .models import Category, Log, UserProfile, StyleLink, UserFeedback, UserStyleLinkVisit
 
 
 def is_superuser(user):
@@ -1679,6 +1679,30 @@ def style_search(request, unique_id):
         # 设置会话状态，标记当前是从仕样搜索页面进入
         request.session['from_style_search'] = True
         request.session['style_search_unique_id'] = unique_id
+        
+        # 记录用户访问
+        is_valid = style_link.can_be_clicked()
+        with transaction.atomic():
+            # 检查是否已存在访问记录
+            visit, created = UserStyleLinkVisit.objects.get_or_create(
+                user=request.user,
+                style_link=style_link,
+                defaults={
+                    'visit_count': 1,
+                    'last_visited_at': timezone.now(),
+                    'is_valid': is_valid,
+                    'link_name': style_link.name,
+                    'unique_id': style_link.unique_id
+                }
+            )
+            if not created:
+                # 如果记录已存在，更新访问次数和其他信息
+                visit.visit_count += 1
+                visit.last_visited_at = timezone.now()
+                visit.is_valid = is_valid
+                visit.link_name = style_link.name
+                visit.unique_id = style_link.unique_id
+                visit.save()
     except StyleLink.DoesNotExist:
         messages.error(request, '该仕样链接不存在或已失效！')
         return redirect('clamps:search')
@@ -1784,6 +1808,30 @@ def style_search_en(request, unique_id):
         # 设置会话标记
         request.session['from_style_search'] = True
         request.session['style_search_unique_id'] = unique_id
+        
+        # 记录用户访问
+        is_valid = style_link.can_be_clicked()
+        with transaction.atomic():
+            # 检查是否已存在访问记录
+            visit, created = UserStyleLinkVisit.objects.get_or_create(
+                user=request.user,
+                style_link=style_link,
+                defaults={
+                    'visit_count': 1,
+                    'last_visited_at': timezone.now(),
+                    'is_valid': is_valid,
+                    'link_name': style_link.name,
+                    'unique_id': style_link.unique_id
+                }
+            )
+            if not created:
+                # 如果记录已存在，更新访问次数和其他信息
+                visit.visit_count += 1
+                visit.last_visited_at = timezone.now()
+                visit.is_valid = is_valid
+                visit.link_name = style_link.name
+                visit.unique_id = style_link.unique_id
+                visit.save()
     except StyleLink.DoesNotExist:
         messages.error(request, "Style search link not found!")
         return redirect('clamps:search_en')
@@ -2392,6 +2440,11 @@ def profile(request):
         action_type__in=['download', 'batch_download']
     ).order_by('-timestamp')[:100]
     
+    # 获取用户访问过的仕样链接记录
+    style_link_visits = UserStyleLinkVisit.objects.filter(
+        user=request.user
+    ).order_by('-last_visited_at')
+    
     # 预处理下载日志数据，先收集所有需要查询的产品ID
     temp_logs = []
     product_ids_to_query = []
@@ -2482,9 +2535,15 @@ def profile(request):
     feedback_page_number = request.GET.get('feedback_page')
     feedback_page_obj = feedback_paginator.get_page(feedback_page_number)
     
+    # 分页处理仕样链接访问记录，默认每页10条
+    style_link_paginator = Paginator(style_link_visits, 10)
+    style_link_page_number = request.GET.get('style_link_page')
+    style_link_page_obj = style_link_paginator.get_page(style_link_page_number)
+    
     context = {
         'download_logs': download_page_obj,
         'user_feedbacks': feedback_page_obj,
+        'style_link_visits': style_link_page_obj,
         'is_style_search': request.session.get('from_style_search', False)
     }
     return render(request, 'profile.html', context)
@@ -2498,6 +2557,11 @@ def profile_en(request):
         user=request.user,
         action_type__in=['download', 'batch_download']
     ).order_by('-timestamp')[:100]
+    
+    # 获取用户访问过的仕样链接记录
+    style_link_visits = UserStyleLinkVisit.objects.filter(
+        user=request.user
+    ).order_by('-last_visited_at')
     
     # 预处理下载日志数据，先收集所有需要查询的产品ID
     temp_logs = []
@@ -2589,9 +2653,15 @@ def profile_en(request):
     feedback_page_number = request.GET.get('feedback_page')
     feedback_page_obj = feedback_paginator.get_page(feedback_page_number)
     
+    # 分页处理仕样链接访问记录，默认每页10条
+    style_link_paginator = Paginator(style_link_visits, 10)
+    style_link_page_number = request.GET.get('style_link_page')
+    style_link_page_obj = style_link_paginator.get_page(style_link_page_number)
+    
     context = {
         'download_logs': download_page_obj,
         'user_feedbacks': feedback_page_obj,
+        'style_link_visits': style_link_page_obj,
         'is_style_search': request.session.get('from_style_search', False)
     }
     return render(request, 'profile_en.html', context)

@@ -20,6 +20,9 @@
                         <a href="#my-feedback" class="list-group-item list-group-item-action" onclick="switchTab('my-feedback', this); return false;">
                             <i class="bi bi-chat-dots me-2"></i>我的反馈
                         </a>
+                        <a href="#style-links" class="list-group-item list-group-item-action" onclick="switchTab('style-links', this); return false;">
+                            <i class="bi bi-link me-2"></i>我访问过的仕样链接
+                        </a>
                     </div>
                 </div>
             </div>
@@ -79,7 +82,7 @@
                                         <ul class="pagination justify-content-center">
                                             {% if download_logs.has_previous %} 
                                                 <li class="page-item">
-                                                    <a class="page-link" href="?download_page={{ download_logs.previous_page_number }}&feedback_page={{ user_feedbacks.number }}" aria-label="Previous">
+                                                    <a class="page-link" href="?download_page={{ download_logs.previous_page_number }}&feedback_page={{ user_feedbacks.number }}&style_link_page={{ style_link_visits.number }}" aria-label="Previous">
                                                         <span aria-hidden="true">&laquo;</span>
                                                     </a>
                                                 </li>
@@ -92,14 +95,14 @@
                                                     </li>
                                                 {% else %} 
                                                     <li class="page-item">
-                                                        <a class="page-link" href="?download_page={{ i }}&feedback_page={{ user_feedbacks.number }}">{{ i }}</a>
+                                                        <a class="page-link" href="?download_page={{ i }}&feedback_page={{ user_feedbacks.number }}&style_link_page={{ style_link_visits.number }}">{{ i }}</a>
                                                     </li>
                                                 {% endif %}
                                             {% endfor %}
                                             
                                             {% if download_logs.has_next %} 
                                                 <li class="page-item">
-                                                    <a class="page-link" href="?download_page={{ download_logs.next_page_number }}&feedback_page={{ user_feedbacks.number }}" aria-label="Next">
+                                                    <a class="page-link" href="?download_page={{ download_logs.next_page_number }}&feedback_page={{ user_feedbacks.number }}&style_link_page={{ style_link_visits.number }}" aria-label="Next">
                                                         <span aria-hidden="true">&raquo;</span>
                                                     </a>
                                                 </li>
@@ -171,7 +174,7 @@
                                         <ul class="pagination justify-content-center">
                                             {% if user_feedbacks.has_previous %} 
                                                 <li class="page-item">
-                                                    <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.previous_page_number }}" aria-label="Previous">
+                                                    <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.previous_page_number }}&style_link_page={{ style_link_visits.number }}" aria-label="Previous">
                                                         <span aria-hidden="true">&laquo;</span>
                                                     </a>
                                                 </li>
@@ -184,14 +187,14 @@
                                                     </li>
                                                 {% else %} 
                                                     <li class="page-item">
-                                                        <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ i }}">{{ i }}</a>
+                                                        <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ i }}&style_link_page={{ style_link_visits.number }}">{{ i }}</a>
                                                     </li>
                                                 {% endif %}
                                             {% endfor %}
                                             
                                             {% if user_feedbacks.has_next %} 
                                                 <li class="page-item">
-                                                    <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.next_page_number }}" aria-label="Next">
+                                                    <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.next_page_number }}&style_link_page={{ style_link_visits.number }}" aria-label="Next">
                                                         <span aria-hidden="true">&raquo;</span>
                                                     </a>
                                                 </li>
@@ -203,6 +206,98 @@
                                 <div class="alert alert-info text-center">
                                     <i class="bi bi-info-circle me-2"></i>
                                     暂无反馈记录
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- 我访问过的仕样链接 -->
+                <section id="style-links" class="module-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-link text-primary me-2"></i>我访问过的仕样链接
+                            <span class="badge bg-secondary float-end">共 {{ style_link_visits.paginator.count }} 条</span>
+                        </h5>
+                    </div>
+                        <div class="card-body">
+                            {% if style_link_visits %} 
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">链接ID</th>
+                                                <th scope="col">初次访问时间</th>
+                                                <th scope="col">上次访问时间</th>
+                                                <th scope="col">访问次数</th>
+                                                <th scope="col">链接状态</th>
+                                                <th scope="col">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for visit in style_link_visits %} 
+                                                <tr>
+                                                    <td>{{ visit.unique_id }}</td>
+                                                    <td>{{ visit.first_visited_at|date:"Y-m-d H:i:s" }}</td>
+                                                    <td>{{ visit.last_visited_at|date:"Y-m-d H:i:s" }}</td>
+                                                    <td>{{ visit.visit_count }}</td>
+                                                    <td>
+                                                        {% if visit.is_valid %}
+                                                            <span class="badge bg-success">有效</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">无效</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="/style-search/{{ visit.unique_id }}/" class="btn btn-sm btn-primary" target="_blank">
+                                                            <i class="bi bi-arrow-right"></i> 访问链接
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- 仕样链接访问记录分页 -->
+                                {% if style_link_visits.has_other_pages %} 
+                                    <nav aria-label="Style link visits pagination" class="mt-4">
+                                        <ul class="pagination justify-content-center">
+                                            {% if style_link_visits.has_previous %} 
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.number }}&style_link_page={{ style_link_visits.previous_page_number }}" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            {% for i in style_link_visits.paginator.page_range %} 
+                                                {% if style_link_visits.number == i %} 
+                                                    <li class="page-item active">
+                                                        <a class="page-link" href="#">{{ i }}</a>
+                                                    </li>
+                                                {% else %} 
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.number }}&style_link_page={{ i }}">{{ i }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if style_link_visits.has_next %} 
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?download_page={{ download_logs.number }}&feedback_page={{ user_feedbacks.number }}&style_link_page={{ style_link_visits.next_page_number }}" aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                {% endif %}
+                            {% else %} 
+                                <div class="alert alert-info text-center">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    暂无访问过的仕样链接
                                 </div>
                             {% endif %}
                         </div>

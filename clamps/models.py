@@ -715,3 +715,35 @@ class StyleLink(models.Model):
             return request.build_absolute_uri(reverse('clamps:style_search', args=[self.unique_id]))
         return f"/style-search/{self.unique_id}/"
 
+
+class UserStyleLinkVisit(models.Model):
+    """用户访问仕样链接记录"""
+    
+    # 关联信息
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="style_link_visits", verbose_name="访问用户")
+    style_link = models.ForeignKey(StyleLink, on_delete=models.CASCADE, related_name="visits", verbose_name="仕样链接")
+    
+    # 访问时间
+    first_visited_at = models.DateTimeField(auto_now_add=True, verbose_name="初次访问时间")
+    last_visited_at = models.DateTimeField(auto_now=True, verbose_name="上次访问时间")
+    
+    # 访问统计
+    visit_count = models.IntegerField(default=1, verbose_name="访问次数")
+    
+    # 链接状态（记录访问时的状态）
+    is_valid = models.BooleanField(default=True, verbose_name="链接有效状态")
+    
+    # 链接信息快照
+    link_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="链接名称")
+    unique_id = models.CharField(max_length=32, verbose_name="链接唯一标识")
+    
+    class Meta:
+        verbose_name = "用户仕样链接访问记录"
+        verbose_name_plural = "用户仕样链接访问记录"
+        ordering = ['-last_visited_at']
+        # 确保每个用户对每个链接只有一条记录
+        unique_together = [['user', 'style_link']]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.style_link.name or self.unique_id}"
+
