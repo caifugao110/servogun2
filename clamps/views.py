@@ -1306,7 +1306,12 @@ def export_data(request):
 @login_required
 @user_passes_test(is_staff_or_superuser)
 def import_csv(request):
+    import logging
+    import time
+    logger = logging.getLogger(__name__)
+    
     if request.method == 'POST' and request.FILES.get('csv_file'):
+        start_time = time.time()
         csv_file = request.FILES['csv_file']
 
         # 1. 检查文件类型
@@ -1325,28 +1330,27 @@ def import_csv(request):
 
         category, _ = Category.objects.get_or_create(name=category_name)
 
-        # 3. 编码检测
-        raw_data = csv_file.read()
-        try:
-            encoding = chardet.detect(raw_data)['encoding'] or 'utf-8'
-            decoded_file = raw_data.decode(encoding)
-        except (UnicodeDecodeError, TypeError):
-            try:
-                decoded_file = raw_data.decode('gbk')
-            except UnicodeDecodeError:
-                messages.error(request, '文件编码无法识别，请确保为 UTF-8 或 GBK。')
-                return redirect('clamps:import_csv')
-
-        io_string = io.StringIO(decoded_file)
-        reader = csv.reader(io_string)
+        # 3. 编码检测（优化：使用流式读取，减少内存占用）
+        # 先读取一小部分数据进行编码检测
+        sample = csv_file.read(1024 * 1024)  # 读取1MB样本进行编码检测
+        encoding = chardet.detect(sample)['encoding'] or 'utf-8'
+        csv_file.seek(0)  # 重置文件指针到开头
+        
+        # 使用TextIOWrapper直接读取文件，避免一次性加载整个文件
+        reader = csv.reader(io.TextIOWrapper(csv_file, encoding=encoding))
         try:
             next(reader)  # 跳过表头
         except StopIteration:
             messages.error(request, 'CSV 文件为空或没有标题行。')
             return redirect('clamps:import_csv')
 
-        # 4. 预加载现有产品
-        existing_products = {p.drawing_no_1.strip().upper(): p for p in Product.objects.all()}
+        # 4. 预加载现有产品（优化：只查询需要的字段，减少内存占用）
+        existing_products = {}
+        # 使用values_list只获取drawing_no_1和id，避免加载整个对象
+        for product in Product.objects.values_list('id', 'drawing_no_1'):
+            product_id, drawing_no = product
+            if drawing_no:
+                existing_products[drawing_no.strip().upper()] = product_id
 
         products_to_create = []
         products_to_update = []
@@ -1405,12 +1409,10 @@ def import_csv(request):
                 'bmp_file_path': os.path.join('media', row[39].strip()) if len(row) > 39 and row[39].strip() else '',
             }
 
-            key = drawing_no_1.upper()
+            key = drawing_no_1.strip().upper()
             if key in existing_products:
-                # 更新
-                product = existing_products[key]
-                for k, v in product_data.items():
-                    setattr(product, k, v)
+                # 更新：构造Product对象，包含id和新数据
+                product = Product(id=existing_products[key], **product_data)
                 products_to_update.append(product)
                 updated_count += 1
             else:
@@ -1418,28 +1420,50 @@ def import_csv(request):
                 products_to_create.append(Product(**product_data))
                 created_count += 1
 
-        # 6. 批量写入
+        # 6. 批量写入（优化：使用更大的批次大小）
+        batch_size = 5000  # 增加批次大小，提高导入速度
+        
+        # 获取所有字段名，用于bulk_update
+        all_fields = [
+            'category', 'description', 'drawing_no_1', 'sub_category_type',
+            'stroke', 'electrode_arm_end', 'clamping_force', 'electrode_arm_type',
+            'transformer', 'weight', 'transformer_placement', 'flange_pcd',
+            'bracket_direction', 'bracket_angle', 'motor_manufacturer', 'bracket_count',
+            'gearbox_type', 'bracket_material', 'gearbox_stroke', 'tool_changer',
+            'throat_depth', 'has_balance', 'throat_width', 'water_circuit',
+            'grip_extension_length', 'eccentricity', 'eccentricity_direction',
+            'eccentricity_to_center', 'guidance_method', 'static_arm_eccentricity',
+            'static_electrode_arm_end', 'moving_arm_eccentricity', 'moving_electrode_arm_end',
+            'pivot_to_drive_center_dist', 'static_arm_front_length', 'static_arm_front_height',
+            'moving_arm_front_length', 'moving_arm_front_height', 'pdf_file_path',
+            'step_file_path', 'bmp_file_path'
+        ]
+        
         with transaction.atomic():
             if products_to_create:
-                Product.objects.bulk_create(products_to_create, batch_size=1000)
+                Product.objects.bulk_create(products_to_create, batch_size=batch_size)
             if products_to_update:
                 Product.objects.bulk_update(
                     products_to_update,
-                    fields=list(product_data.keys()),
-                    batch_size=1000
+                    fields=all_fields,
+                    batch_size=batch_size
                 )
 
+        total_time = time.time() - start_time
+        logger.info(f'CSV导入完成：新增 {created_count} 条，更新 {updated_count} 条，耗时 {total_time:.2f} 秒，总记录数 {created_count + updated_count} 条')
+        
         messages.success(
             request,
-            f'CSV 导入成功！新增 {created_count} 条，更新 {updated_count} 条。'
+            f'CSV 导入成功！新增 {created_count} 条，更新 {updated_count} 条。耗时 {total_time:.2f} 秒。'
         )
         return redirect('clamps:import_csv')
 
     return render(request, 'management/import_csv.html')
 
 def sync_files_core():
-    """文件同步核心逻辑，用于定时任务调用"""
+    """文件同步核心逻辑"""
     import logging
+    import time
     from django.conf import settings
     import os
     from collections import defaultdict
@@ -1448,20 +1472,28 @@ def sync_files_core():
     
     logger = logging.getLogger(__name__)
     
+    start_time = time.time()
+    
     media_root = settings.MEDIA_ROOT
     if not os.path.isdir(media_root):
         logger.error(f'媒体目录 {media_root} 不存在。')
         return False, f'媒体目录 {media_root} 不存在。'
 
-    # 1. 一次性加载所有产品
+    # 1. 优化产品查询：只获取需要的字段值，减少内存占用
     products = Product.objects.all().only(
         'id', 'drawing_no_1',
         'pdf_file_path', 'step_file_path', 'bmp_file_path'
     )
-    product_map = {p.drawing_no_1.strip().upper(): p for p in products}
+    # 优化：预处理drawing_no_1，构建更高效的映射
+    product_map = {}
+    for p in products:
+        if p.drawing_no_1:
+            key = p.drawing_no_1.strip().upper()
+            product_map[key] = p
 
     # 2. 需要批量更新的容器
     to_update = defaultdict(list)
+    batch_size = 10000  # 优化：增大批量更新大小
 
     # 3. 文件后缀 -> 模型字段
     ext_field = {
@@ -1473,41 +1505,64 @@ def sync_files_core():
     updated = unmatch = 0
     unmatched_files = []
 
-    # 4. 遍历 media/ 下所有文件
-    for root, _, files in os.walk(media_root):
-        for filename in files:
-            name, ext = os.path.splitext(filename.lower())
-            if ext not in ext_field:
-                continue
+    # 4. 遍历 media/ 下所有文件 - 优化：使用scandir替代os.walk
+    processed_files = 0
+    
+    def scan_directory(path):
+        nonlocal updated, unmatch, processed_files, unmatched_files
+        
+        with os.scandir(path) as entries:
+            for entry in entries:
+                if entry.is_dir(follow_symlinks=False):
+                    # 递归处理子目录
+                    scan_directory(entry.path)
+                elif entry.is_file(follow_symlinks=False):
+                    processed_files += 1
+                    filename = entry.name
+                    name, ext = os.path.splitext(filename.lower())
+                    if ext not in ext_field:
+                        continue
 
-            # 去掉后缀 _pdf/_step/_bmp
-            clean = name.upper().replace('_PDF', '').replace('_STEP', '').replace('_BMP', '')
-            product = product_map.get(clean)
-            if not product:
-                unmatch += 1
-                unmatched_files.append(filename)
-                continue
+                    # 优化：一次性替换所有后缀
+                    clean = name.upper()
+                    if clean.endswith(('_PDF', '_STEP', '_BMP')):
+                        clean = clean[:-4]  # 移除最后4个字符
+                    
+                    product = product_map.get(clean)
+                    if not product:
+                        unmatch += 1
+                        if len(unmatched_files) < 5:  # 只保留前5个未匹配文件
+                            unmatched_files.append(filename)
+                        continue
 
-            field = ext_field[ext]
-            # 只保留文件名
-            if getattr(product, field) != filename:
-                setattr(product, field, filename)
-                to_update[field].append(product)
-                updated += 1
+                    field = ext_field[ext]
+                    # 只保留文件名
+                    if getattr(product, field) != filename:
+                        setattr(product, field, filename)
+                        to_update[field].append(product)
+                        updated += 1
+    
+    scan_directory(media_root)
 
-    # 5. 批量更新
+    # 5. 批量更新 - 优化：使用更大的批量大小
     with transaction.atomic():
         for field, objs in to_update.items():
-            Product.objects.bulk_update(objs, [field])
+            # 分批次更新，减少内存占用和数据库压力
+            for i in range(0, len(objs), batch_size):
+                batch = objs[i:i+batch_size]
+                Product.objects.bulk_update(batch, [field])
 
-    # 6. 返回结果
-    msg = f'同步完成：更新 {updated} 条记录。'
+    # 6. 计算耗时并返回结果
+    total_time = time.time() - start_time
+    msg = f'同步完成：处理 {processed_files} 个文件，更新 {updated} 条记录。耗时 {total_time:.2f} 秒。'
     if unmatch:
-        msg += f' 未匹配 {unmatch} 个文件：{', '.join(unmatched_files[:5])}'
-        if len(unmatched_files) > 5:
-            msg += ' ...'
+        msg += f' 未匹配 {unmatch} 个文件'
+        if unmatched_files:
+            msg += f'：{', '.join(unmatched_files)}'
+            if unmatch > 5:
+                msg += ' ...'
     
-    logger.info(msg)
+    logger.info(f'{msg}')
     return True, msg
 
 
