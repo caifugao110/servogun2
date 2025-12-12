@@ -1504,12 +1504,13 @@ def sync_files_core():
 
     updated = unmatch = 0
     unmatched_files = []
+    all_unmatched_files = []  # 保存所有未匹配文件
 
     # 4. 遍历 media/ 下所有文件 - 优化：使用scandir替代os.walk
     processed_files = 0
     
     def scan_directory(path):
-        nonlocal updated, unmatch, processed_files, unmatched_files
+        nonlocal updated, unmatch, processed_files, unmatched_files, all_unmatched_files
         
         with os.scandir(path) as entries:
             for entry in entries:
@@ -1531,7 +1532,8 @@ def sync_files_core():
                     product = product_map.get(clean)
                     if not product:
                         unmatch += 1
-                        if len(unmatched_files) < 5:  # 只保留前5个未匹配文件
+                        all_unmatched_files.append(filename)  # 保存所有未匹配文件
+                        if len(unmatched_files) < 5:  # 只保留前5个未匹配文件用于消息提示
                             unmatched_files.append(filename)
                         continue
 
@@ -1552,7 +1554,22 @@ def sync_files_core():
                 batch = objs[i:i+batch_size]
                 Product.objects.bulk_update(batch, [field])
 
-    # 6. 计算耗时并返回结果
+    # 6. 保存所有未匹配文件到日志文件
+    log_dir = os.path.join(settings.BASE_DIR, 'logs')
+    os.makedirs(log_dir, exist_ok=True)
+    unmatched_log_path = os.path.join(log_dir, 'unmatched_files.log')
+    
+    with open(unmatched_log_path, 'w', encoding='utf-8') as f:
+        f.write(f'# 文件同步未匹配文件记录 - 生成时间：{time.strftime('%Y-%m-%d %H:%M:%S')}\n')
+        f.write(f'# 总处理文件数：{processed_files}，未匹配文件数：{unmatch}\n')
+        f.write(f'# 媒体目录：{media_root}\n')
+        f.write('\n')
+        for filename in sorted(all_unmatched_files):
+            f.write(f'{filename}\n')
+    
+    logger.info(f'未匹配文件列表已保存到：{unmatched_log_path}')
+
+    # 7. 计算耗时并返回结果
     total_time = time.time() - start_time
     msg = f'同步完成：处理 {processed_files} 个文件，更新 {updated} 条记录。耗时 {total_time:.2f} 秒。'
     if unmatch:
@@ -1560,7 +1577,7 @@ def sync_files_core():
         if unmatched_files:
             msg += f'：{', '.join(unmatched_files)}'
             if unmatch > 5:
-                msg += ' ...'
+                msg += ' ...\n未匹配文件完整列表已保存到 logs/unmatched_files.log'
     
     logger.info(f'{msg}')
     return True, msg
@@ -1582,6 +1599,52 @@ def sync_files(request):
     
     # GET请求，直接返回仪表板，不执行同步操作
     return redirect('clamps:management_dashboard')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def view_unmatched_files(request):
+    """查看未匹配文件列表"""
+    import os
+    from django.conf import settings
+    
+    # 读取未匹配文件日志
+    log_dir = os.path.join(settings.BASE_DIR, 'logs')
+    unmatched_log_path = os.path.join(log_dir, 'unmatched_files.log')
+    
+    unmatched_files = []
+    log_info = {
+        'generated_time': '未生成',
+        'total_processed': 0,
+        'total_unmatched': 0,
+        'media_root': '',
+    }
+    
+    if os.path.exists(unmatched_log_path):
+        with open(unmatched_log_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # 解析日志头信息
+            if line.startswith('# 文件同步未匹配文件记录'):
+                log_info['generated_time'] = line.split('生成时间：')[1]
+            elif line.startswith('# 总处理文件数'):
+                parts = line.split('，')
+                log_info['total_processed'] = int(parts[0].split('：')[1])
+                log_info['total_unmatched'] = int(parts[1].split('：')[1])
+            elif line.startswith('# 媒体目录'):
+                log_info['media_root'] = line.split('：')[1]
+            elif not line.startswith('#'):
+                unmatched_files.append(line)
+    
+    return render(request, 'management/unmatched_files.html', {
+        'unmatched_files': unmatched_files,
+        'log_info': log_info,
+    })
 
 
 # 仕样管理相关视图

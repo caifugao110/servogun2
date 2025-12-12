@@ -1,0 +1,144 @@
+<!--
+  Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+
+{% extends 'base.html' %}
+
+{% block title %}未匹配文件列表 - 小原焊枪选型数据库{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
+            <h1 class="display-6 fw-bold">
+                <i class="bi bi-file-earmark-excel me-2"></i>
+                未匹配文件列表
+            </h1>
+            <div>
+                <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> 返回仪表盘
+                </a>
+            </div>
+        </div>
+        
+        <!-- 日志信息卡片 -->
+        <div class="card mb-4 fade-in-up">
+            <div class="card-header">
+                <h5 class="card-title mb-0">日志信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="p-3 bg-body-secondary rounded">
+                            <div class="text-muted small">生成时间</div>
+                            <div class="h5">{{ log_info.generated_time }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-body-secondary rounded">
+                            <div class="text-muted small">总处理文件数</div>
+                            <div class="h5">{{ log_info.total_processed }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-body-secondary rounded">
+                            <div class="text-muted small">未匹配文件数</div>
+                            <div class="h5 text-danger">{{ log_info.total_unmatched }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-body-secondary rounded">
+                            <div class="text-muted small">媒体目录</div>
+                            <div class="h5 small text-truncate" title="{{ log_info.media_root }}">{{ log_info.media_root }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 未匹配文件列表 -->
+        <div class="card mb-4 fade-in-up">
+            <div class="card-header">
+                <h5 class="card-title mb-0">未匹配文件</h5>
+            </div>
+            <div class="card-body">
+                {% if unmatched_files %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="w-10">序号</th>
+                                    <th scope="col">文件名</th>
+                                    <th scope="col" class="w-25">文件类型</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in unmatched_files %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ file }}</td>
+                                        <td>
+                                            {% if file.lower|slice:":-4" == ".pdf" %}
+                                                <span class="badge bg-primary">PDF</span>
+                                            {% elif file.lower|slice:":-5" == ".step" %}
+                                                <span class="badge bg-secondary">STEP</span>
+                                            {% elif file.lower|slice:":-4" == ".bmp" %}
+                                                <span class="badge bg-success">BMP</span>
+                                            {% else %}
+                                                <span class="badge bg-dark">其他</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-check-circle text-success" style="font-size: 5rem;"></i>
+                        <h4 class="mt-3 mb-1">没有未匹配文件</h4>
+                        <p class="text-muted">所有文件都已成功匹配到产品记录</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 说明卡片 -->
+        <div class="card bg-info-subtle border-info fade-in-up">
+            <div class="card-body">
+                <h5 class="card-title text-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    说明
+                </h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-arrow-right-short me-1"></i>
+                        未匹配文件是指在media目录中存在，但在数据库中找不到对应产品记录的文件。
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-arrow-right-short me-1"></i>
+                        请检查这些文件的命名是否与数据库中的产品图号一致。
+                    </li>
+                    <li>
+                        <i class="bi bi-arrow-right-short me-1"></i>
+                        您可以通过"同步文件"功能重新匹配文件，或修改文件名使其与产品图号匹配。
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

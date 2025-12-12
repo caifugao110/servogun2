@@ -50,6 +50,7 @@ urlpatterns = [
     path('management/export/', views.export_data, name='export_data'),
     path('management/import_csv/', views.import_csv, name='import_csv'),
     path('management/sync_files/', views.sync_files, name='sync_files'),
+    path('management/unmatched_files/', views.view_unmatched_files, name='view_unmatched_files'),
     path('management/analytics/', views.analytics_view, name='analytics'),
     path('management/user_feedback/', views.manage_user_feedback, name='manage_user_feedback'),
     path('management/user_feedback/update_status/<int:feedback_id>/', views.update_feedback_status, name='update_feedback_status'),
