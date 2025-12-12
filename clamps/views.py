@@ -1454,7 +1454,7 @@ def import_csv(request):
         
         messages.success(
             request,
-            f'CSV 导入成功！新增 {created_count} 条，更新 {updated_count} 条。耗时 {total_time:.2f} 秒。'
+            f'{csv_file.name} 导入成功！新增 {created_count} 条，更新 {updated_count} 条。耗时 {total_time:.2f} 秒。'
         )
         return redirect('clamps:import_csv')
 
