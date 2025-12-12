@@ -119,15 +119,37 @@
                             -->
 							
                             {% if product.pdf_file_path %}
-                                <div class="mt-3">
-                                    <button class="btn btn-outline-secondary w-100" 
-                                         onclick="previewPDF('{% url 'clamps:protected_media' path=product.pdf_file_path %}', '{{ product.drawing_no_1|escapejs }}')"
-                                         >
-                                        <i class="bi bi-file-earmark-pdf me-2"></i>
-                                        预览 PDF 文件
-                                    </button>
-                                </div>
+                                <button class="btn btn-outline-purple w-100" 
+                                         onclick="previewPDF('{% url 'clamps:protected_media' path=product.pdf_file_path %}', '{{ product.drawing_no_1|escapejs }}')">
+                                    <i class="bi bi-file-earmark-pdf me-2"></i>
+                                    预览 PDF 文件
+                                </button>
                             {% endif %}
+                            <style>
+                                /* 亮色模式下的预览PDF按钮样式 - 与其他按钮保持一致 */
+                                .btn-outline-purple {
+                                    border-color: #6f42c1 !important;
+                                    color: #6f42c1 !important;
+                                    background-color: transparent !important;
+                                }
+                                
+                                .btn-outline-purple:hover {
+                                    background-color: rgba(111, 66, 193, 0.1) !important;
+                                    border-color: #5b21b6 !important;
+                                }
+                                
+                                /* 暗色模式下的预览PDF按钮样式 - 与其他按钮保持一致 */
+                                [data-bs-theme="dark"] .btn-outline-purple {
+                                    border-color: #d8b4fe !important;
+                                    color: #d8b4fe !important;
+                                    background-color: transparent !important;
+                                }
+                                
+                                [data-bs-theme="dark"] .btn-outline-purple:hover {
+                                    background-color: rgba(216, 180, 254, 0.1) !important;
+                                    border-color: #c084fc !important;
+                                }
+                            </style>
                         </div>
                     </div>
                 </div>
