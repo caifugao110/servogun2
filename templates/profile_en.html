@@ -55,12 +55,7 @@
                                             {% for log in download_logs %} 
                                                 <tr>
                                                     <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
-                                                    <td>
-                                                        {% if log.action_type == 'batch_download' %}
-                                                            <span class="badge bg-info me-1">Batch Download</span>
-                                                        {% endif %}
-                                                        {{ log.product_id }}
-                                                    </td>
+                                                    <td>{{ log.product_id }}</td>
                                                     <td>{{ log.file_type }}</td>
                                                     <td>{{ log.file_size }}</td>
                                                     <td>

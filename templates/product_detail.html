@@ -78,7 +78,7 @@
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             {% if product.pdf_file_path %}
-                                <a href="{% url 'clamps:download_file' product.id 'pdf' %}" 
+                                <a href="{% url 'clamps:download_file' product.id 'pdf' %}?filename_format=with_type" 
                                    class="btn btn-outline-primary download-btn">
                                     <i class="bi bi-file-earmark-arrow-down me-2"></i>
                                     下载 PDF 文件
@@ -91,7 +91,7 @@
                             {% endif %}
                             
                             {% if product.step_file_path %}
-                                <a href="{% url 'clamps:download_file' product.id 'step' %}" 
+                                <a href="{% url 'clamps:download_file' product.id 'step' %}?filename_format=with_type" 
                                    class="btn btn-outline-success download-btn">
                                     <i class="bi bi-file-earmark-arrow-down me-2"></i>
                                     下载 STEP 文件
@@ -100,6 +100,15 @@
                                 <button class="btn btn-outline-secondary" disabled>
                                     <i class="bi bi-file-earmark-x me-2"></i>
                                     STEP 文件不可用
+                                </button>
+                            {% endif %}
+                            
+                            <!-- 批量下载PDF和STEP按钮 -->
+                            {% if product.pdf_file_path and product.step_file_path %}
+                                <button class="btn btn-outline-dark w-100 batch-download-btn" 
+                                        onclick="batchDownloadSingleProduct({{ product.id }}, '{{ product.drawing_no_1|escapejs }}')">
+                                    <i class="bi bi-file-earmark-zip me-2"></i>
+                                    下载 PDF 和 STEP
                                 </button>
                             {% endif %}
                             
@@ -131,11 +140,14 @@
                                     border-color: #6f42c1 !important;
                                     color: #6f42c1 !important;
                                     background-color: transparent !important;
+                                    transition: all 0.2s ease !important;
                                 }
                                 
-                                .btn-outline-purple:hover {
-                                    background-color: rgba(111, 66, 193, 0.1) !important;
+                                .btn-outline-purple:hover,
+                                .btn-outline-purple:focus {
+                                    background-color: #6f42c1 !important;
                                     border-color: #5b21b6 !important;
+                                    color: white !important;
                                 }
                                 
                                 /* 暗色模式下的预览PDF按钮样式 - 与其他按钮保持一致 */
@@ -145,9 +157,40 @@
                                     background-color: transparent !important;
                                 }
                                 
-                                [data-bs-theme="dark"] .btn-outline-purple:hover {
-                                    background-color: rgba(216, 180, 254, 0.1) !important;
+                                [data-bs-theme="dark"] .btn-outline-purple:hover,
+                                [data-bs-theme="dark"] .btn-outline-purple:focus {
+                                    background-color: #d8b4fe !important;
                                     border-color: #c084fc !important;
+                                    color: white !important;
+                                }
+                                
+                                /* 批量下载按钮样式 - 确保在亮色和暗色模式下都正常显示 */
+                                .batch-download-btn {
+                                    border-color: #212529 !important;
+                                    color: #212529 !important;
+                                    background-color: transparent !important;
+                                    transition: all 0.2s ease !important;
+                                }
+                                
+                                .batch-download-btn:hover,
+                                .batch-download-btn:focus {
+                                    background-color: #212529 !important;
+                                    border-color: #000 !important;
+                                    color: white !important;
+                                }
+                                
+                                /* 暗色模式下的批量下载按钮样式 */
+                                [data-bs-theme="dark"] .batch-download-btn {
+                                    border-color: #adb5bd !important;
+                                    color: #adb5bd !important;
+                                    background-color: transparent !important;
+                                }
+                                
+                                [data-bs-theme="dark"] .batch-download-btn:hover,
+                                [data-bs-theme="dark"] .batch-download-btn:focus {
+                                    background-color: #adb5bd !important;
+                                    border-color: #fff !important;
+                                    color: white !important;
                                 }
                             </style>
                         </div>
@@ -704,6 +747,77 @@ function addWatermark(context, width, height) {
             });
     }
     
+    // 检查批量下载文件大小
+    function checkBatchFileSize(productIds, fileType, callback) {
+        const formData = new FormData();
+        formData.append('product_ids', productIds.join(','));
+        formData.append('file_type', fileType);
+        // 添加语言标识，用于后端判断语言
+        formData.append('language', window.location.pathname.includes('en') || window.location.pathname.includes('_en') ? 'en' : 'zh');
+        
+        // 添加CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            formData.append('csrfmiddlewaretoken', csrfToken.value);
+        }
+        
+        fetch('{% url "clamps:check_batch_file_size" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.can_download) {
+                callback();
+            } else {
+                showToast(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('检查批量文件大小时出错:', error);
+            showToast('检查文件大小时出错，请稍后重试', 'danger');
+        });
+    }
+    
+    // 单个产品批量下载PDF和STEP
+    function batchDownloadSingleProduct(productId, productName) {
+        // 检查文件大小和存在性
+        checkBatchFileSize([productId], 'both', () => {
+            // 检查通过，显示下载提示
+            showDownloadWarning(() => {
+                // 3秒后开始下载 - 使用POST请求
+                setTimeout(() => {
+                    // 创建表单并提交
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `{% url 'clamps:batch_download' 'both' %}`;
+                    
+                    // 添加CSRF token
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = csrfToken.value;
+                        form.appendChild(csrfInput);
+                    }
+                    
+                    // 添加产品ID参数
+                    const productIdsInput = document.createElement('input');
+                    productIdsInput.type = 'hidden';
+                    productIdsInput.name = 'product_ids';
+                    productIdsInput.value = productId;
+                    form.appendChild(productIdsInput);
+                    
+                    // 提交表单
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
+                }, 3000);
+            });
+        });
+    }
+    
     function showDownloadWarning(callback) {
         const warningHtml = `
             <div class="modal fade" id="downloadWarningModal" tabindex="-1" aria-hidden="true">
@@ -797,5 +911,8 @@ function addWatermark(context, width, height) {
         }, 5000);
     }
 </script>
+
+<!-- 添加CSRF token到页面中供JavaScript使用 -->
+{% csrf_token %}
 {% endblock %}
 

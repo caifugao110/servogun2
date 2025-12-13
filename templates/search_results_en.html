@@ -45,15 +45,74 @@
         border-radius: 0.25rem; /* Keep button rounded corners */
         margin-right: 0.5rem; /* Spacing between buttons */
         min-width: 80px; /* Ensure consistent button width */
+        /* Adjust colors for blue background to improve contrast */
+        border-color: white; /* Use white for border */
+        color: white; /* Use white for text */
+        background-color: transparent; /* Transparent background */
+        font-weight: 500; /* Slightly bold text */
+        transition: all 0.2s ease; /* Add transition effect */
+    }
+    /* Hover effect for unselected state */
+    .file-type-buttons .btn:not(.active):hover {
+        background-color: rgba(255, 255, 255, 0.2); /* White semi-transparent background */
+        border-color: white; /* Keep white border */
+        color: white; /* Keep white text */
     }
     .file-type-buttons .btn:last-child {
         margin-right: 0; /* Last button doesn't need right margin */
     }
+    /* Add right margin to button group to ensure spacing with batch download button */
+    .file-type-buttons {
+        margin-right: 1.5rem !important; /* Spacing with batch download button */
+    }
     /* Active state button style */
     .file-type-buttons .btn.active {
-        background-color: var(--bs-primary); /* Use theme primary color as background */
-        border-color: var(--bs-primary); /* Border color consistent with background */
-        color: white; /* Text color white */
+        background-color: white; /* Use white as background */
+        border-color: white; /* White border */
+        color: var(--bs-primary); /* Primary color text */
+        font-weight: 600; /* Bold text for active state */
+    }
+    
+    /* Batch download button style - Simplified design for clear visibility */
+    .batch-download-btn {
+        /* Basic styles */
+        padding: 0.25rem 0.75rem; /* Appropriate padding */
+        margin-left: 0 !important; /* Reset left margin to avoid conflict with button group right margin */
+        font-size: 0.875rem; /* Font size */
+        font-weight: 600; /* Bold text */
+        line-height: 1.5; /* Line height */
+        border-radius: 0.25rem; /* Rounded corners */
+        text-align: center; /* Centered text */
+        text-decoration: none; /* No underline */
+        vertical-align: middle; /* Vertically centered */
+        cursor: pointer; /* Pointer cursor */
+        user-select: none; /* Prevent text selection */
+        border: 1px solid transparent; /* Border */
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Transition effects */
+        
+        /* Custom colors - Ensure visibility on blue background */
+        background-color: white; /* White background */
+        color: #0d6efd; /* Blue text */
+        border-color: white; /* White border */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Slight shadow */
+    }
+    
+    /* Batch download button disabled state */
+    .batch-download-btn:disabled {
+        background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background */
+        color: rgba(0, 0, 0, 0.5); /* Gray text */
+        border-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white border */
+        box-shadow: none; /* Remove shadow */
+        cursor: not-allowed; /* Disabled cursor */
+        opacity: 0.65; /* Reduce opacity */
+    }
+    
+    /* Batch download button hover effect */
+    .batch-download-btn:not(:disabled):hover {
+        background-color: #f8f9fa; /* Light gray background */
+        color: #0d6efd; /* Blue text */
+        border-color: white; /* White border */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
     }
 
     /* Image preview style */
@@ -118,7 +177,7 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm active" data-file-type="step">STEP Only</button>
                                 <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">PDF and STEP</button>
                             </div>
-                            <button id="batchDownloadBtn" class="btn btn-primary btn-sm" disabled>
+                            <button id="batchDownloadBtn" class="batch-download-btn" disabled>
                                 <i class="bi bi-download me-2"></i>Batch Download Selected
                             </button>
                         </div>
@@ -203,7 +262,7 @@
                                                     <i class="bi bi-eye me-1"></i>Details
                                                 </a>
                                                 {% if product.pdf_file_path %}
-                                                    <a href="{% url 'clamps:download_file' product.id 'pdf' %}" 
+                                                    <a href="{% url 'clamps:download_file' product.id 'pdf' %}?filename_format=with_type" 
                                                        class="btn btn-outline-success btn-sm delayed-download"
                                                        data-product-id="{{ product.id }}" 
                                                        data-file-type="pdf">
@@ -212,7 +271,7 @@
                                                 {% endif %}
 
                                                 {% if product.step_file_path %}
-                                                    <a href="{% url 'clamps:download_file' product.id 'step' %}" 
+                                                    <a href="{% url 'clamps:download_file' product.id 'step' %}?filename_format=with_type" 
                                                        class="btn btn-outline-info btn-sm delayed-download"
                                                        data-product-id="{{ product.id }}" 
                                                        data-file-type="step">

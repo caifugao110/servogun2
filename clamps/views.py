@@ -594,13 +594,17 @@ def download_file(request, product_id, file_type):
             # 获取原始文件名（不带路径）
             original_filename = os.path.basename(file_path)
             
+            # 将原始文件名的后缀改为大写
+            base_name, ext = os.path.splitext(original_filename)
+            original_filename_with_uppercase_ext = f"{base_name}{ext.upper()}"
+            
             # 对于bmp, pdf, step文件，进行压缩
             if file_type in ['bmp', 'pdf', 'step']:
                 # 创建一个临时的内存文件来存储zip内容
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
                     # 获取不带后缀的文件名，并去除特定后缀
-                    base_name, ext = os.path.splitext(original_filename)
+                    base_name, ext = os.path.splitext(original_filename_with_uppercase_ext)
                     if file_type == 'pdf' and base_name.lower().endswith(('_pdf','_pdf')):
                         base_name = base_name
                     elif file_type == 'step' and base_name.endswith('_STEP'):
@@ -611,21 +615,31 @@ def download_file(request, product_id, file_type):
                         # 如果没有特定后缀，则直接使用原始文件名
                         pass
                     
-                    # 将文件添加到zip中，使用处理后的文件名
+                    # 将文件添加到zip中，使用处理后的文件名（后缀大写）
                     if file_type == 'pdf':
                         # 生成水印文本
                         watermark_text = f"For Reference Only[OBARA] {request.user.username} {timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M:%S')}"
                         temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{original_filename}")
                         add_watermark_to_pdf(full_file_path, temp_watermarked_pdf_path, watermark_text)
-                        zf.write(temp_watermarked_pdf_path, arcname=original_filename)
+                        zf.write(temp_watermarked_pdf_path, arcname=original_filename_with_uppercase_ext)
                         os.remove(temp_watermarked_pdf_path) # 清理临时文件
                     else:
-                        zf.write(full_file_path, arcname=original_filename)
+                        zf.write(full_file_path, arcname=original_filename_with_uppercase_ext)
 
                 
                 zip_buffer.seek(0)
                 response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-                response['Content-Disposition'] = f'attachment; filename="{base_name}.zip"'
+                
+                # 根据filename_format参数决定下载文件名格式
+                filename_format = request.GET.get('filename_format', '')
+                if filename_format == 'with_type':
+                    # 使用 "文件名_文件类型" 格式，文件类型大写
+                    zip_filename = f"{base_name}_{file_type.upper()}.zip"
+                else:
+                    # 默认格式
+                    zip_filename = f"{base_name}.zip"
+                
+                response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
                 
                 # 记录下载日志
                 log_entry = Log(user=request.user, action_type='download', ip_address=request.META.get('REMOTE_ADDR'),
@@ -697,14 +711,22 @@ def batch_download_view(request, file_type):
                     if product.pdf_file_path:
                         full_pdf_path = os.path.join(settings.MEDIA_ROOT, str(product.pdf_file_path).replace('media/', ''))
                         if os.path.exists(full_pdf_path):
-                            files_to_add.append((full_pdf_path, os.path.basename(str(product.pdf_file_path))))
+                            # 将PDF文件名的后缀改为大写
+                            pdf_arcname = os.path.basename(str(product.pdf_file_path))
+                            pdf_base, pdf_ext = os.path.splitext(pdf_arcname)
+                            pdf_arcname_with_uppercase_ext = f"{pdf_base}{pdf_ext.upper()}"
+                            files_to_add.append((full_pdf_path, pdf_arcname_with_uppercase_ext))
                             total_size_mb += os.path.getsize(full_pdf_path) / (1024 * 1024)
                         else:
                             messages.warning(request, f"文件 {os.path.basename(str(product.pdf_file_path))} 不存在或已损坏，已跳过。")
                     if product.step_file_path:
                         full_step_path = os.path.join(settings.MEDIA_ROOT, str(product.step_file_path).replace('media/', ''))
                         if os.path.exists(full_step_path):
-                            files_to_add.append((full_step_path, os.path.basename(str(product.step_file_path))))
+                            # 将STEP文件名的后缀改为大写
+                            step_arcname = os.path.basename(str(product.step_file_path))
+                            step_base, step_ext = os.path.splitext(step_arcname)
+                            step_arcname_with_uppercase_ext = f"{step_base}{step_ext.upper()}"
+                            files_to_add.append((full_step_path, step_arcname_with_uppercase_ext))
                             total_size_mb += os.path.getsize(full_step_path) / (1024 * 1024)
                         else:
                             messages.warning(request, f"文件 {os.path.basename(str(product.step_file_path))} 不存在或已损坏，已跳过。")
@@ -722,7 +744,11 @@ def batch_download_view(request, file_type):
                     if os.path.exists(full_file_path):
                         file_size_bytes = os.path.getsize(full_file_path)
                         total_size_mb += file_size_bytes / (1024 * 1024)
-                        files_to_add.append((full_file_path, os.path.basename(file_path)))
+                        # 将文件名的后缀改为大写
+                        arcname = os.path.basename(file_path)
+                        base, ext = os.path.splitext(arcname)
+                        arcname_with_uppercase_ext = f"{base}{ext.upper()}"
+                        files_to_add.append((full_file_path, arcname_with_uppercase_ext))
                     else:
                         messages.warning(request, f"文件 {os.path.basename(file_path)} 不存在或已损坏，已跳过。")
                 else:
@@ -744,8 +770,19 @@ def batch_download_view(request, file_type):
 
         zip_buffer.seek(0)
         response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-        ts = timezone.localtime(timezone.now()).strftime('%Y%m%d_%H%M%S')
-        response['Content-Disposition'] = f'attachment; filename="batch_download_{file_type}_{ts}.zip"'
+        
+        # 检查是否是单个产品批量下载
+        is_single_product = len(product_ids) == 1
+        if is_single_product:
+            # 单个产品批量下载，使用产品图号作为压缩包名称
+            product = products.first()
+            zip_filename = f"{product.drawing_no_1}.zip"
+        else:
+            # 多个产品批量下载，使用带时间戳的批量下载名称
+            ts = timezone.localtime(timezone.now()).strftime('%Y%m%d_%H%M%S')
+            zip_filename = f"batch_download_{file_type}_{ts}.zip"
+        
+        response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
         
         log_entry = Log(user=request.user, action_type='batch_download', ip_address=request.META.get('REMOTE_ADDR'),
                         user_agent=request.META.get('HTTP_USER_AGENT', ''),
@@ -2577,8 +2614,15 @@ def profile(request):
         # 解析日志详情
         if 'Product IDs:' in log.details:
             log_data['product_id'] = '多个产品'
-            log_data['file_type'] = '- 多个文件'
-            log_data['file_size'] = '未知'
+            log_data['file_type'] = '多个文件'
+            # 解析批量下载的文件大小
+            if 'Total Size:' in log.details:
+                details = log.details
+                total_size_part = [part for part in details.split(',') if 'Total Size:' in part][0]
+                total_size = total_size_part.split(':')[1].strip()
+            else:
+                total_size = '未知'
+            log_data['file_size'] = total_size
         elif 'File Type:' in log.details:
             # 解析单个下载记录
             details = log.details
@@ -2695,8 +2739,15 @@ def profile_en(request):
         # 解析日志详情
         if 'Product IDs:' in log.details:
             log_data['product_id'] = 'Multiple Products'
-            log_data['file_type'] = '- Multiple Files'
-            log_data['file_size'] = 'Unknown'
+            log_data['file_type'] = 'Multiple Files'
+            # 解析批量下载的文件大小
+            if 'Total Size:' in log.details:
+                details = log.details
+                total_size_part = [part for part in details.split(',') if 'Total Size:' in part][0]
+                total_size = total_size_part.split(':')[1].strip()
+            else:
+                total_size = 'Unknown'
+            log_data['file_size'] = total_size
         elif 'File Type:' in log.details:
             # 解析单个下载记录
             details = log.details

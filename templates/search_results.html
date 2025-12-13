@@ -45,15 +45,74 @@
         border-radius: 0.25rem; /* 保持按钮圆角 */
         margin-right: 0.5rem; /* 按钮之间间隔 */
         min-width: 80px; /* 确保按钮宽度一致 */
+        /* 针对蓝色背景调整颜色，提高对比度 */
+        border-color: white; /* 使用白色作为边框颜色 */
+        color: white; /* 使用白色作为文字颜色 */
+        background-color: transparent; /* 透明背景 */
+        font-weight: 500; /* 略微加粗文字 */
+        transition: all 0.2s ease; /* 添加过渡效果 */
+    }
+    /* 未选中状态的悬浮效果 */
+    .file-type-buttons .btn:not(.active):hover {
+        background-color: rgba(255, 255, 255, 0.2); /* 白色半透明背景 */
+        border-color: white; /* 保持白色边框 */
+        color: white; /* 保持白色文字 */
     }
     .file-type-buttons .btn:last-child {
         margin-right: 0; /* 最后一个按钮不需要右边距 */
     }
+    /* 为按钮组添加右边距，确保与批量下载按钮的间距 */
+    .file-type-buttons {
+        margin-right: 1.5rem !important; /* 与批量下载按钮的间距 */
+    }
     /* 激活状态的按钮样式 */
     .file-type-buttons .btn.active {
-        background-color: var(--bs-primary); /* 使用主题主色作为背景 */
-        border-color: var(--bs-primary); /* 边框颜色与背景一致 */
-        color: white; /* 文字颜色为白色 */
+        background-color: white; /* 使用白色作为背景 */
+        border-color: white; /* 白色边框 */
+        color: var(--bs-primary); /* 主色文字 */
+        font-weight: 600; /* 加粗激活状态文字 */
+    }
+    
+    /* 批量下载按钮样式 - 简化设计，确保清晰可见 */
+    .batch-download-btn {
+        /* 基础样式 */
+        padding: 0.25rem 0.75rem; /* 适当的内边距 */
+        margin-left: 0 !important; /* 重置左边距，避免与按钮组的右边距冲突 */
+        font-size: 0.875rem; /* 字体大小 */
+        font-weight: 600; /* 加粗文字 */
+        line-height: 1.5; /* 行高 */
+        border-radius: 0.25rem; /* 圆角 */
+        text-align: center; /* 文字居中 */
+        text-decoration: none; /* 无下划线 */
+        vertical-align: middle; /* 垂直居中 */
+        cursor: pointer; /* 鼠标指针 */
+        user-select: none; /* 禁止选中文本 */
+        border: 1px solid transparent; /* 边框 */
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* 过渡效果 */
+        
+        /* 自定义颜色 - 确保在蓝色背景上清晰可见 */
+        background-color: white; /* 白色背景 */
+        color: #0d6efd; /* 蓝色文字 */
+        border-color: white; /* 白色边框 */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* 轻微阴影 */
+    }
+    
+    /* 批量下载按钮禁用状态 */
+    .batch-download-btn:disabled {
+        background-color: rgba(255, 255, 255, 0.5); /* 半透明白色背景 */
+        color: rgba(0, 0, 0, 0.5); /* 灰色文字 */
+        border-color: rgba(255, 255, 255, 0.5); /* 半透明白色边框 */
+        box-shadow: none; /* 移除阴影 */
+        cursor: not-allowed; /* 禁用光标 */
+        opacity: 0.65; /* 降低不透明度 */
+    }
+    
+    /* 批量下载按钮悬浮效果 */
+    .batch-download-btn:not(:disabled):hover {
+        background-color: #f8f9fa; /* 浅灰色背景 */
+        color: #0d6efd; /* 蓝色文字 */
+        border-color: white; /* 白色边框 */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 增强阴影 */
     }
 
     /* 图片预览样式 */
@@ -118,7 +177,7 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm active" data-file-type="step">仅STEP</button>
                                 <button type="button" class="btn btn-outline-primary btn-sm" data-file-type="both">PDF和STEP</button>
                             </div>
-                            <button id="batchDownloadBtn" class="btn btn-primary btn-sm" disabled>
+                            <button id="batchDownloadBtn" class="batch-download-btn" disabled>
                                 <i class="bi bi-download me-2"></i>批量下载选中项
                             </button>
                         </div>
@@ -212,7 +271,7 @@
                                                     <i class="bi bi-eye me-1"></i>详情
                                                 </a>
                                                 {% if product.pdf_file_path %}
-                                                    <a href="{% url 'clamps:download_file' product.id 'pdf' %}" 
+                                                    <a href="{% url 'clamps:download_file' product.id 'pdf' %}?filename_format=with_type" 
                                                        class="btn btn-outline-success btn-sm delayed-download"
                                                        data-product-id="{{ product.id }}" 
                                                        data-file-type="pdf">
@@ -221,7 +280,7 @@
                                                 {% endif %}
 
                                                 {% if product.step_file_path %}
-                                                    <a href="{% url 'clamps:download_file' product.id 'step' %}" 
+                                                    <a href="{% url 'clamps:download_file' product.id 'step' %}?filename_format=with_type" 
                                                        class="btn btn-outline-info btn-sm delayed-download"
                                                        data-product-id="{{ product.id }}" 
                                                        data-file-type="step">
