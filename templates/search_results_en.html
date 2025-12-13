@@ -139,6 +139,112 @@
         border-radius: 0.375rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
+    /* Reset all th styles to ensure proper header display */
+    .table th {
+        background-color: rgba(0, 123, 255, 0.8) !important;
+        color: white !important;
+        font-weight: 600 !important;
+        padding: 0.75rem !important;
+        text-align: center !important;
+        border: none !important;
+    }
+    
+    /* Sortable column header in light mode - match regular headers */
+    .table th.highlight-field {
+        background-image: none !important;
+        background: none !important;
+        background-color: rgba(0, 123, 255, 0.8) !important;
+        color: white !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Sortable column header hover effect */
+    .table th.highlight-field:hover {
+        background-color: rgba(0, 123, 255, 1) !important;
+        color: white !important;
+    }
+    
+    /* All header styles in dark mode - ensure consistent color */
+    [data-bs-theme="dark"] .table th {
+        background-image: none !important;
+        background: none !important;
+        background-color: rgba(0, 123, 255, 0.3) !important;
+        color: white !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Sortable column header in dark mode - match regular headers */
+    [data-bs-theme="dark"] .table th.highlight-field {
+        background-color: rgba(0, 123, 255, 0.3) !important;
+    }
+    
+    /* Dark mode sortable column header hover effect */
+    [data-bs-theme="dark"] .table th.highlight-field:hover {
+        background-color: rgba(0, 123, 255, 0.5) !important;
+        color: white !important;
+    }
+    
+    /* Active sortable column header styles */
+    .table th.highlight-field,
+    .table th.highlight-field a {
+        color: white !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Sort link styles - ensure covers entire th area */
+    .table th.highlight-field a {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 0.75rem 0.5rem !important;
+        margin: -0.75rem -0.5rem !important;
+        text-decoration: none !important;
+        color: white !important;
+        background: transparent !important;
+        text-align: center !important;
+    }
+    
+    /* Sort icon styles */
+    .table th.highlight-field i {
+        font-size: 0.85rem !important;
+        opacity: 0.8 !important;
+        color: white !important;
+    }
+    
+    /* Ensure highlight-field styles in td are not affected */
+    .table td .highlight-field {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .table td .highlight-field:hover {
+        background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+        transform: scale(1.05);
+        border-color: var(--accent-color);
+    }
+    
+    /* Dark mode table content styles - improve readability */
+    [data-bs-theme="dark"] .table td .highlight-field {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    [data-bs-theme="dark"] .table td .highlight-field:hover {
+        background: linear-gradient(135deg, #34495e, #4a637b);
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
 </style>
 {% endblock %}
 
@@ -190,11 +296,46 @@
                                 <tr>
                                     <th width="5%"><input type="checkbox" id="selectAll"></th>
                                     <th width="5%">No.</th>
-                                    <th width="15%" class="highlight-field">Drawing No.1(o)</th>
-                                    <th width="12%" class="highlight-field">Throat Depth</th>
-                                    <th width="12%" class="highlight-field">Throat Width</th>
-                                    <th width="12%" class="highlight-field">Transformer</th>
-                                    <th width="12%" class="highlight-field">Pressure</th>
+                                    <th width="15%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=drawing_no_1&sort_dir={% if sort_by == 'drawing_no_1' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            Drawing No.1(o)
+                                            {% if sort_by == 'drawing_no_1' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th width="12%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=throat_depth&sort_dir={% if sort_by == 'throat_depth' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            Throat Depth
+                                            {% if sort_by == 'throat_depth' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th width="12%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=throat_width&sort_dir={% if sort_by == 'throat_width' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            Throat Width
+                                            {% if sort_by == 'throat_width' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th width="12%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=transformer&sort_dir={% if sort_by == 'transformer' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            Transformer
+                                            {% if sort_by == 'transformer' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th width="12%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=clamping_force&sort_dir={% if sort_by == 'clamping_force' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            Pressure
+                                            {% if sort_by == 'clamping_force' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
                                     <th width="15%">Preview</th>
                                     <th width="12%">Actions</th>
                                 </tr>

@@ -312,7 +312,18 @@ def search_results_base(request, template_name):
     water_circuit = query_params.get('water_circuit')
     gearbox_type = query_params.get('gearbox_type')
 
-    queryset = Product.objects.all().order_by('drawing_no_1')
+    # 获取排序参数
+    sort_by = request.GET.get('sort_by', 'drawing_no_1')
+    # 获取排序方向，默认为升序
+    sort_dir = request.GET.get('sort_dir', 'asc')
+    
+    # 构建排序表达式
+    if sort_dir == 'desc':
+        order_by = f'-{sort_by}'
+    else:
+        order_by = sort_by
+    
+    queryset = Product.objects.all().order_by(order_by)
 
     if category_id:
         try:
@@ -423,11 +434,14 @@ def search_results_base(request, template_name):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # 添加排序相关上下文
     context = {
         'page_obj': page_obj,
         'total_results': paginator.count,
         'query_params': query_params,
-        'is_style_search': request.session.get('from_style_search', False)
+        'is_style_search': request.session.get('from_style_search', False),
+        'sort_by': sort_by,
+        'sort_dir': sort_dir
     }
     return render(request, template_name, context)
 

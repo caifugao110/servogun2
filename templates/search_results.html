@@ -139,6 +139,112 @@
         border-radius: 0.375rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
+    /* 重置所有th样式，确保表头显示正常 */
+    .table th {
+        background-color: rgba(0, 123, 255, 0.8) !important;
+        color: white !important;
+        font-weight: 600 !important;
+        padding: 0.75rem !important;
+        text-align: center !important;
+        border: none !important;
+    }
+    
+    /* 白色模式下未选中的排序列头 - 与普通表头保持一致 */
+    .table th.highlight-field {
+        background-image: none !important;
+        background: none !important;
+        background-color: rgba(0, 123, 255, 0.8) !important;
+        color: white !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* 排序列头悬停效果 */
+    .table th.highlight-field:hover {
+        background-color: rgba(0, 123, 255, 1) !important;
+        color: white !important;
+    }
+    
+    /* 暗色模式下所有表头样式 - 确保颜色一致 */
+    [data-bs-theme="dark"] .table th {
+        background-image: none !important;
+        background: none !important;
+        background-color: rgba(0, 123, 255, 0.3) !important;
+        color: white !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* 暗色模式下排序列头样式 - 与普通表头保持一致 */
+    [data-bs-theme="dark"] .table th.highlight-field {
+        background-color: rgba(0, 123, 255, 0.3) !important;
+    }
+    
+    /* 暗色模式下排序列头悬停效果 */
+    [data-bs-theme="dark"] .table th.highlight-field:hover {
+        background-color: rgba(0, 123, 255, 0.5) !important;
+        color: white !important;
+    }
+    
+    /* 选中状态下的排序列头样式 */
+    .table th.highlight-field,
+    .table th.highlight-field a {
+        color: white !important;
+        font-weight: 600 !important;
+    }
+    
+    /* 排序链接样式 - 确保覆盖整个th区域 */
+    .table th.highlight-field a {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 0.75rem 0.5rem !important;
+        margin: -0.75rem -0.5rem !important;
+        text-decoration: none !important;
+        color: white !important;
+        background: transparent !important;
+        text-align: center !important;
+    }
+    
+    /* 排序图标样式 */
+    .table th.highlight-field i {
+        font-size: 0.85rem !important;
+        opacity: 0.8 !important;
+        color: white !important;
+    }
+    
+    /* 确保td中的highlight-field样式不受影响 */
+    .table td .highlight-field {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .table td .highlight-field:hover {
+        background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+        transform: scale(1.05);
+        border-color: var(--accent-color);
+    }
+    
+    /* 暗色模式下表格内容样式 - 提高可读性 */
+    [data-bs-theme="dark"] .table td .highlight-field {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    [data-bs-theme="dark"] .table td .highlight-field:hover {
+        background: linear-gradient(135deg, #34495e, #4a637b);
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
 </style>
 {% endblock %}
 
@@ -193,11 +299,46 @@
 							<!--
                                     <th width="20%" class="highlight-field">描述</th>
 							-->
-                                    <th width="15%" class="highlight-field">图号1(o)</th>
-                                    <th width="12%" class="highlight-field">喉深</th>
-                                    <th width="12%" class="highlight-field">喉宽</th>
-                                    <th width="12%" class="highlight-field">变压器</th>
-                                    <th width="12%" class="highlight-field">加压力</th>
+                                    <th width="15%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=drawing_no_1&sort_dir={% if sort_by == 'drawing_no_1' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            图号1(o)
+                                            {% if sort_by == 'drawing_no_1' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th width="12%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=throat_depth&sort_dir={% if sort_by == 'throat_depth' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            喉深
+                                            {% if sort_by == 'throat_depth' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th width="12%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=throat_width&sort_dir={% if sort_by == 'throat_width' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            喉宽
+                                            {% if sort_by == 'throat_width' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th width="12%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=transformer&sort_dir={% if sort_by == 'transformer' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            变压器
+                                            {% if sort_by == 'transformer' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
+                                    <th width="12%" class="highlight-field">
+                                        <a href="?{% for key, value in query_params.items %}{% if key != 'sort_by' and key != 'sort_dir' and key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}sort_by=clamping_force&sort_dir={% if sort_by == 'clamping_force' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-reset">
+                                            加压力
+                                            {% if sort_by == 'clamping_force' %}
+                                                {% if sort_dir == 'asc' %}<i class="bi bi-arrow-up ms-1"></i>{% else %}<i class="bi bi-arrow-down ms-1"></i>{% endif %}
+                                            {% endif %}
+                                        </a>
+                                    </th>
                                     <th width="15%">预览图</th>
                                     <th width="12%">操作</th>
                                 </tr>
