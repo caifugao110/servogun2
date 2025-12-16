@@ -151,37 +151,36 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            # 检查密码是否过期 - 优化：使用select_related减少数据库查询
-            try:
-                user_profile = UserProfile.objects.get(user=user)
-            except UserProfile.DoesNotExist:
-                # 仅在必要时创建，减少数据库操作
-                user_profile = UserProfile.objects.create(user=user)
+            # 优化：使用get_or_create减少数据库查询次数
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
             
             if user_profile.is_password_expired():
                 logout(request)
                 messages.error(request, '您的账户密码已过期，请联系您的营业经理进行账号续期。')
                 return render(request, 'login.html')
 
-            # 记录登录日志 - 异步处理或延迟保存
-            Log.objects.create(
-                user=user, 
-                action_type='login', 
-                ip_address=request.META.get('REMOTE_ADDR'), 
-                user_agent=request.META.get('HTTP_USER_AGENT', '')
-            )
-            
-            # 检查是否有已处理但未通知的反馈
-            processed_feedback = UserFeedback.objects.filter(
-                user=user,
-                status__in=['已处理', '无法确认', '无效反馈'],
-                is_notified=False
-            )
-            
-            if processed_feedback.exists():
-                messages.success(request, '您提交的反馈已被管理员处理，感谢您的反馈。')
-                # 标记所有已处理的反馈为已通知
-                processed_feedback.update(is_notified=True)
+            # 优化：使用事务批量处理数据库操作
+            from django.db import transaction
+            with transaction.atomic():
+                # 记录登录日志
+                Log.objects.create(
+                    user=user, 
+                    action_type='login', 
+                    ip_address=request.META.get('REMOTE_ADDR'), 
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+                
+                # 检查是否有已处理但未通知的反馈
+                processed_feedback = UserFeedback.objects.filter(
+                    user=user,
+                    status__in=['已处理', '无法确认', '无效反馈'],
+                    is_notified=False
+                )
+                
+                if processed_feedback.exists():
+                    messages.success(request, '您提交的反馈已被管理员处理，感谢您的反馈。')
+                    # 标记所有已处理的反馈为已通知
+                    processed_feedback.update(is_notified=True)
             
             # 处理next参数，重定向到原来请求的页面
             next_url = request.GET.get('next', request.POST.get('next', 'clamps:home'))
@@ -199,37 +198,36 @@ def user_login_en(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            # 检查密码是否过期 - 优化：使用select_related减少数据库查询
-            try:
-                user_profile = UserProfile.objects.get(user=user)
-            except UserProfile.DoesNotExist:
-                # 仅在必要时创建，减少数据库操作
-                user_profile = UserProfile.objects.create(user=user)
+            # 优化：使用get_or_create减少数据库查询次数
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
             
             if user_profile.is_password_expired():
                 logout(request)
                 messages.error(request, 'Your account password has expired. Please contact your sales manager for account renewal.')
                 return render(request, 'login_en.html')
             
-            # 记录登录日志 - 异步处理或延迟保存
-            Log.objects.create(
-                user=user, 
-                action_type='login', 
-                ip_address=request.META.get('REMOTE_ADDR'), 
-                user_agent=request.META.get('HTTP_USER_AGENT', '')
-            )
-            
-            # 检查是否有已处理但未通知的反馈
-            processed_feedback = UserFeedback.objects.filter(
-                user=user,
-                status__in=['已处理', '无法确认', '无效反馈'],
-                is_notified=False
-            )
-            
-            if processed_feedback.exists():
-                messages.success(request, 'Your feedback has been processed by the administrator. Thank you for your feedback.')
-                # 标记所有已处理的反馈为已通知
-                processed_feedback.update(is_notified=True)
+            # 优化：使用事务批量处理数据库操作
+            from django.db import transaction
+            with transaction.atomic():
+                # 记录登录日志
+                Log.objects.create(
+                    user=user, 
+                    action_type='login', 
+                    ip_address=request.META.get('REMOTE_ADDR'), 
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+                
+                # 检查是否有已处理但未通知的反馈
+                processed_feedback = UserFeedback.objects.filter(
+                    user=user,
+                    status__in=['已处理', '无法确认', '无效反馈'],
+                    is_notified=False
+                )
+                
+                if processed_feedback.exists():
+                    messages.success(request, 'Your feedback has been processed by the administrator. Thank you for your feedback.')
+                    # 标记所有已处理的反馈为已通知
+                    processed_feedback.update(is_notified=True)
             
             # 处理next参数，重定向到原来请求的页面
             next_url = request.GET.get('next', request.POST.get('next', 'clamps:home_en'))

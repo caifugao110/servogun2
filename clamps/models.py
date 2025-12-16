@@ -473,7 +473,6 @@ class UserProfile(models.Model):
         if self.password_validity_days == 0:  # 永久有效
             return False
         
-        from datetime import timedelta
         expiry_date = self.password_last_changed + timedelta(days=self.password_validity_days)
         return timezone.now() > expiry_date
 
