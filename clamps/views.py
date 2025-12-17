@@ -41,16 +41,19 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, F
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 
 # 本地应用
 from .models import Product
+from .pdf_utils import PDFProcessor
 
 
 
@@ -132,7 +135,6 @@ def is_superuser(user):
 
 def is_staff_or_superuser(user):
     return user.is_staff or user.is_superuser
-
 
 
 def home(request):
@@ -257,11 +259,12 @@ def user_logout(request):
     messages.info(request, '您已成功登出。')
     return redirect('clamps:login')
 
+
 @login_required
 def user_logout_en(request):
     Log.objects.create(
         user=request.user, 
-        action_type='logout_en', 
+        action_type='logout', 
         ip_address=request.META.get('REMOTE_ADDR'), 
         user_agent=request.META.get('HTTP_USER_AGENT', '')
     )
@@ -275,6 +278,7 @@ def user_logout_en(request):
 def search(request):
     categories = Category.objects.all()
     return render(request, 'search.html', {'categories': categories})
+
 
 @login_required
 def search_en(request):
@@ -290,6 +294,17 @@ def search_results_base(request, template_name):
     description = query_params.get('description')
     drawing_no_1 = query_params.get('drawing_no_1')
     sub_category_type = query_params.get('sub_category_type')
+    
+    # 创建缓存键，基于搜索参数
+    cache_key = f'search_results_{hash(frozenset(query_params.items()))}'
+    
+    # 检查缓存是否存在
+    cached_context = cache.get(cache_key)
+    if cached_context:
+        # 如果是英文页面，确保使用正确的模板
+        if template_name == 'search_results_en.html':
+            return render(request, template_name, cached_context)
+        return render(request, template_name, cached_context)
 
     # 数值范围参数
     stroke = query_params.get('stroke')
@@ -321,29 +336,31 @@ def search_results_base(request, template_name):
     else:
         order_by = sort_by
     
-    queryset = Product.objects.all().order_by(order_by)
-
+    # 使用Q对象构建复杂查询条件，减少数据库查询次数
+    q_objects = Q()
+    
     if category_id:
         try:
             # 尝试将category_id转换为整数，使用category_id过滤
-            queryset = queryset.filter(category_id=int(category_id))
+            q_objects &= Q(category_id=int(category_id))
         except ValueError:
             # 如果转换失败，说明是分类名称，使用category__name过滤
-            queryset = queryset.filter(category__name=category_id)
+            q_objects &= Q(category__name=category_id)
     if description:
-        queryset = queryset.filter(description__icontains=description)
+        q_objects &= Q(description__icontains=description)
     if drawing_no_1:
         drawing_numbers = [num.strip() for num in drawing_no_1.split(',') if num.strip()]
         if drawing_numbers:
             drawing_q = Q()
             for num in drawing_numbers:
                 drawing_q |= Q(drawing_no_1__icontains=num)
-            queryset = queryset.filter(drawing_q)
+            q_objects &= drawing_q
     if sub_category_type:
-        queryset = queryset.filter(sub_category_type__icontains=sub_category_type)
+        q_objects &= Q(sub_category_type__icontains=sub_category_type)
 
-    # 处理数值范围查询
-    def parse_range_query(field_name, query_string, current_queryset):
+    # 处理数值范围查询 - 返回Q对象
+    def build_range_q(field_name, query_string):
+        range_q = Q()
         if query_string:
             query_string = query_string.strip()
             if '~' in query_string:
@@ -351,61 +368,59 @@ def search_results_base(request, template_name):
                 min_val_str = parts[0].strip()
                 max_val_str = parts[1].strip()
 
-                q_objects = Q()
                 if min_val_str:
                     try:
                         min_val = float(min_val_str)
-                        q_objects &= Q(**{f'{field_name}__gte': min_val})
+                        range_q &= Q(**{f'{field_name}__gte': min_val})
                     except ValueError:
                         pass # 忽略无效的最小值
                 if max_val_str:
                     try:
                         max_val = float(max_val_str)
-                        q_objects &= Q(**{f'{field_name}__lte': max_val})
+                        range_q &= Q(**{f'{field_name}__lte': max_val})
                     except ValueError:
                         pass # 忽略无效的最大值
-                
-                if q_objects: # 确保有有效的查询条件才应用
-                    current_queryset = current_queryset.filter(q_objects)
             else:
                 # 精确匹配
                 try:
                     exact_val = float(query_string)
-                    current_queryset = current_queryset.filter(**{field_name: exact_val})
+                    range_q &= Q(**{field_name: exact_val})
                 except ValueError:
                     pass # 忽略无效的精确值
-        return current_queryset
+        return range_q
 
-    queryset = parse_range_query('stroke', stroke, queryset)
-    queryset = parse_range_query('clamping_force', clamping_force, queryset)
-    queryset = parse_range_query('weight', weight, queryset)
-    queryset = parse_range_query('throat_depth', throat_depth, queryset)
-    queryset = parse_range_query('throat_width', throat_width, queryset)
+    # 添加数值范围查询
+    q_objects &= build_range_q('stroke', stroke)
+    q_objects &= build_range_q('clamping_force', clamping_force)
+    q_objects &= build_range_q('weight', weight)
+    q_objects &= build_range_q('throat_depth', throat_depth)
+    q_objects &= build_range_q('throat_width', throat_width)
 
+    # 添加其他字段查询
     if transformer:
-        queryset = queryset.filter(transformer__icontains=transformer)
+        q_objects &= Q(transformer__icontains=transformer)
     if electrode_arm_end:
-        queryset = queryset.filter(electrode_arm_end__icontains=electrode_arm_end)
+        q_objects &= Q(electrode_arm_end__icontains=electrode_arm_end)
     if motor_manufacturer:
-        queryset = queryset.filter(motor_manufacturer__icontains=motor_manufacturer)
+        q_objects &= Q(motor_manufacturer__icontains=motor_manufacturer)
     if has_balance:
         # 处理中英文版本的has_balance值
         if has_balance in ['有', 'Yes']:
-            queryset = queryset.filter(has_balance=True)
+            q_objects &= Q(has_balance=True)
         elif has_balance in ['无', 'No']:
-            queryset = queryset.filter(has_balance=False)
+            q_objects &= Q(has_balance=False)
     
     if gearbox_type:
-        queryset = queryset.filter(gearbox_type__icontains=gearbox_type)
+        q_objects &= Q(gearbox_type__icontains=gearbox_type)
     
     if transformer_placement:
-        queryset = queryset.filter(transformer_placement__icontains=transformer_placement)
+        q_objects &= Q(transformer_placement__icontains=transformer_placement)
     if flange_pcd:
-        queryset = queryset.filter(flange_pcd__icontains=flange_pcd)
+        q_objects &= Q(flange_pcd__icontains=flange_pcd)
     if bracket_direction:
-        queryset = queryset.filter(bracket_direction__icontains=bracket_direction)
+        q_objects &= Q(bracket_direction__icontains=bracket_direction)
     if water_circuit:
-        queryset = queryset.filter(water_circuit__icontains=water_circuit)
+        q_objects &= Q(water_circuit__icontains=water_circuit)
 
     # 处理动态字段 (确保 transformer_placement 等已处理的字段不再被动态处理)
     dynamic_fields = {}
@@ -421,7 +436,10 @@ def search_results_base(request, template_name):
         # 确保字段存在于Product模型中
         if hasattr(Product, field_name):
             # 动态字段支持范围搜索
-            queryset = parse_range_query(field_name, field_value, queryset)
+            q_objects &= build_range_q(field_name, field_value)
+    
+    # 执行一次性查询
+    queryset = Product.objects.filter(q_objects).order_by(order_by)
 
     # 记录搜索日志
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
@@ -441,11 +459,16 @@ def search_results_base(request, template_name):
         'sort_by': sort_by,
         'sort_dir': sort_dir
     }
+    
+    # 缓存搜索结果10分钟
+    cache.set(cache_key, context, timeout=600)
+    
     return render(request, template_name, context)
 
 @login_required
 def search_results(request):
     return search_results_base(request, 'search_results.html')
+
 
 @login_required
 def search_results_en(request):
@@ -455,7 +478,19 @@ def search_results_en(request):
 
 @login_required
 def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    # 缓存键，包含产品ID和语言
+    cache_key = f'product_detail_{product_id}_zh'
+    
+    # 尝试从缓存获取
+    cached_product = cache.get(cache_key)
+    if cached_product:
+        product = cached_product
+    else:
+        # 从数据库获取
+        product = get_object_or_404(Product, id=product_id)
+        # 缓存1小时
+        cache.set(cache_key, product, timeout=3600)
+    
     # 记录查看详情日志
     log_entry = Log(user=request.user, action_type='view', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id}')
@@ -465,9 +500,23 @@ def product_detail(request, product_id):
         'is_style_search': request.session.get('from_style_search', False)
     })
 
+
 @login_required
 def product_detail_en(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    # 缓存键，包含产品ID和语言
+    cache_key = f'product_detail_{product_id}_en'
+    
+    # 尝试从缓存获取
+    cached_product = cache.get(cache_key)
+    if cached_product:
+        product = cached_product
+    else:
+        # 从数据库获取
+        product = get_object_or_404(Product, id=product_id)
+        # 缓存1小时
+        cache.set(cache_key, product, timeout=3600)
+    
+    # 记录查看详情日志
     log_entry = Log(user=request.user, action_type='view', ip_address=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id} (English)')
     log_entry.save()
@@ -475,6 +524,8 @@ def product_detail_en(request, product_id):
         'product': product,
         'is_style_search': request.session.get('from_style_search', False)
     })
+
+
 
 
 
@@ -612,35 +663,53 @@ def download_file(request, product_id, file_type):
             
             # 对于bmp, pdf, step文件，进行压缩
             if file_type in ['bmp', 'pdf', 'step']:
-                # 创建一个临时的内存文件来存储zip内容
-                zip_buffer = io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-                    # 获取不带后缀的文件名，并去除特定后缀
-                    base_name, ext = os.path.splitext(original_filename_with_uppercase_ext)
-                    if file_type == 'pdf' and base_name.lower().endswith(('_pdf','_pdf')):
-                        base_name = base_name
-                    elif file_type == 'step' and base_name.endswith('_STEP'):
-                        base_name = base_name
-                    elif file_type == 'bmp' and base_name.endswith('_BMP'):
-                        base_name = base_name
-                    else:
-                        # 如果没有特定后缀，则直接使用原始文件名
-                        pass
-                    
-                    # 将文件添加到zip中，使用处理后的文件名（后缀大写）
-                    if file_type == 'pdf':
-                        # 生成水印文本
-                        watermark_text = f"For Reference Only[OBARA] {request.user.username} {timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M:%S')}"
-                        temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{original_filename}")
-                        add_watermark_to_pdf(full_file_path, temp_watermarked_pdf_path, watermark_text)
-                        zf.write(temp_watermarked_pdf_path, arcname=original_filename_with_uppercase_ext)
-                        os.remove(temp_watermarked_pdf_path) # 清理临时文件
-                    else:
-                        zf.write(full_file_path, arcname=original_filename_with_uppercase_ext)
-
+                # 获取不带后缀的文件名，并去除特定后缀
+                base_name, ext = os.path.splitext(original_filename_with_uppercase_ext)
+                if file_type == 'pdf' and base_name.lower().endswith(('_pdf','_pdf')):
+                    base_name = base_name
+                elif file_type == 'step' and base_name.endswith('_STEP'):
+                    base_name = base_name
+                elif file_type == 'bmp' and base_name.endswith('_BMP'):
+                    base_name = base_name
+                else:
+                    # 如果没有特定后缀，则直接使用原始文件名
+                    pass
                 
-                zip_buffer.seek(0)
-                response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+                # 生成水印文本
+                temp_watermarked_pdf_path = None
+                if file_type == 'pdf':
+                    # 生成水印文本
+                    watermark_text = f"For Reference Only[OBARA] {request.user.username} {timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M:%S')}"
+                    temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{original_filename}")
+                    PDFProcessor.add_watermark(full_file_path, temp_watermarked_pdf_path, watermark_text)
+                    final_file_path = temp_watermarked_pdf_path
+                else:
+                    final_file_path = full_file_path
+                    
+                # 定义流式生成zip文件的函数
+                def zip_generator():
+                    # 使用BytesIO作为zip文件的容器
+                    zip_buffer = io.BytesIO()
+                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+                        # 添加文件到zip
+                        zf.write(final_file_path, arcname=original_filename_with_uppercase_ext)
+                    
+                    # 清理临时文件
+                    if temp_watermarked_pdf_path and os.path.exists(temp_watermarked_pdf_path):
+                        os.remove(temp_watermarked_pdf_path)
+                    
+                    # 重置buffer位置
+                    zip_buffer.seek(0)
+                    
+                    # 分块读取并返回数据
+                    while True:
+                        chunk = zip_buffer.read(8192)  # 8KB chunks
+                        if not chunk:
+                            break
+                        yield chunk
+                
+                # 创建StreamingHttpResponse
+                response = StreamingHttpResponse(zip_generator(), content_type='application/zip')
                 
                 # 根据filename_format参数决定下载文件名格式
                 filename_format = request.GET.get('filename_format', '')
@@ -773,7 +842,7 @@ def batch_download_view(request, file_type):
                 if file_type == 'pdf' or (file_type == 'both' and arcname.lower().endswith('.pdf')):
                     watermark_text = f"For Reference Only[OBARA] {request.user.username} {timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M:%S')}"
                     temp_watermarked_pdf_path = os.path.join(tempfile.gettempdir(), f"watermarked_{arcname}")
-                    add_watermark_to_pdf(full_path, temp_watermarked_pdf_path, watermark_text)
+                    PDFProcessor.add_watermark(full_path, temp_watermarked_pdf_path, watermark_text)
                     zf.write(temp_watermarked_pdf_path, arcname=arcname)
                     os.remove(temp_watermarked_pdf_path)
                 else:

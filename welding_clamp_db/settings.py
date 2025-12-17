@@ -143,6 +143,10 @@ LOGGING = {
             'format': '{levelname} {message}',
             'style': '{',
         },
+        'json': {
+            '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
+        },
     },
     'handlers': {
         'file': {
@@ -151,6 +155,12 @@ LOGGING = {
             'filename': BASE_DIR / 'logs' / 'django.log',
             'formatter': 'verbose',
         },
+        'json_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.json.log',
+            'formatter': 'json',
+        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -158,17 +168,17 @@ LOGGING = {
         },
     },
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': ['console', 'file', 'json_file'],
         'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'json_file'],
             'level': 'INFO',
             'propagate': False,
         },
         'clamps': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'json_file'],
             'level': 'DEBUG',
             'propagate': False,
         },

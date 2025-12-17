@@ -18,25 +18,28 @@ from . import views, media_views
 app_name = 'clamps'
 
 urlpatterns = [
-    # 中文页面URL
     path('', views.home, name='home'),
+    path('_en/', views.home_en, name='home_en'),
+    
     path('login/', views.user_login, name='login'),
+    path('login_en/', views.user_login_en, name='login_en'),
+    
     path('logout/', views.user_logout, name='logout'),
+    path('logout_en/', views.user_logout_en, name='logout_en'),
+    
     path('search/', views.search, name='search'),
+    path('search_en/', views.search_en, name='search_en'),
+    
     path('search/results/', views.search_results, name='search_results'),
+    path('search/results_en/', views.search_results_en, name='search_results_en'),
+    
     re_path(r'^product/(?P<product_id>\d+)/$', views.product_detail, name='product_detail'),
+    re_path(r'^product/(?P<product_id>\d+)_en/$', views.product_detail_en, name='product_detail_en'),
+    
     re_path(r'^download/(?P<product_id>\d+)/(?P<file_type>\w+)/$', views.download_file, name='download_file'),
     path('batch_download/<str:file_type>/', views.batch_download_view, name='batch_download'),
     re_path(r'^check_file_size/(?P<product_id>\d+)/(?P<file_type>\w+)/$', views.check_file_size, name='check_file_size'),
     path('check_batch_file_size/', views.check_batch_file_size, name='check_batch_file_size'),
-
-    # 英文页面URL
-    path('_en/', views.home_en, name='home_en'),
-    path('login_en/', views.user_login_en, name='login_en'),
-    path('logout_en/', views.user_logout_en, name='logout_en'),
-    path('search_en/', views.search_en, name='search_en'),
-    path('search/results_en/', views.search_results_en, name='search_results_en'),
-    re_path(r'^product/(?P<product_id>\d+)_en/$', views.product_detail_en, name='product_detail_en'),
 
     # 管理功能
     path('management/', views.management_dashboard, name='management_dashboard'),
