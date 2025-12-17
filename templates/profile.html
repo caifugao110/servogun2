@@ -142,17 +142,35 @@
                                                     <td>{{ feedback.created_at|date:"Y-m-d H:i:s" }}</td>
                                                     <td>
                                                         <span class="badge bg-primary">
-                                                            {{ feedback.category }}
+                                                            {% if feedback.category == 'Data Error' %}
+                                                                数据错误
+                                                            {% elif feedback.category == 'Data Loss' %}
+                                                                数据丢失
+                                                            {% elif feedback.category == 'System Error' %}
+                                                                系统错误
+                                                            {% elif feedback.category == 'Feature Optimization' %}
+                                                                功能优化
+                                                            {% elif feedback.category == 'Other Suggestions' %}
+                                                                其他建议
+                                                            {% else %}
+                                                                {{ feedback.category }}
+                                                            {% endif %}
                                                         </span>
                                                     </td>
                                                     <td>
                                                         {{ feedback.content }}
                                                     </td>
                                                     <td>
-                                                        {% if feedback.status == '已处理' %}
-                                                            <span class="badge bg-success">{{ feedback.status }}</span>
-                                                        {% elif feedback.status == '待确认' or feedback.status == '已确认待处理' %}
-                                                            <span class="badge bg-warning">{{ feedback.status }}</span>
+                                                        {% if feedback.status == '已处理' or feedback.status == 'Processed' %}
+                                                            <span class="badge bg-success">已处理</span>
+                                                        {% elif feedback.status == '待确认' or feedback.status == 'Pending Confirmation' %}
+                                                            <span class="badge bg-warning">待确认</span>
+                                                        {% elif feedback.status == '已确认待处理' or feedback.status == 'Confirmed Pending Processing' %}
+                                                            <span class="badge bg-warning">已确认待处理</span>
+                                                        {% elif feedback.status == '无法确认' or feedback.status == 'Unable to Confirm' %}
+                                                            <span class="badge bg-secondary">无法确认</span>
+                                                        {% elif feedback.status == '无效反馈' or feedback.status == 'Invalid Feedback' %}
+                                                            <span class="badge bg-secondary">无效反馈</span>
                                                         {% else %}
                                                             <span class="badge bg-secondary">{{ feedback.status }}</span>
                                                         {% endif %}

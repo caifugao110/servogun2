@@ -142,7 +142,19 @@
                                                     <td>{{ feedback.created_at|date:"Y-m-d H:i:s" }}</td>
                                                     <td>
                                                         <span class="badge bg-primary">
-                                                            {{ feedback.category }}
+                                                            {% if feedback.category == '数据错误' %}
+                                                                Data Error
+                                                            {% elif feedback.category == '数据丢失' %}
+                                                                Data Loss
+                                                            {% elif feedback.category == '系统错误' %}
+                                                                System Error
+                                                            {% elif feedback.category == '功能优化' %}
+                                                                Feature Optimization
+                                                            {% elif feedback.category == '其他建议' %}
+                                                                Other Suggestions
+                                                            {% else %}
+                                                                {{ feedback.category }}
+                                                            {% endif %}
                                                         </span>
                                                     </td>
                                                     <td>
@@ -157,8 +169,10 @@
                                                             <span class="badge bg-warning">Confirmed Pending Processing</span>
                                                         {% elif feedback.status == '无法确认' %}
                                                             <span class="badge bg-secondary">Unable to Confirm</span>
-                                                        {% else %}
+                                                        {% elif feedback.status == '无效反馈' %}
                                                             <span class="badge bg-secondary">Invalid Feedback</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">{{ feedback.status }}</span>
                                                         {% endif %}
                                                     </td>
                                                 </tr>
