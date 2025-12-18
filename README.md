@@ -133,7 +133,7 @@ welding_clamp_db/
 │   │   └── cmaps/              # PDF映射文件
 │   ├── pdf/
 │   └── webfonts/
-├── media/                      # 用户上传的媒体文件目录（STEP, PDF等）
+├── media/                      # 存放产品相关文件目录（STEP, PDF等）
 ├── logs/                       # 系统日志文件目录
 ├── db.sqlite3                  # 默认 SQLite 数据库文件
 ├── .gitignore                  # Git忽略文件
