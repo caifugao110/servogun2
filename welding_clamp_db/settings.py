@@ -157,6 +157,11 @@ LOGGING = {
             '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
         },
+        'django.server': {
+            '()': 'django.utils.log.ServerFormatter',
+            'format': '[{server_time}] {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'file': {
@@ -172,17 +177,22 @@ LOGGING = {
             'formatter': 'json',
         },
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'django.server',
         },
     },
     'root': {
-        'handlers': ['console', 'file', 'json_file'],
+        'handlers': ['file', 'json_file'],
         'level': 'INFO',
     },
     'loggers': {
         'django': {
+            'handlers': ['file', 'json_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.server': {
             'handlers': ['console', 'file', 'json_file'],
             'level': 'INFO',
             'propagate': False,
