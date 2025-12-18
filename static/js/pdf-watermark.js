@@ -202,4 +202,3 @@ function showToast(message, type = 'info') {
     const toast = new bootstrap.Toast(toastContainer.lastElementChild);
     toast.show();
 }
-

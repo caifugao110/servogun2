@@ -1249,7 +1249,7 @@ def view_logs(request):
     
     if action_type:
         if action_type == 'download':
-            logs = logs.filter(action_type__in=['download', 'batch_download'])
+            logs = logs.filter(action_type__in=['download', 'batch_download', 'single_download'])
         else:
             logs = logs.filter(action_type=action_type)
     if username:
@@ -1269,7 +1269,7 @@ def view_logs(request):
     total_count = logs.count()
     login_count = logs.filter(action_type='login').count()
     search_count = logs.filter(action_type='search').count()
-    download_count = logs.filter(action_type__in=['download', 'batch_download']).count()
+    download_count = logs.filter(action_type__in=['download', 'batch_download', 'single_download']).count()
     view_count = logs.filter(action_type='view').count()
     
     paginator = Paginator(logs, 20)  # 每页显示20条日志
@@ -2341,7 +2341,7 @@ def download_analytics_api(request):
     # 基础查询：下载相关的日志
     # 只查询有用户关联的日志（排除匿名用户）
     base_query = Log.objects.filter(
-        action_type__in=['download', 'batch_download'],
+        action_type__in=['download', 'batch_download', 'single_download'],
         timestamp__gte=start_date,
         timestamp__lte=end_date,
         user__isnull=False  # 排除匿名用户
@@ -2450,8 +2450,8 @@ def parse_download_size(details):
 def parse_file_count(details):
     """从日志详情中解析下载文件数量"""
     try:
-        # 单个文件下载
-        if 'File Type:' in details and 'Product IDs:' not in details:
+        # 单个文件下载 - 检查Product ID: 或旧格式
+        if ('File Type:' in details and 'Product IDs:' not in details) or 'Product ID:' in details:
             return 1
         # 批量下载
         elif 'Product IDs:' in details:
@@ -2535,7 +2535,7 @@ def get_user_profile_data(request):
         today = timezone.localtime(timezone.now()).date()
         today_logs = Log.objects.filter(
             user=request.user,
-            action_type__in=['download', 'batch_download'],
+            action_type__in=['download', 'batch_download', 'single_download'],
             timestamp__date=today
         )
         
@@ -2544,10 +2544,10 @@ def get_user_profile_data(request):
         daily_download_size_mb = 0.0
         
         for log in today_logs:
-            # 解析下载大小
-            size_match = re.search(r'File Size: ([\d.]+) MB', log.details)
+            # 解析下载大小，支持File Size: 和 Total Size: 格式
+            size_match = re.search(r'(File Size|Total Size): ([\d.]+) MB', log.details)
             if size_match:
-                daily_download_size_mb += float(size_match.group(1))
+                daily_download_size_mb += float(size_match.group(2))
             
             # 解析下载文件数量
             if 'batch_download' in log.action_type:
@@ -2673,7 +2673,7 @@ def profile(request):
     # 获取用户的下载记录，最近100条
     download_logs = Log.objects.filter(
         user=request.user,
-        action_type__in=['download', 'batch_download']
+        action_type__in=['download', 'batch_download', 'single_download']
     ).order_by('-timestamp')[:100]
     
     # 获取用户访问过的仕样链接记录
@@ -2726,9 +2726,9 @@ def profile(request):
                 file_type = '未知'
             log_data['file_type'] = file_type
             
-            # 提取文件大小
-            if 'File Size:' in details:
-                file_size_part = [part for part in details.split(',') if 'File Size:' in part][0]
+            # 提取文件大小，支持Total Size: 格式
+            if 'Total Size:' in details:
+                file_size_part = [part for part in details.split(',') if 'Total Size:' in part][0]
                 file_size = file_size_part.split(':')[1].strip()
             else:
                 file_size = '未知'
@@ -2798,7 +2798,7 @@ def profile_en(request):
     # 获取用户的下载记录，最近100条
     download_logs = Log.objects.filter(
         user=request.user,
-        action_type__in=['download', 'batch_download']
+        action_type__in=['download', 'batch_download', 'single_download']
     ).order_by('-timestamp')[:100]
     
     # 获取用户访问过的仕样链接记录
@@ -2851,9 +2851,9 @@ def profile_en(request):
                 file_type = 'Unknown'
             log_data['file_type'] = file_type
             
-            # 提取文件大小
-            if 'File Size:' in details:
-                file_size_part = [part for part in details.split(',') if 'File Size:' in part][0]
+            # 提取文件大小，支持Total Size: 格式
+            if 'Total Size:' in details:
+                file_size_part = [part for part in details.split(',') if 'Total Size:' in part][0]
                 file_size = file_size_part.split(':')[1].strip()
             else:
                 file_size = 'Unknown'

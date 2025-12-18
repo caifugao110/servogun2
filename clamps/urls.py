@@ -14,6 +14,12 @@
 
 from django.urls import path, re_path
 from . import views, media_views
+from .async_compression_views import (
+    start_compression,
+    check_compression_progress,
+    download_compressed_file,
+    check_batch_file_size
+)
 
 app_name = 'clamps'
 
@@ -39,7 +45,12 @@ urlpatterns = [
     re_path(r'^download/(?P<product_id>\d+)/(?P<file_type>\w+)/$', views.download_file, name='download_file'),
     path('batch_download/<str:file_type>/', views.batch_download_view, name='batch_download'),
     re_path(r'^check_file_size/(?P<product_id>\d+)/(?P<file_type>\w+)/$', views.check_file_size, name='check_file_size'),
-    path('check_batch_file_size/', views.check_batch_file_size, name='check_batch_file_size'),
+    # 异步压缩相关接口
+    path('async_compression/start/', start_compression, name='start_compression'),
+    path('async_compression/progress/', check_compression_progress, name='check_compression_progress'),
+    path('async_compression/download/', download_compressed_file, name='download_compressed_file'),
+    # 更新批量文件大小检查接口以使用异步压缩视图
+    path('check_batch_file_size/', check_batch_file_size, name='check_batch_file_size'),
 
     # 管理功能
     path('management/', views.management_dashboard, name='management_dashboard'),

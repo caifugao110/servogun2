@@ -31,8 +31,15 @@ def protected_media(request, path):
     if not os.path.abspath(file_path).startswith(os.path.abspath(settings.MEDIA_ROOT)):
         raise Http404("File not found")
 
+    # 获取原始文件名并将后缀改为大写
+    original_filename = os.path.basename(file_path)
+    # 分离文件名和后缀
+    filename, ext = os.path.splitext(original_filename)
+    # 将后缀转换为大写
+    uppercase_filename = f"{filename}{ext.upper()}"
+    
     response = FileResponse(open(file_path, 'rb'))
-    response['Content-Disposition'] = f'inline; filename="{os.path.basename(file_path)}"'
+    response['Content-Disposition'] = f'inline; filename="{uppercase_filename}"'
     return response
 
 

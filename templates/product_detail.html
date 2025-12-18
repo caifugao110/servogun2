@@ -51,8 +51,9 @@
                     </div>
                     <div class="card-body text-center">
                         {% if product.bmp_file_path %}
-                         <img src="{% url 'clamps:protected_media' path=product.bmp_file_path %}" 
-                                 class="img-fluid rounded shadow" 
+                         <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2RlZTJlNiIvPjx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkrDqMO85a+85aSnPC90ZXh0Pjwvc3ZnPg==" 
+                                 data-src="{% url 'clamps:protected_media' path=product.bmp_file_path %}" 
+                                 class="img-fluid rounded shadow lazyload" 
                                  onclick="previewImage('{% url 'clamps:protected_media' path=product.bmp_file_path %}', '{{ product.drawing_no_1|escapejs }}')"
                                  style="cursor: pointer; max-height: 300px;"
                                  alt="产品图片"
@@ -78,11 +79,11 @@
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             {% if product.pdf_file_path %}
-                                <a href="{% url 'clamps:download_file' product.id 'pdf' %}?filename_format=with_type" 
+                                <button onclick="downloadSingleFile({{ product.id }}, 'pdf', '{{ product.drawing_no_1|escapejs }}')" 
                                    class="btn btn-outline-primary download-btn">
                                     <i class="bi bi-file-earmark-arrow-down me-2"></i>
                                     下载 PDF 文件
-                                </a>
+                                </button>
                             {% else %}
                                 <button class="btn btn-outline-secondary" disabled>
                                     <i class="bi bi-file-earmark-x me-2"></i>
@@ -91,11 +92,11 @@
                             {% endif %}
                             
                             {% if product.step_file_path %}
-                                <a href="{% url 'clamps:download_file' product.id 'step' %}?filename_format=with_type" 
+                                <button onclick="downloadSingleFile({{ product.id }}, 'step', '{{ product.drawing_no_1|escapejs }}')" 
                                    class="btn btn-outline-success download-btn">
                                     <i class="bi bi-file-earmark-arrow-down me-2"></i>
                                     下载 STEP 文件
-                                </a>
+                                </button>
                             {% else %}
                                 <button class="btn btn-outline-secondary" disabled>
                                     <i class="bi bi-file-earmark-x me-2"></i>
@@ -507,11 +508,63 @@
 {% block extra_js %}
 {# 引用本地目录的PDF.js #}
 <script src="{% static 'js/pdf.js' %}"></script>
+<script src="{% static 'js/compression_async.js' %}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    // Lazy loading implementation
+    document.addEventListener("DOMContentLoaded", function() {
+        // Intersection Observer for lazy loading
+        const lazyLoadImages = document.querySelectorAll(".lazyload");
+        
+        if ("IntersectionObserver" in window) {
+            let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        let lazyImage = entry.target;
+                        lazyImage.src = lazyImage.dataset.src;
+                        lazyImage.classList.remove("lazyload");
+                        lazyImageObserver.unobserve(lazyImage);
+                    }
+                });
+            });
+            
+            lazyLoadImages.forEach(function(lazyImage) {
+                lazyImageObserver.observe(lazyImage);
+            });
+        } else {
+            // Fallback for browsers that don't support Intersection Observer
+            let lazyLoadThrottleTimeout;
+            
+            function lazyLoad() {
+                if (lazyLoadThrottleTimeout) {
+                    clearTimeout(lazyLoadThrottleTimeout);
+                }
+                
+                lazyLoadThrottleTimeout = setTimeout(function() {
+                    const scrollTop = window.pageYOffset;
+                    
+                    lazyLoadImages.forEach(function(img) {
+                        if (img.offsetTop < (window.innerHeight + scrollTop)) {
+                            img.src = img.dataset.src;
+                            img.classList.remove("lazyload");
+                        }
+                    });
+                    
+                    if (lazyLoadImages.length === 0) {
+                        document.removeEventListener("scroll", lazyLoad);
+                        window.removeEventListener("resize", lazyLoad);
+                        window.removeEventListener("orientationChange", lazyLoad);
+                    }
+                }, 20);
+            }
+            
+            document.addEventListener("scroll", lazyLoad);
+            window.addEventListener("resize", lazyLoad);
+            window.addEventListener("orientationChange", lazyLoad);
+        }
+        
         // 检查本地PDF.js是否加载成功
         if (typeof pdfjsLib === 'undefined') {
-            console.error('本地PDF.js加载失败，请检查/static/js/pdf.min.js是否存在');
+            console.error('本地PDF.js加载失败，请检查/static/js/pdf.js是否存在');
             alert('PDF预览组件加载失败，请联系管理员');
         }
     });
@@ -705,28 +758,27 @@ function addWatermark(context, width, height) {
 		}
     }
 	
-    // 下载文件时显示提示 - 增加文件大小检查
-    document.querySelectorAll('.download-btn').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const downloadUrl = this.href;
-            // 从URL中提取product_id和file_type
-            const urlParts = downloadUrl.split('/');
-            const productId = urlParts[urlParts.length - 3];
-            const fileType = urlParts[urlParts.length - 2];
-            
-            // 先检查文件大小
-            checkFileSize(productId, fileType, () => {
-                // 检查通过，显示下载提示
-                showDownloadWarning(() => {
-                    // 3秒后开始下载
-                    setTimeout(() => {
-                        window.location.href = downloadUrl;
-                    }, 3000);
-                });
-            });
-        });
-    });
+    // 单个文件下载按钮现在使用onclick处理程序与异步逻辑
+    // 不需要在download-btn类上添加额外的事件监听器
+    
+    // 从cookie获取CSRF令牌
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // 此cookie字符串是否以我们想要的名称开头？
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    window.CSRF_TOKEN = csrftoken;
     
     // 检查单个文件大小
     function checkFileSize(productId, fileType, callback) {
@@ -749,21 +801,21 @@ function addWatermark(context, width, height) {
     
     // 检查批量下载文件大小
     function checkBatchFileSize(productIds, fileType, callback) {
-        const formData = new FormData();
-        formData.append('product_ids', productIds.join(','));
-        formData.append('file_type', fileType);
-        // 添加语言标识，用于后端判断语言
-        formData.append('language', window.location.pathname.includes('en') || window.location.pathname.includes('_en') ? 'en' : 'zh');
-        
-        // 添加CSRF token
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (csrfToken) {
-            formData.append('csrfmiddlewaretoken', csrfToken.value);
-        }
+        // 使用JSON格式发送请求，配合CSRF header
+        const requestData = {
+            product_ids: productIds.join(','),
+            file_type: fileType,
+            language: window.location.pathname.includes('en') || window.location.pathname.includes('_en') ? 'en' : 'zh'
+        };
         
         fetch('{% url "clamps:check_batch_file_size" %}', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.CSRF_TOKEN
+            },
+            body: JSON.stringify(requestData),
+            credentials: 'same-origin'
         })
         .then(response => response.json())
         .then(data => {
@@ -779,46 +831,132 @@ function addWatermark(context, width, height) {
         });
     }
     
-    // 单个产品批量下载PDF和STEP
+    // 单个产品批量下载PDF和STEP - 异步压缩优化
     function batchDownloadSingleProduct(productId, productName) {
         // 检查文件大小和存在性
         checkBatchFileSize([productId], 'both', () => {
-            // 检查通过，显示下载提示
-            showDownloadWarning(() => {
-                // 3秒后开始下载 - 使用POST请求
-                setTimeout(() => {
-                    // 创建表单并提交
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `{% url 'clamps:batch_download' 'both' %}`;
-                    
-                    // 添加CSRF token
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-                    if (csrfToken) {
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = 'csrfmiddlewaretoken';
-                        csrfInput.value = csrfToken.value;
-                        form.appendChild(csrfInput);
+            // 检查通过，开始压缩并显示下载提示
+            startCompression([productId], 'both', (taskId) => {
+                let isDownloadReady = false;
+                
+                // 显示带有进度的下载提示
+                showDownloadWarning(() => {
+                    // 只有当压缩完成时才允许下载
+                    if (isDownloadReady) {
+                        // 下载完成的文件
+                        downloadCompressedFile(taskId, 'both');
+                    } else {
+                        // 如果还没准备好，显示提示
+                        showToast('压缩任务尚未完成，请稍候再试', 'warning');
                     }
-                    
-                    // 添加产品ID参数
-                    const productIdsInput = document.createElement('input');
-                    productIdsInput.type = 'hidden';
-                    productIdsInput.name = 'product_ids';
-                    productIdsInput.value = productId;
-                    form.appendChild(productIdsInput);
-                    
-                    // 提交表单
-                    document.body.appendChild(form);
-                    form.submit();
-                    document.body.removeChild(form);
-                }, 3000);
+                }, taskId);
+                
+                // 开始检查进度
+                let progressCheckInterval = setInterval(() => {
+                    checkCompressionProgress(taskId, (progress, isCompleted) => {
+                        updateCompressionProgress(progress);
+                        
+                        // 更新下载按钮状态
+                        const directDownloadBtn = document.getElementById('directDownloadBtn');
+                        if (directDownloadBtn) {
+                            if (isCompleted) {
+                                directDownloadBtn.disabled = false;
+                                directDownloadBtn.innerHTML = '<i class="bi bi-download me-1"></i>开始下载';
+                                isDownloadReady = true;
+                                // 压缩完成，自动开始下载
+                                clearInterval(progressCheckInterval);
+                                setTimeout(() => {
+                                    const modal = bootstrap.Modal.getInstance(document.getElementById('downloadWarningModal'));
+                                    if (modal) {
+                                        modal.hide();
+                                        downloadCompressedFile(taskId, 'both');
+                                    }
+                                }, 1000);
+                            } else {
+                                directDownloadBtn.disabled = true;
+                                directDownloadBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>压缩中...(' + progress + '%)';
+                            }
+                        }
+                    });
+                }, 1000);
             });
         });
     }
     
-    function showDownloadWarning(callback) {
+    // 单个文件下载 - 异步压缩优化
+    function downloadSingleFile(productId, passedFileType, productName) {
+        // 调试日志：检查全局fileType变量
+        console.log('=== downloadSingleFile 函数调用开始 ===');
+        console.log('全局fileType变量:', window.fileType);
+        console.log('参数 - productId:', productId);
+        console.log('参数 - passedFileType:', passedFileType);
+        console.log('参数 - productName:', productName);
+        
+        // 使用立即执行函数确保捕获正确的文件类型
+        (function(fileTypeToUse) {
+            console.log('闭包中使用的文件类型:', fileTypeToUse);
+            
+            // 检查文件大小和存在性
+            checkBatchFileSize([productId], fileTypeToUse, () => {
+                // 调试日志：checkBatchFileSize 回调被调用
+                console.log('checkBatchFileSize 回调被调用，准备启动压缩任务');
+                console.log('准备调用 startCompression，文件类型:', fileTypeToUse);
+                
+                // 检查通过，开始压缩并显示下载提示
+                startCompression([productId], fileTypeToUse, (taskId) => {
+                    let isDownloadReady = false;
+                    let requestFileType = fileTypeToUse; // 保存当前请求的文件类型
+                    
+                    console.log('startCompression 回调中使用的文件类型:', requestFileType);
+                    
+                    // 显示带有进度的下载提示
+                    showDownloadWarning(() => {
+                        // 只有当压缩完成时才允许下载
+                        if (isDownloadReady) {
+                            // 下载完成的文件
+                            console.log('自动下载时使用的文件类型:', requestFileType);
+                            downloadCompressedFile(taskId, requestFileType);
+                        } else {
+                            // 如果还没准备好，显示提示
+                            showToast('压缩任务尚未完成，请稍候再试', 'warning');
+                        }
+                    }, taskId);
+                    
+                    // 开始检查进度
+                    let progressCheckInterval = setInterval(() => {
+                        checkCompressionProgress(taskId, (progress, isCompleted) => {
+                            updateCompressionProgress(progress);
+                            
+                            // 更新下载按钮状态
+                            const directDownloadBtn = document.getElementById('directDownloadBtn');
+                            if (directDownloadBtn) {
+                                if (isCompleted) {
+                                    directDownloadBtn.disabled = false;
+                                    directDownloadBtn.innerHTML = '<i class="bi bi-download me-1"></i>开始下载';
+                                    isDownloadReady = true;
+                                    // 压缩完成，自动开始下载
+                                    clearInterval(progressCheckInterval);
+                                    setTimeout(() => {
+                                        const modal = bootstrap.Modal.getInstance(document.getElementById('downloadWarningModal'));
+                                        if (modal) {
+                                            modal.hide();
+                                            console.log('压缩完成自动下载时使用的文件类型:', requestFileType);
+                                            downloadCompressedFile(taskId, requestFileType);
+                                        }
+                                    }, 1000);
+                                } else {
+                                    directDownloadBtn.disabled = true;
+                                    directDownloadBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>压缩中...(' + progress + '%)';
+                                }
+                            }
+                        });
+                    }, 1000);
+                });
+            });
+        })(passedFileType);
+    }
+    
+    function showDownloadWarning(callback, taskId = null) {
         const warningHtml = `
             <div class="modal fade" id="downloadWarningModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
@@ -838,13 +976,21 @@ function addWatermark(context, width, height) {
                                 <div class="spinner-border text-primary me-2" role="status">
                                     <span class="visually-hidden">加载中...</span>
                                 </div>
-                                <span id="countdown">3</span> 秒后自动开始下载...<br>数据较多时服务器压缩需要时间，请耐心等待
+                                <span>正在准备文件，请稍候...</span><br>数据较多时服务器压缩需要时间，请耐心等待
                             </div>
+                            ${taskId ? `
+                            <div class="mt-3">
+                                <h6>压缩进度:</h6>
+                                <div class="progress">
+                                    <div id="compressionProgress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" id="directDownloadBtn">
-                                <i class="bi bi-download me-1"></i>
-                                如窗口没有自动跳转点此直接下载
+                            <button type="button" class="btn btn-primary" id="directDownloadBtn" disabled>
+                                <i class="bi bi-hourglass-split me-1"></i>
+                                压缩中...
                             </button>
                         </div>
                     </div>
@@ -861,33 +1007,29 @@ function addWatermark(context, width, height) {
         document.body.insertAdjacentHTML('beforeend', warningHtml);
         const modal = new bootstrap.Modal(document.getElementById('downloadWarningModal'));
         
-        let countdown = 3;
-        const countdownElement = document.getElementById('countdown');
         const directDownloadBtn = document.getElementById('directDownloadBtn');
         
-        const timer = setInterval(() => {
-            countdown--;
-            countdownElement.textContent = countdown;
-            if (countdown <= 0) {
-                clearInterval(timer);
-                modal.hide();
-                callback();
-            }
-        }, 1000);
-        
         directDownloadBtn.addEventListener('click', () => {
-            clearInterval(timer);
             modal.hide();
             callback();
         });
         
         modal.show();
         
-        // 模态框关闭时清理定时器
+        // 模态框关闭时清理
         document.getElementById('downloadWarningModal').addEventListener('hidden.bs.modal', () => {
-            clearInterval(timer);
             document.getElementById('downloadWarningModal').remove();
         });
+    }
+    
+    // Update compression progress in the modal
+    function updateCompressionProgress(progress) {
+        const progressElement = document.getElementById('compressionProgress');
+        if (progressElement) {
+            progressElement.style.width = `${progress}%`;
+            progressElement.textContent = `${progress}%`;
+            progressElement.setAttribute('aria-valuenow', progress);
+        }
     }
     
     function showToast(message, type = 'info') {

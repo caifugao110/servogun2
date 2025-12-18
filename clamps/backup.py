@@ -31,6 +31,21 @@ from pathlib import Path
 # 获取项目根目录（因为文件在clamps目录下，所以需要上一级）
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# 导入Django相关模块（延迟导入，避免在模块加载时触发setup）
+import django
+from django.conf import settings
+from django.utils import timezone
+from clamps.models import CompressionTask
+
+# 只在非Django启动环境下执行setup
+def initialize_django():
+    if not django.conf.settings.configured:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'welding_clamp_db.settings')
+        django.setup()
+
+# 获取项目根目录（因为文件在clamps目录下，所以需要上一级）
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 # 配置日志，只输出到控制台
 logging.basicConfig(
     level=logging.INFO,
@@ -46,6 +61,11 @@ BACKUP_DIR = BASE_DIR / 'backups'
 DB_FILE = BASE_DIR / 'db.sqlite3'
 RETENTION_DAYS = 30
 BACKUP_TIME = "00:01"
+
+# 临时文件配置
+TEMP_DIR = BASE_DIR / 'temp'
+COMPRESSED_FILES_DIR = TEMP_DIR / 'compressed_files'
+COMPRESSED_RETENTION_DAYS = 7
 
 
 def create_backup():
@@ -75,10 +95,11 @@ def create_backup():
 
 
 def daily_task():
-    """每日任务：备份数据库"""
-    logger.info("开始执行每日备份任务")
+    """每日任务：备份数据库和清理临时文件"""
+    logger.info("开始执行每日任务")
     create_backup()
-    logger.info("每日备份任务执行完成")
+    cleanup_compressed_files()
+    logger.info("每日任务执行完成")
 
 
 def cleanup_old_backups():
@@ -103,6 +124,46 @@ def cleanup_old_backups():
         logger.error(f"清理旧备份失败: {str(e)}")
 
 
+def cleanup_compressed_files():
+    """直接清空压缩文件目录"""
+    try:
+        logger.info("开始清空压缩文件目录")
+        
+        # 确保temp目录存在
+        os.makedirs(TEMP_DIR, exist_ok=True)
+        
+        # 确保compressed_files目录存在
+        os.makedirs(COMPRESSED_FILES_DIR, exist_ok=True)
+        
+        file_count = 0
+        total_size = 0
+        
+        # 直接清空compressed_files目录
+        for file in os.listdir(COMPRESSED_FILES_DIR):
+            file_path = COMPRESSED_FILES_DIR / file
+            if file_path.is_file():
+                file_size = os.path.getsize(file_path)
+                file_count += 1
+                total_size += file_size
+                
+                try:
+                    os.remove(file_path)
+                    logger.info(f"已删除压缩文件: {file_path} ({file_size / 1024 / 1024:.2f} MB)")
+                except Exception as e:
+                    logger.error(f"删除压缩文件失败: {file_path} - {str(e)}")
+        
+        # 删除所有压缩任务记录
+        task_count = CompressionTask.objects.count()
+        if task_count > 0:
+            CompressionTask.objects.all().delete()
+            logger.info(f"已删除所有{task_count}个压缩任务记录")
+        
+        logger.info(f"压缩文件目录清空完成: 删除了{file_count}个文件，总大小{total_size / 1024 / 1024:.2f}MB")
+        
+    except Exception as e:
+        logger.error(f"清空压缩文件目录失败: {str(e)}")
+
+
 def run_backup():
     """运行备份，用于手动执行或系统定时任务调用"""
     logger.info("开始执行数据库备份任务")
@@ -125,6 +186,8 @@ def start_scheduler():
 if __name__ == "__main__":
     # 检查命令行参数
     import sys
+    # 初始化Django环境（仅当脚本直接运行时）
+    initialize_django()
     if len(sys.argv) > 1 and sys.argv[1] == "--scheduler":
         # 启动调度器
         start_scheduler()

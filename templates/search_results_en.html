@@ -16,6 +16,7 @@
 
 
 {% extends 'base_en.html' %}
+{% load static %}
 
 {% block title %}Search Results - OBARA Welding Gun Selection Database{% endblock %}
 
@@ -384,8 +385,9 @@
                                         </td>
                                         <td>
                                             {% if product.bmp_file_path %}
-                                          <img src="{% url 'clamps:protected_media' path=product.bmp_file_path %}" 
-                                                     class="image-preview" 
+                                          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjZGVlMmU2Ii8+PHRleHQgeD0iMzAiIHk9IjMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkrDqMO85a+85aSnPC90ZXh0Pjwvc3ZnPg==" 
+                                                     data-src="{% url 'clamps:protected_media' path=product.bmp_file_path %}" 
+                                                     class="image-preview lazyload" 
                                                      onclick="previewImage('{% url 'clamps:protected_media' path=product.bmp_file_path %}', '{{ product.drawing_no_1|default:"Unknown Product" }}')"
                                                      alt="Product Preview"
                                                      style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; border-radius: 4px;"
@@ -403,21 +405,17 @@
                                                     <i class="bi bi-eye me-1"></i>Details
                                                 </a>
                                                 {% if product.pdf_file_path %}
-                                                    <a href="{% url 'clamps:download_file' product.id 'pdf' %}?filename_format=with_type" 
-                                                       class="btn btn-outline-success btn-sm delayed-download"
-                                                       data-product-id="{{ product.id }}" 
-                                                       data-file-type="pdf">
+                                                    <button onclick="downloadSingleFile({{ product.id }}, 'pdf', '{{ product.drawing_no_1|escapejs }}')" 
+                                                       class="btn btn-outline-success btn-sm download-btn">
                                                         <i class="bi bi-download me-1"></i>PDF
-                                                    </a>
+                                                    </button>
                                                 {% endif %}
 
                                                 {% if product.step_file_path %}
-                                                    <a href="{% url 'clamps:download_file' product.id 'step' %}?filename_format=with_type" 
-                                                       class="btn btn-outline-info btn-sm delayed-download"
-                                                       data-product-id="{{ product.id }}" 
-                                                       data-file-type="step">
+                                                    <button onclick="downloadSingleFile({{ product.id }}, 'step', '{{ product.drawing_no_1|escapejs }}')" 
+                                                       class="btn btn-outline-info btn-sm download-btn">
                                                         <i class="bi bi-download me-1"></i>STEP
-                                                    </a>
+                                                    </button>
                                                 {% endif %}
                                             </div>
                                         </td>
@@ -543,7 +541,61 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/compression_async.js' %}"></script>
 <script>
+    // Lazy loading implementation
+    document.addEventListener("DOMContentLoaded", function() {
+        // Intersection Observer for lazy loading
+        const lazyLoadImages = document.querySelectorAll(".lazyload");
+        
+        if ("IntersectionObserver" in window) {
+            let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        let lazyImage = entry.target;
+                        lazyImage.src = lazyImage.dataset.src;
+                        lazyImage.classList.remove("lazyload");
+                        lazyImageObserver.unobserve(lazyImage);
+                    }
+                });
+            });
+            
+            lazyLoadImages.forEach(function(lazyImage) {
+                lazyImageObserver.observe(lazyImage);
+            });
+        } else {
+            // Fallback for browsers that don't support Intersection Observer
+            let lazyLoadThrottleTimeout;
+            
+            function lazyLoad() {
+                if (lazyLoadThrottleTimeout) {
+                    clearTimeout(lazyLoadThrottleTimeout);
+                }
+                
+                lazyLoadThrottleTimeout = setTimeout(function() {
+                    const scrollTop = window.pageYOffset;
+                    
+                    lazyLoadImages.forEach(function(img) {
+                        if (img.offsetTop < (window.innerHeight + scrollTop)) {
+                            img.src = img.dataset.src;
+                            img.classList.remove("lazyload");
+                        }
+                    });
+                    
+                    if (lazyLoadImages.length === 0) {
+                        document.removeEventListener("scroll", lazyLoad);
+                        window.removeEventListener("resize", lazyLoad);
+                        window.removeEventListener("orientationChange", lazyLoad);
+                    }
+                }, 20);
+            }
+            
+            document.addEventListener("scroll", lazyLoad);
+            window.addEventListener("resize", lazyLoad);
+            window.addEventListener("orientationChange", lazyLoad);
+        }
+    });
+    
     function viewDetail(productId) {
         window.location.href = `/product/${productId}_en/`;
     }
@@ -606,7 +658,7 @@
         });
     });
     
-    // Batch download functionality - fixed to use POST request with file existence check
+    // Batch download functionality - asynchronous compression optimization
     document.getElementById('batchDownloadBtn').addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
         if (checkedBoxes.length === 0) {
@@ -616,88 +668,127 @@
         
         const productIds = Array.from(checkedBoxes).map(cb => cb.value);
         const activeFileType = document.querySelector('.file-type-buttons .btn.active').dataset.fileType;
+        let isDownloadReady = false;
         
         // Check file size and existence first - completely rely on backend check
         checkBatchFileSize(productIds, activeFileType, () => {
-            // Check passed, show download warning
-            showDownloadWarning(() => {
-                // Start download after 3 seconds - use POST request
-                setTimeout(() => {
-                    // Create form and submit
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `{% url 'clamps:batch_download' 'FILETYPE' %}`.replace('FILETYPE', activeFileType);
-                    
-                    // Add CSRF token
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-                    if (csrfToken) {
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = 'csrfmiddlewaretoken';
-                        csrfInput.value = csrfToken.value;
-                        form.appendChild(csrfInput);
+            // Check passed, start compression and show download warning with progress
+            startCompression(productIds, activeFileType, (taskId) => {
+                // Show download warning with progress
+                showDownloadWarning(() => {
+                    // Only allow download when compression is complete
+                    if (isDownloadReady) {
+                        // Download completed file
+                        downloadCompressedFile(taskId, activeFileType);
+                    } else {
+                        // If not ready, show prompt
+                        showToast('Compression task is not yet complete. Please try again later', 'warning');
                     }
-                    
-                    // Add product ID parameter
-                    const productIdsInput = document.createElement('input');
-                    productIdsInput.type = 'hidden';
-                    productIdsInput.name = 'product_ids';
-                    productIdsInput.value = productIds.join(',');
-                    form.appendChild(productIdsInput);
-                    
-                    // Submit form
-                    document.body.appendChild(form);
-                    form.submit();
-                    document.body.removeChild(form);
-                }, 3000);
+                }, taskId);
+                
+                // Start checking progress
+                let progressCheckInterval = setInterval(() => {
+                    checkCompressionProgress(taskId, (progress, isCompleted) => {
+                        updateCompressionProgress(progress);
+                        
+                        // Update download button status
+                        const directDownloadBtn = document.getElementById('directDownloadBtn');
+                        if (directDownloadBtn) {
+                            if (isCompleted) {
+                                directDownloadBtn.disabled = false;
+                                directDownloadBtn.innerHTML = '<i class="bi bi-download me-1"></i>Start Download';
+                                isDownloadReady = true;
+                                // Compression completed, start download automatically
+                                clearInterval(progressCheckInterval);
+                                setTimeout(() => {
+                                    const modal = bootstrap.Modal.getInstance(document.getElementById('downloadWarningModal'));
+                                    if (modal) {
+                                        modal.hide();
+                                        downloadCompressedFile(taskId, activeFileType);
+                                    }
+                                }, 1000);
+                            } else {
+                                directDownloadBtn.disabled = true;
+                                directDownloadBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Compressing...(' + progress + '%)';
+                            }
+                        }
+                    });
+                }, 1000);
             });
         });
     });
     
-    // Add delayed download functionality for pdf and STEP download buttons - add file size check
-    document.querySelectorAll('.delayed-download').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const downloadUrl = this.href;
-            const productId = this.dataset.productId;
-            const fileType = this.dataset.fileType;
-            
-            // Check file size first
-            checkFileSize(productId, fileType, () => {
-                // Check passed, show download warning
+    // Get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    window.CSRF_TOKEN = csrftoken;
+    
+    // Single file download - asynchronous compression optimization
+    function downloadSingleFile(productId, fileType, productName) {
+        // Check file size and existence
+        checkBatchFileSize([productId], fileType, () => {
+            // Check passed, start compression and show download warning
+            startCompression([productId], fileType, (taskId) => {
+                let isDownloadReady = false;
+                let requestFileType = fileType; // Save current request file type
+                
+                // Show download warning with progress
                 showDownloadWarning(() => {
-                    // Start download after 3 seconds
-                    setTimeout(() => {
-                        // Check if download is successful, if failed return to current page
-                        const iframe = document.createElement('iframe');
-                        iframe.style.display = 'none';
-                        iframe.src = downloadUrl;
-                        document.body.appendChild(iframe);
+                    // Only allow download when compression is complete
+                    if (isDownloadReady) {
+                        // Download completed file
+                        downloadCompressedFile(taskId, requestFileType);
+                    } else {
+                        // If not ready, show prompt
+                        showToast('Compression task is not yet complete. Please try again later', 'warning');
+                    }
+                }, taskId);
+                
+                // Start checking progress
+                let progressCheckInterval = setInterval(() => {
+                    checkCompressionProgress(taskId, (progress, isCompleted) => {
+                        updateCompressionProgress(progress);
                         
-                        // Listen to iframe load completion
-                        iframe.onload = function() {
-                            // Check if redirected to error page or detail page
-                            try {
-                                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                                if (iframeDoc.title.includes('Product Details') || iframeDoc.body.innerHTML.includes('Download Failed')) {
-                                    // Download failed, stay on current page
-                                    console.log('Download failed, staying on current page');
-                                }
-                            } catch (e) {
-                                // Cross-origin or other error, assume download successful
-                                console.log('Download request sent');
+                        // Update download button status
+                        const directDownloadBtn = document.getElementById('directDownloadBtn');
+                        if (directDownloadBtn) {
+                            if (isCompleted) {
+                                directDownloadBtn.disabled = false;
+                                directDownloadBtn.innerHTML = '<i class="bi bi-download me-1"></i>Start Download';
+                                isDownloadReady = true;
+                                // Compression completed, start download automatically
+                                clearInterval(progressCheckInterval);
+                                setTimeout(() => {
+                                    const modal = bootstrap.Modal.getInstance(document.getElementById('downloadWarningModal'));
+                                    if (modal) {
+                                        modal.hide();
+                                        downloadCompressedFile(taskId, requestFileType);
+                                    }
+                                }, 1000);
+                            } else {
+                                directDownloadBtn.disabled = true;
+                                directDownloadBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Compressing...(' + progress + '%)';
                             }
-                            
-                            // Clean up iframe
-                            setTimeout(() => {
-                                document.body.removeChild(iframe);
-                            }, 1000);
-                        };
-                    }, 3000);
-                });
+                        }
+                    });
+                }, 1000);
             });
         });
-    });
+    }
     
     // Check single file size
     function checkFileSize(productId, fileType, callback) {
@@ -720,37 +811,37 @@
     
     // Check batch download file size - fixed to use POST request
     function checkBatchFileSize(productIds, fileType, callback) {
-        const formData = new FormData();
-        formData.append('product_ids', productIds.join(','));
-        formData.append('file_type', fileType);
-        // Add language identifier for backend language detection
-        formData.append('language', window.location.pathname.includes('en') || window.location.pathname.includes('_en') ? 'en' : 'zh');
-        
-        // Add CSRF token
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (csrfToken) {
-            formData.append('csrfmiddlewaretoken', csrfToken.value);
-        }
+        // Use JSON format with CSRF header
+        const requestData = {
+            product_ids: productIds.join(','),
+            file_type: fileType,
+            language: window.location.pathname.includes('en') || window.location.pathname.includes('_en') ? 'en' : 'zh'
+        };
         
         fetch('{% url "clamps:check_batch_file_size" %}', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.CSRF_TOKEN
+            },
+            body: JSON.stringify(requestData),
+            credentials: 'same-origin'
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.can_download) {
-                    callback();
-                } else {
-                    showToast(data.message, 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error checking batch file size:', error);
-                showToast('Error checking file size, please try again later', 'danger');
-            });
+        .then(response => response.json())
+        .then(data => {
+            if (data.can_download) {
+                callback();
+            } else {
+                showToast(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error checking batch file size:', error);
+            showToast('Error checking file size, please try again later', 'danger');
+        });
     }
     
-    function showDownloadWarning(callback) {
+    function showDownloadWarning(callback, taskId = null) {
         const warningHtml = `
             <div class="modal fade" id="downloadWarningModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
@@ -770,13 +861,21 @@
                                 <div class="spinner-border text-primary me-2" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <span id="countdown">3</span> seconds until automatic download...<br>Server compression takes time when there's a lot of data, please be patient
+                                <span>Preparing file, please wait...</span><br>Server compression takes time when there's a lot of data, please be patient
                             </div>
+                            ${taskId ? `
+                            <div class="mt-3">
+                                <h6>Compression Progress:</h6>
+                                <div class="progress">
+                                    <div id="compressionProgress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" id="directDownloadBtn">
-                                <i class="bi bi-download me-1"></i>
-                                Click here for direct download if window doesn't redirect automatically
+                            <button type="button" class="btn btn-primary" id="directDownloadBtn" disabled>
+                                <i class="bi bi-hourglass-split me-1"></i>
+                                Compressing...
                             </button>
                         </div>
                     </div>
@@ -793,33 +892,29 @@
         document.body.insertAdjacentHTML('beforeend', warningHtml);
         const modal = new bootstrap.Modal(document.getElementById('downloadWarningModal'));
         
-        let countdown = 3;
-        const countdownElement = document.getElementById('countdown');
         const directDownloadBtn = document.getElementById('directDownloadBtn');
         
-        const timer = setInterval(() => {
-            countdown--;
-            countdownElement.textContent = countdown;
-            if (countdown <= 0) {
-                clearInterval(timer);
-                modal.hide();
-                callback();
-            }
-        }, 1000);
-        
         directDownloadBtn.addEventListener('click', () => {
-            clearInterval(timer);
             modal.hide();
             callback();
         });
         
         modal.show();
         
-        // Clean up timer when modal is closed
+        // Clean up when modal is closed
         document.getElementById('downloadWarningModal').addEventListener('hidden.bs.modal', () => {
-            clearInterval(timer);
             document.getElementById('downloadWarningModal').remove();
         });
+    }
+    
+    // Update compression progress in the modal
+    function updateCompressionProgress(progress) {
+        const progressElement = document.getElementById('compressionProgress');
+        if (progressElement) {
+            progressElement.style.width = `${progress}%`;
+            progressElement.textContent = `${progress}%`;
+            progressElement.setAttribute('aria-valuenow', progress);
+        }
     }
     
     function showToast(message, type = 'info') {

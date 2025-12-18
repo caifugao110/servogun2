@@ -158,10 +158,10 @@
                                                     <i class="bi bi-search me-1"></i>
                                                     搜索
                                                 </span>
-                                            {% elif log.action_type == 'download' %}
+                                            {% elif log.action_type == 'download' or log.action_type == 'single_download' %}
                                                 <span class="badge bg-warning">
                                                     <i class="bi bi-download me-1"></i>
-                                                    下载
+                                                    单个下载
                                                 </span>
                                             {% elif log.action_type == 'batch_download' %}
                                                 <span class="badge bg-warning">
@@ -186,9 +186,9 @@
                                             <small class="text-muted">
                                                 {% if log.details|length > 100 %}
                                                     {{ log.details|truncatechars:100 }}
-                                                    <a href="#" onclick="showFullDetails({{ log.id }}, '{{ log.details|escapejs }}')" class="text-primary">
-                                                        查看全部
-                                                    </a>
+                                                    <button type="button" data-log-id="{{ log.id }}" data-details="{{ log.details|escapejs }}" class="btn btn-link text-primary p-0 view-full-details">
+                                                    查看全部
+                                                </button>
                                                 {% else %}
                                                     {{ log.details }}
                                                 {% endif %}
@@ -284,12 +284,23 @@
 </div>
 
 <script>
-    // 原有的日志相关功能
+    // 日志相关功能
     function showFullDetails(logId, details) {
         document.getElementById('detailsContent').innerHTML = '<p><strong>日志ID:</strong> ' + logId + '</p><p><strong>详细信息:</strong></p><pre>' + details + '</pre>';
         const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
         modal.show();
     }
+    
+    // 添加事件监听器，使用事件委托处理查看全部按钮点击
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('view-full-details')) {
+                const logId = e.target.getAttribute('data-log-id');
+                const details = e.target.getAttribute('data-details');
+                showFullDetails(logId, details);
+            }
+        });
+    });
     
     // 设置日期筛选的默认值
     document.addEventListener('DOMContentLoaded', function() {

@@ -746,3 +746,40 @@ class UserStyleLinkVisit(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.style_link.name or self.unique_id}"
 
+
+# 异步压缩相关模型
+import uuid
+from enum import Enum
+
+class CompressionStatus(Enum):
+    PENDING = 'pending'        # 等待压缩
+    PROCESSING = 'processing'  # 压缩中
+    COMPLETED = 'completed'      # 压缩完成
+    FAILED = 'failed'          # 压缩失败
+
+class CompressionTask(models.Model):
+    """压缩任务模型"""
+    task_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    product_ids = models.TextField(help_text="产品ID列表，用逗号分隔")
+    file_type = models.CharField(max_length=10, choices=[
+        ('pdf', 'PDF Only'),
+        ('step', 'STEP Only'),
+        ('bmp', 'BMP Only'),
+        ('both', 'PDF and STEP')
+    ])
+    status = models.CharField(max_length=20, choices=[(status.value, status.name) for status in CompressionStatus], default=CompressionStatus.PENDING.value)
+    progress = models.IntegerField(default=0, help_text="压缩进度，0-100")
+    compressed_file_path = models.CharField(max_length=255, blank=True, null=True, help_text="压缩文件路径")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    error_message = models.TextField(blank=True, null=True, help_text="错误信息")
+    user_id = models.IntegerField(blank=True, null=True, help_text="发起任务的用户ID")
+
+    def __str__(self):
+        return f"CompressionTask {self.task_id} - {self.status}"
+
+    class Meta:
+        verbose_name = "压缩任务"
+        verbose_name_plural = "压缩任务"
+        ordering = ['-created_at']
+

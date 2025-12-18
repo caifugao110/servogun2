@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'clamps',
+    'channels',
 ]
 
 # 中间件配置
@@ -72,6 +73,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'welding_clamp_db.wsgi.application'
+# ASGI配置
+ASGI_APPLICATION = 'welding_clamp_db.asgi.application'
+
+# Channels配置
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # 数据库配置
 DATABASES = {

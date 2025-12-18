@@ -15,7 +15,7 @@
 
 
 from django.contrib import admin
-from .models import Category, Product, Log
+from clamps.models import Category, Product, Log
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

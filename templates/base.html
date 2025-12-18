@@ -23,6 +23,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="小原焊枪选型数据库 - 专业的焊枪选型工具">
     <title>{% block title %}小原焊枪选型数据库{% endblock %}</title>
+    
+    <!-- CSRF Token for AJAX requests -->
+    <script>
+        window.CSRF_TOKEN = '{{ csrf_token }}';
+    </script>
 	{% load static %}
     <link rel="icon" type="image/x-icon" href="{% static 'icon/Obara_logo.bmp' %}">
 	

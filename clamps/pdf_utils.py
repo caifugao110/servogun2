@@ -25,7 +25,7 @@ class PDFProcessor:
     
     @staticmethod
     def create_watermark(watermark_text, output_path):
-        """创建水印PDF文件"""
+        """创建水印PDF文件，支持文件路径或BytesIO对象"""
         # 将页面尺寸设置为A4横向
         pagesize_landscape_a4 = landscape(A4)
         c = canvas.Canvas(output_path, pagesize=pagesize_landscape_a4)

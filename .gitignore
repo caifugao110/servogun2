@@ -3,6 +3,7 @@ media/
 venv/
 logs/
 backups/
+temp/
 
 # Ignore Python compiled files
 __pycache__/
