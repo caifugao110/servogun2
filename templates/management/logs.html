@@ -185,12 +185,14 @@
                                         <td>
                                             <small class="text-muted">
                                                 {% if log.details|length > 100 %}
-                                                    {{ log.details|truncatechars:100 }}
+                                                    <!-- 格式化显示截断的日志详情 -->
+                                                    <span class="formatted-log">{{ log.details|truncatechars:100 }}</span>
                                                     <button type="button" data-log-id="{{ log.id }}" data-details="{{ log.details|escapejs }}" class="btn btn-link text-primary p-0 view-full-details">
                                                     查看全部
                                                 </button>
                                                 {% else %}
-                                                    {{ log.details }}
+                                                    <!-- 直接显示格式化后的日志详情 -->
+                                                    <span class="formatted-log">{{ log.details }}</span>
                                                 {% endif %}
                                             </small>
                                         </td>
@@ -284,9 +286,75 @@
 </div>
 
 <script>
-    // 日志相关功能
+    // 格式化日志详情的通用函数
+    function formatLogDetails(details) {
+        try {
+            // 处理旧格式的QueryDict字符串
+            if (details.startsWith('<QueryDict: {') && details.endsWith('}>')) {
+                // 提取QueryDict内部的内容
+                const innerContent = details.slice(13, -2);
+                // 将单引号替换为双引号，处理列表格式
+                const jsonString = innerContent.replace(/'/g, '"')
+                    .replace(/\[("[^"]*")\]/g, '$1');
+                // 解析为JSON对象
+                const parsed = JSON.parse('{' + jsonString + '}');
+                // 排除csrfmiddlewaretoken字段
+                delete parsed.csrfmiddlewaretoken;
+                // 转换为易读的字符串格式
+                return Object.entries(parsed)
+                    .filter(([k, v]) => v !== '') // 过滤空值
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(', ');
+            }
+            // 处理字典格式的字符串
+            else if (details.startsWith('{') && details.endsWith('}')) {
+                const parsed = JSON.parse(details.replace(/'/g, '"'));
+                return Object.entries(parsed)
+                    .filter(([k, v]) => v !== '') // 过滤空值
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(', ');
+            }
+        } catch (e) {
+            // 如果解析失败，返回原始内容的截断版本
+        }
+        return details;
+    }
+    
+    // 日志详情模态框显示函数
     function showFullDetails(logId, details) {
-        document.getElementById('detailsContent').innerHTML = '<p><strong>日志ID:</strong> ' + logId + '</p><p><strong>详细信息:</strong></p><pre>' + details + '</pre>';
+        // 尝试解析并格式化详细信息，处理不同格式
+        let formattedDetails = details;
+        try {
+            // 处理旧格式的QueryDict字符串
+            if (details.startsWith('<QueryDict: {') && details.endsWith('}>')) {
+                // 提取QueryDict内部的内容
+                const innerContent = details.slice(13, -2);
+                // 将单引号替换为双引号，处理列表格式
+                const jsonString = innerContent.replace(/'/g, '"')
+                    .replace(/\[("[^"]*")\]/g, '$1');
+                // 解析为JSON对象
+                const parsed = JSON.parse('{' + jsonString + '}');
+                // 排除csrfmiddlewaretoken字段
+                delete parsed.csrfmiddlewaretoken;
+                // 美化显示
+                formattedDetails = JSON.stringify(parsed, null, 2);
+            }
+            // 处理字典格式的字符串
+            else if (details.startsWith('{') && details.endsWith('}')) {
+                const parsed = JSON.parse(details.replace(/'/g, '"'));
+                formattedDetails = JSON.stringify(parsed, null, 2);
+            }
+        } catch (e) {
+            // 如果解析失败，使用原始内容
+        }
+        
+        // 使用自适应高度的容器显示
+        document.getElementById('detailsContent').innerHTML = `
+            <p><strong>日志ID:</strong> ${logId}</p>
+            <p><strong>详细信息:</strong></p>
+            <pre style="white-space: pre-wrap; word-wrap: break-word; max-height: none; overflow-y: visible;">${formattedDetails}</pre>
+        `;
+        
         const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
         modal.show();
     }
@@ -298,6 +366,16 @@
                 const logId = e.target.getAttribute('data-log-id');
                 const details = e.target.getAttribute('data-details');
                 showFullDetails(logId, details);
+            }
+        });
+        
+        // 页面加载时格式化所有日志详情
+        const formattedLogSpans = document.querySelectorAll('.formatted-log');
+        formattedLogSpans.forEach(span => {
+            const originalText = span.textContent.trim();
+            const formattedText = formatLogDetails(originalText);
+            if (formattedText !== originalText) {
+                span.textContent = formattedText;
             }
         });
     });

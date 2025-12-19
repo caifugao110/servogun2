@@ -24,6 +24,9 @@ class ClampsConfig(AppConfig):
     name = 'clamps'
 
     def ready(self):
+        # 导入信号处理模块
+        from . import signals
+        
         # 只在主进程中启动调度器（避免runserver的辅助进程重复启动）
         if os.environ.get('RUN_MAIN') == 'true':
             # 导入备份模块并启动调度器

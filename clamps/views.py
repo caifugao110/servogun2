@@ -442,8 +442,10 @@ def search_results_base(request, template_name):
     queryset = Product.objects.filter(q_objects).order_by(order_by)
 
     # 记录搜索日志
+    # 将QueryDict转换为更易读的格式，排除csrfmiddlewaretoken
+    clean_params = {k: v[0] if len(v) == 1 else v for k, v in query_params.lists() if k != 'csrfmiddlewaretoken'}
     log_entry = Log(user=request.user, action_type='search', ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=str(query_params))
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=str(clean_params))
     log_entry.save()
 
     paginator = Paginator(queryset, 20)  # 每页20条记录
@@ -1685,7 +1687,7 @@ def sync_files_core():
         for filename in sorted(all_unmatched_files):
             f.write(f'{filename}\n')
     
-    logger.info(f'未匹配文件列表已保存到：{unmatched_log_path}')
+    logger.debug(f'未匹配文件列表已保存到：{unmatched_log_path}')
 
     # 7. 计算耗时并返回结果
     total_time = time.time() - start_time
@@ -1697,7 +1699,7 @@ def sync_files_core():
             if unmatch > 5:
                 msg += ' ...\n未匹配文件完整列表已保存到 logs/unmatched_files.log'
     
-    logger.info(f'{msg}')
+    logger.debug(f'{msg}')
     return True, msg
 
 

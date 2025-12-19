@@ -10,7 +10,7 @@
 
 ### 2.1 技术栈
 
-*   **后端框架**: Django
+*   **后端框架**: Django + Channels (ASGI支持)
 *   **数据库**: SQLite (默认)
 *   **前端**: HTML, CSS, JavaScript (基于Django模板)
 *   **部署环境**: Python 3.11+
@@ -32,11 +32,13 @@
 
 ### 2.3 系统架构
 
-系统遵循Django的MVT（Model-View-Template）架构模式：
+系统遵循Django的MVT（Model-View-Template）架构模式，并集成了Channels实现ASGI支持：
 
 *   **Model (模型)**: 定义数据结构和业务逻辑，如 `Product` (产品), `Category` (分类), `Log` (日志), `UserProfile` (用户配置), `StyleLink` (仕样链接), `UserFeedback` (用户反馈), `CompressionTask` (压缩任务) 等。与数据库进行交互。
 *   **View (视图)**: 处理用户请求，从模型获取数据，并将数据传递给模板进行渲染。例如 `search_results` 视图处理搜索请求并返回搜索结果页面。
 *   **Template (模板)**: 定义用户界面的结构和布局，使用Django模板语言展示动态数据。例如 `search.html` 用于产品搜索页面，`product_detail.html` 用于产品详情页面。
+*   **ASGI配置**: 支持异步通信，通过 `asgi.py` 和 Channels 实现WebSocket等异步功能。
+*   **WebSocket支持**: 通过 `consumers.py` 和 `routing.py` 实现WebSocket通信，支持实时功能。
 
 此外，系统还包含：
 

@@ -132,8 +132,10 @@ def process_result(raw_result):
 
 def query_coze(query_text):
     """查询Coze API并返回处理后的结果"""
-    # 缓存键名，使用查询文本的MD5哈希值作为唯一标识
-    cache_key = f"coze_query_{query_text}"
+    # 缓存键名，使用查询文本的MD5哈希值作为唯一标识，避免包含特殊字符
+    import hashlib
+    query_hash = hashlib.md5(query_text.encode('utf-8')).hexdigest()
+    cache_key = f"coze_query_{query_hash}"
     
     # 检查缓存中是否已有结果
     cached_result = cache.get(cache_key)
