@@ -154,20 +154,33 @@ def download_compressed_file(request):
             # 设置响应头
             response = HttpResponse(file_content, content_type='application/zip')
             
-            # 生成文件名（大写）
+            # 生成文件名
             if len(task.product_ids.split(',')) == 1:
                 # 单个产品
                 product = Product.objects.get(id=task.product_ids)
                 if task.file_type in ['pdf', 'step', 'both']:
                     # 单个产品下载，使用产品图号+文件类型（不使用实际文件名）
-                    zip_filename = f"{product.drawing_no_1}_{task.file_type}.zip".upper()
+                    if task.file_type == 'both':
+                        # 下载PDF和STEP按钮点击后，压缩包名称只保留产品图号
+                        zip_filename = f"{product.drawing_no_1}.zip"
+                    else:
+                        # PDF和STEP压缩包，文件类型大写
+                        zip_filename = f"{product.drawing_no_1}_{task.file_type.upper()}.zip"
+                    # 确保后缀为小写
+                    if zip_filename.endswith('.ZIP'):
+                        zip_filename = zip_filename[:-4] + '.zip'
             else:
-                # 多个产品，使用带时间戳的名称
+                # 多个产品，使用带时间戳的名称，全部改为小写
                 ts = task.updated_at.strftime('%Y%m%d_%H%M%S')
-                zip_filename = f"batch_download_{task.file_type}_{ts}.zip".upper()
+                zip_filename = f"batch_download_{task.file_type}_{ts}.zip"
+                # 确保文件名和后缀都是小写
+                zip_filename = zip_filename.lower()
             
             # 移除文件名中的_BOTH（根据需求，批量下载PDF和STEP不需要显示BOTH）
             zip_filename = zip_filename.replace('_BOTH', '')
+            # 再次确保后缀为小写，防止替换后出现问题
+            if not zip_filename.endswith('.zip'):
+                zip_filename = zip_filename[:-4] + '.zip'
             
             # 计算文件大小（必须在使用前定义）
             file_size_mb = os.path.getsize(full_file_path) / (1024 * 1024)
