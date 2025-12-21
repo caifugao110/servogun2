@@ -1,0 +1,269 @@
+{% extends 'base_en.html' %}
+{% load static %}
+
+{% block title %}{{ pdf_title }} - PDF Viewer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pdf-container {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+    }
+    
+    .pdf-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        z-index: 10;
+        position: sticky;
+        top: 100px;
+        background-clip: padding-box;
+    }
+    
+    [data-bs-theme="dark"] .pdf-toolbar {
+        background: #2c3034;
+    }
+    
+    .pdf-toolbar .toolbar-left,
+    .pdf-toolbar .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .pdf-toolbar button {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .pdf-toolbar button:hover {
+        background: #0052a3;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
+    }
+    
+    .pdf-toolbar button:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .pdf-toolbar input[type="number"] {
+        width: 80px;
+        padding: 8px 12px;
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        text-align: center;
+    }
+    
+    .pdf-toolbar .page-info {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    
+    .pdf-toolbar .zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .pdf-viewer {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: visible;
+        position: relative;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    [data-bs-theme="dark"] .pdf-viewer {
+        background: #2c3034;
+    }
+    
+    #pdf-canvas {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        transition: transform 0.2s ease;
+        height: auto !important;
+        width: auto !important;
+    }
+    
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+    }
+    
+    [data-bs-theme="dark"] .loading-overlay {
+        background: rgba(44, 48, 52, 0.8);
+    }
+    
+    .loading-text {
+        margin-top: 15px;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .error-message {
+        color: #dc3545;
+        text-align: center;
+        padding: 20px;
+        font-size: 18px;
+    }
+    
+    .download-button {
+        background: var(--accent-color) !important;
+    }
+    
+    .download-button:hover {
+        background: #e85a2a !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">{{ pdf_title }}</h1>
+    
+    <div class="pdf-container">
+        <div class="pdf-viewer">
+            <div id="loading-overlay" class="loading-overlay">
+                <div class="spinner-border" style="width: 3rem; height: 3rem; color: var(--primary-color);"></div>
+                <div class="loading-text">Loading PDF document...</div>
+            </div>
+            <div id="pdf-pages"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pdf.js' %}"></script>
+<script src="{% static 'js/pdf.worker.js' %}"></script>
+
+<script>
+    // 设置PDF.js全局配置
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "{% static 'js/pdf.worker.js' %}";
+    
+    // PDF文档URL和标题
+    const pdfUrl = "{{ pdf_url }}";
+    const pdfTitle = "{{ pdf_title }}";
+    
+    // 初始化PDF文档和页面信息
+    let pdfDoc = null;
+    let scale = 1.0;
+    
+    // 获取DOM元素
+    const pdfPagesContainer = document.getElementById('pdf-pages');
+    
+    // 渲染单页PDF
+    async function renderSinglePage(pageNum, scale) {
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: scale });
+        
+        // 创建canvas元素
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置canvas尺寸
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        canvas.className = 'pdf-page-canvas';
+        
+        // 确保canvas元素使用实际计算的尺寸
+        canvas.style.height = `${viewport.height}px`;
+        canvas.style.width = `${viewport.width}px`;
+        canvas.style.display = 'block';
+        canvas.style.margin = '0 auto 20px auto';
+        canvas.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+        
+        // 渲染PDF页面到canvas
+        const renderContext = {
+            canvasContext: ctx,
+            viewport: viewport
+        };
+        
+        await page.render(renderContext).promise;
+        
+        return canvas;
+    }
+    
+    // 渲染所有PDF页面
+    async function renderAllPages() {
+        // 清空现有内容
+        pdfPagesContainer.innerHTML = '';
+        
+        // 渲染每一页
+        for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+            const canvas = await renderSinglePage(pageNum, scale);
+            pdfPagesContainer.appendChild(canvas);
+        }
+    }
+    
+    // 适应页面
+    async function fitPage() {
+        const container = document.querySelector('.pdf-viewer');
+        const containerWidth = container.clientWidth;
+        
+        // 使用第一页计算缩放比例
+        const page = await pdfDoc.getPage(1);
+        const originalViewport = page.getViewport({ scale: 1.0 });
+        const scaleWidth = containerWidth / originalViewport.width * 0.95;
+        scale = scaleWidth;
+        
+        renderAllPages();
+    }
+    
+    // 窗口大小变化时重新渲染
+    window.addEventListener('resize', function() {
+        if (pdfDoc) {
+            renderAllPages();
+        }
+    });
+    
+    // 加载PDF文档
+    pdfjsLib.getDocument(pdfUrl).promise.then(async function(pdfDoc_) {
+        pdfDoc = pdfDoc_;
+        
+        // 计算初始缩放比例 - 适应页面
+        await fitPage();
+        
+        // 隐藏加载动画
+        document.getElementById('loading-overlay').style.display = 'none';
+    }).catch(function(error) {
+        // 显示错误信息
+        document.getElementById('loading-overlay').innerHTML = `
+            <div class="error-message">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size: 32px; margin-bottom: 10px; display: block;"></i>
+                <p>Failed to load PDF document: ${error.message}</p>
+                <p>Please try to <a href="${pdfUrl}" target="_blank" style="color: var(--primary-color);">download</a> the PDF file directly.</p>
+            </div>
+        `;
+        console.error('PDF加载失败:', error);
+    });
+</script>
+{% endblock %}

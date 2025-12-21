@@ -70,7 +70,7 @@
                             <div class="mb-4 form-check">
                                 <input type="checkbox" class="form-check-input" id="agreementCheck" required>
                                 <label class="form-check-label" for="agreementCheck">
-                                    I have read and agree to the <a href="/static/pdf/User Agreement.pdf" target="_blank">User Agreement</a> and <a href="/static/pdf/Privacy Policy.pdf" target="_blank">Privacy Policy</a> of OBARA Welding Gun Selection Database
+                                    I have read and agree to the <a href="{% url 'clamps:pdf_viewer' 'User_Agreement_en.pdf' %}" target="_blank">User Agreement</a> and <a href="{% url 'clamps:pdf_viewer' 'Privacy_Policy_en.pdf' %}" target="_blank">Privacy Policy</a> of Obara Welding Gun Selection Database
                                 </label>
                                 <div class="invalid-feedback">
                                     Please check this box to agree to the User Agreement

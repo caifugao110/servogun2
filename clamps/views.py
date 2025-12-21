@@ -2034,6 +2034,50 @@ def empty_style_search_en(request):
     return redirect('clamps:search_en')
 
 
+def pdf_viewer(request, pdf_filename):
+    """PDF阅读器视图 - 统一处理中英文PDF，通过文件名_en后缀区分"""
+    # 新的命名规则：中文PDF文件已改为英文文件名，英文PDF使用_en后缀
+    # 映射旧中文文件名到新英文文件名
+    pdf_mapping = {
+        # 旧中文文件名 -> 新英文文件名
+        '产品搜索使用指南.pdf': 'Product_Search_User_Guide.pdf',
+        '用户协议.pdf': 'User_Agreement.pdf',
+        '隐私政策.pdf': 'Privacy_Policy.pdf',
+        'csv文件导入前数据标准化流程.pdf': 'CSV_Data_Standardization_Guide.pdf',
+        '获取media文件标准化流程.pdf': 'Media_File_Standardization_Guide.pdf',
+        # 旧中文文件名 -> 新英文_en文件名（兼容旧链接）
+        '产品搜索使用指南_en.pdf': 'Product_Search_User_Guide_en.pdf',
+        '用户协议_en.pdf': 'User_Agreement_en.pdf',
+        '隐私政策_en.pdf': 'Privacy_Policy_en.pdf'
+    }
+    
+    # 使用映射后的PDF文件名
+    mapped_pdf_filename = pdf_mapping.get(pdf_filename, pdf_filename)
+    
+    # 构建PDF文件的完整URL
+    pdf_url = f"/static/pdf/{mapped_pdf_filename}"
+    
+    # 提取文件名作为标题（去除.pdf扩展名）
+    pdf_title = mapped_pdf_filename.replace('.pdf', '')
+    
+    # 根据文件名_en后缀决定使用哪个模板
+    if mapped_pdf_filename.endswith('_en.pdf'):
+        # 英文PDF，使用英文模板
+        return render(request, 'pdf_viewer_en.html', {
+            'pdf_url': pdf_url,
+            'pdf_title': pdf_title
+        })
+    else:
+        # 中文PDF，使用中文模板
+        return render(request, 'pdf_viewer.html', {
+            'pdf_url': pdf_url,
+            'pdf_title': pdf_title
+        })
+
+
+
+
+
 def style_search_en(request, unique_id):
     """仕样搜索英文页面"""
     try:

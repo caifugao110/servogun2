@@ -92,6 +92,9 @@ urlpatterns = [
     path('api/ai_search/', views.ai_search_api, name='ai_search_api'),
     path('api/user_profile_data/', views.get_user_profile_data, name='get_user_profile_data'),
     
+    # PDF阅读器 - 统一使用一个路由，通过文件名_en后缀区分中英文
+    path('pdf/viewer/<path:pdf_filename>/', views.pdf_viewer, name='pdf_viewer'),
+    
     # 媒体文件保护
     re_path(r'^protected_media/(?P<path>.*)$', media_views.protected_media, name='protected_media'),
 ]

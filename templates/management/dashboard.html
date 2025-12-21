@@ -194,7 +194,7 @@
                         <h5 class="mb-0">
                             <i class="bi bi-upload me-2"></i>
                             CSV数据导入
-                            <a href="/static/pdf/csv文件导入前数据标准化流程.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
+                            <a href="{% url 'clamps:pdf_viewer' 'CSV_Data_Standardization_Guide.pdf' %}" class="btn btn-outline-info btn-sm ms-2" title="使用指南" target="_blank">
                                 <i class="bi bi-question-circle"></i>
                             </a>
                         </h5>
@@ -215,7 +215,7 @@
                         <h5 class="mb-0">
                             <i class="bi bi-arrow-repeat me-2"></i>
                             文件同步
-                            <a href="/static/pdf/获取media文件标准化流程.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
+                            <a href="{% url 'clamps:pdf_viewer' 'Media_File_Standardization_Guide.pdf' %}" class="btn btn-outline-info btn-sm ms-2" title="使用指南" target="_blank">
                                 <i class="bi bi-question-circle"></i>
                             </a>
                         </h5>

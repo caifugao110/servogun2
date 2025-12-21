@@ -115,7 +115,7 @@
                                 <label for="category" class="form-label">
                                     <i class="bi bi-diagram-3 me-2"></i>
                                     <span style="color: red; font-weight: bold;">产品分类</span> <span class="text-danger">*</span>
-                                    <a href="/static/pdf/产品搜索使用指南.pdf" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="使用指南">
+                                    <a href="{% url 'clamps:pdf_viewer' 'Product_Search_User_Guide.pdf' %}" class="btn btn-outline-info btn-sm ms-2" title="使用指南" target="_blank">
                                         <i class="bi bi-question-circle"></i>
                                     </a>
                                 </label>

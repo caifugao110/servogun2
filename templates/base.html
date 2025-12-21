@@ -745,55 +745,92 @@
             }
         }
         
-        // 语言切换功能
+        // 修复后的语言切换功能，确保生成正确的URL - 统一使用/pdf/viewer/路径
         function switchLanguage() {
             const currentPath = window.location.pathname;
-            let newPath = currentPath;
-
-            // 定义中英文页面的URL映射关系
-        const translatablePaths = [
-            { zh: "/", en: "/_en/" },
-            { zh: "/login/", en: "/login_en/" },
-            { zh: "/search/", en: "/search_en/" },
-            { zh: "/search/results/", en: "/search/results_en/" },
-            { zh: "/feedback/", en: "/feedback_en/" },
-            { en: "/feedback_en/", zh: "/feedback/" },
-            { zh: "/profile/", en: "/profile_en/" },
-            { en: "/profile_en/", zh: "/profile/" },
-            { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
-            { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" },
-            { zh: /^\/style-search\/([a-zA-Z0-9]+)\/$/, en: "/style-search/$1_en/" },
-            { en: /^\/style-search\/([a-zA-Z0-9]+)_en\/$/, zh: "/style-search/$1/" }
-        ];
-
-            // 判断当前是在中文页还是英文页
-            const isEnglishPage = currentPath.includes('_en/') || translatablePaths.some(p => p.en instanceof RegExp && p.en.test(currentPath));
-
-            if (isEnglishPage) {
-                // 当前是英文页，切换到中文
-                for (const pathMap of translatablePaths) {
-                    if (typeof pathMap.en === 'string' && currentPath === pathMap.en) {
-                        newPath = pathMap.zh;
-                        break;
-                    } else if (pathMap.en instanceof RegExp && pathMap.en.test(currentPath)) {
-                        newPath = currentPath.replace(pathMap.en, pathMap.zh);
+            
+            // 处理PDF页面 - 统一使用/pdf/viewer/路径，只通过文件名_en后缀区分
+            if (currentPath.includes('/pdf/viewer/')) {
+                // 提取文件名
+                let filename = '';
+                const pathParts = currentPath.split('/');
+                
+                // 遍历路径部分，找到有效的PDF文件名
+                for (let i = pathParts.length - 1; i >= 0; i--) {
+                    const part = pathParts[i];
+                    if (part && part !== '' && part !== 'pdf' && part !== 'viewer') {
+                        filename = part;
                         break;
                     }
                 }
-            } else {
-                // 当前是中文页，切换到英文
-                for (const pathMap of translatablePaths) {
-                    if (typeof pathMap.zh === 'string' && currentPath === pathMap.zh) {
-                        newPath = pathMap.en;
-                        break;
-                    } else if (pathMap.zh instanceof RegExp && pathMap.zh.test(currentPath)) {
-                        newPath = currentPath.replace(pathMap.zh, pathMap.en);
-                        break;
-                    }
+                
+                // 移除末尾斜杠
+                if (filename.endsWith('/')) {
+                    filename = filename.slice(0, -1);
+                }
+                
+                // 解码文件名
+                const decodedFilename = decodeURIComponent(filename);
+                
+                // 构建新的文件名：根据当前语言切换
+                let newFilename;
+                if (decodedFilename.endsWith('_en.pdf')) {
+                    // 英文PDF切换到中文：移除_en后缀
+                    newFilename = decodedFilename.replace('_en.pdf', '.pdf');
+                } else {
+                    // 中文PDF切换到英文：添加_en后缀
+                    newFilename = decodedFilename.replace('.pdf', '_en.pdf');
+                }
+                
+                // 编码新文件名
+                const encodedFilename = encodeURIComponent(newFilename);
+                
+                // 构建新路径 - 统一使用/pdf/viewer/路径
+                const newPath = `/pdf/viewer/${encodedFilename}/`;
+                
+                // 直接跳转，使用正确的URL
+                window.location.href = newPath;
+                return;
+            }
+            
+            // 其他页面保持原有逻辑
+            let newPath = currentPath;
+            const translatablePaths = [
+                { zh: "/", en: "/_en/" },
+                { zh: "/login/", en: "/login_en/" },
+                { zh: "/search/", en: "/search_en/" },
+                { zh: "/search/results/", en: "/search/results_en/" },
+                { zh: "/feedback/", en: "/feedback_en/" },
+                { en: "/feedback_en/", zh: "/feedback/" },
+                { zh: "/profile/", en: "/profile_en/" },
+                { en: "/profile_en/", zh: "/profile/" },
+                { zh: /^\/product\/(\d+)\/$/, en: "/product/$1_en/" },
+                { en: /^\/product\/(\d+)_en\/$/, zh: "/product/$1/" },
+                { zh: /^\/style-search\/([a-zA-Z0-9]+)\/$/, en: "/style-search/$1_en/" },
+                { en: /^\/style-search\/([a-zA-Z0-9]+)_en\/$/, zh: "/style-search/$1/" }
+            ];
+            
+            let foundMapping = false;
+            for (const pathMap of translatablePaths) {
+                if (typeof pathMap.en === 'string' && currentPath === pathMap.en) {
+                    newPath = pathMap.zh;
+                    foundMapping = true;
+                    break;
+                } else if (pathMap.en instanceof RegExp && pathMap.en.test(currentPath)) {
+                    newPath = currentPath.replace(pathMap.en, pathMap.zh);
+                    foundMapping = true;
+                    break;
+                } else if (typeof pathMap.zh === 'string' && currentPath === pathMap.zh) {
+                    newPath = pathMap.en;
+                    foundMapping = true;
+                    break;
+                } else if (pathMap.zh instanceof RegExp && pathMap.zh.test(currentPath)) {
+                    newPath = currentPath.replace(pathMap.zh, pathMap.en);
+                    foundMapping = true;
+                    break;
                 }
             }
-
-            // 如果路径发生变化，则跳转
+            
             if (newPath !== currentPath) {
                 window.location.href = newPath + window.location.search;
             }
@@ -809,7 +846,19 @@
             // 语言切换按钮文本初始化
             const languageToggleBtn = document.querySelector(".language-toggle");
             const currentPath = window.location.pathname;
-            const isEnglishPage = currentPath.includes('_en/');
+            
+            // 判断是否为英文页面，包括PDF页面
+            let isEnglishPage = currentPath.includes('_en/');
+            
+            // 特殊处理PDF页面
+            if (currentPath.includes('/pdf/viewer/')) {
+                const filename = currentPath.split('/').find(part => part.includes('.pdf'));
+                if (filename && filename.includes('_en.pdf')) {
+                    isEnglishPage = true;
+                } else {
+                    isEnglishPage = false;
+                }
+            }
             
             if (languageToggleBtn) {
                 if (isEnglishPage) {
