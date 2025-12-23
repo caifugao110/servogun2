@@ -874,11 +874,18 @@ def batch_download_view(request, file_type):
         # 记录批量下载日志
         log_entry = Log(user=request.user, action_type='batch_download', ip_address=request.META.get('REMOTE_ADDR'),
                         user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                        details=f'File Type: {file_type}, Drawing No.: {drawing_nos_str}, Total Size: {total_size_mb:.2f} MB')
+                        details=f'File Type: {file_type}, Drawing Nos: {drawing_nos_str}, Total Size: {total_size_mb:.2f} MB')
         log_entry.save()
         
-        # 记录批量下载统计
-        user_profile.record_download(total_size_mb)
+        # 记录批量下载统计 - 增加实际下载的文件数量
+        # 对于'both'类型，每个产品下载2个文件，否则每个产品下载1个文件
+        file_count = len(products) if file_type != 'both' else len(products) * 2
+        # 记录下载大小
+        user_profile.daily_download_size_mb += total_size_mb
+        # 增加文件数量统计
+        user_profile.daily_download_count += file_count
+        user_profile.last_download_date = timezone.localtime(timezone.now()).date()
+        user_profile.save()
         
         return response
     messages.error(request, "无效的批量下载请求。")
@@ -2593,46 +2600,21 @@ def get_user_profile_data(request):
             # 转换为本地时间并格式化
             expiry_text = password_expiry_date.strftime('%Y-%m-%d %H:%M:%S')
         
-        # 从Log表中获取今日的下载统计数据
+        # 确保使用最新的下载统计数据
+        # 检查是否需要重置每日统计
         today = timezone.localtime(timezone.now()).date()
-        today_logs = Log.objects.filter(
-            user=request.user,
-            action_type__in=['download', 'batch_download', 'single_download'],
-            timestamp__date=today
-        )
-        
-        # 计算今日下载统计
-        daily_download_count = 0
-        daily_download_size_mb = 0.0
-        
-        for log in today_logs:
-            # 解析下载大小，支持File Size: 和 Total Size: 格式
-            size_match = re.search(r'(File Size|Total Size): ([\d.]+) MB', log.details)
-            if size_match:
-                daily_download_size_mb += float(size_match.group(2))
-            
-            # 解析下载文件数量
-            if 'batch_download' in log.action_type:
-                # 批量下载
-                if 'Product IDs:' in log.details:
-                    ids_match = re.search(r'Product IDs: ([\d,]+)', log.details)
-                    if ids_match:
-                        daily_download_count += len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
-                elif 'Drawing Nos:' in log.details:
-                    nos_match = re.search(r'Drawing Nos: ([^,]+)', log.details)
-                    if nos_match:
-                        daily_download_count += len([no.strip() for no in nos_match.group(1).split(',') if no.strip()])
-            else:
-                # 单个文件下载
-                daily_download_count += 1
+        if user_profile.last_download_date != today:
+            user_profile.reset_daily_download_stats()
+            # 重新获取更新后的数据
+            user_profile.refresh_from_db()
         
         return JsonResponse({
             'created_by': user_profile.created_by.username if user_profile.created_by else "N/A",
             'password_expiry_date': expiry_text,
             'max_daily_download_gb': user_profile.max_daily_download_gb,
             'max_daily_download_count': user_profile.max_daily_download_count,
-            'daily_download_count': daily_download_count,
-            'daily_download_size_mb': daily_download_size_mb
+            'daily_download_count': user_profile.daily_download_count,
+            'daily_download_size_mb': user_profile.daily_download_size_mb
         })
     except UserProfile.DoesNotExist:
         # 创建新的用户配置
@@ -2772,11 +2754,53 @@ def profile(request):
                 total_size = '未知'
             log_data['file_size'] = total_size
         elif 'Drawing Nos:' in log.details:
-            log_data['product_id'] = '多个产品'
-            log_data['file_type'] = '多个文件'
+            # 解析批量下载的图号
+            details = log.details
+            
+            # 处理多行和逗号分隔的图号
+            if 'Drawing Nos:' in details:
+                # 找到Drawing Nos:开始的部分
+                drawing_nos_start = details.index('Drawing Nos:')
+                
+                # 查找结束位置 - 排除逗号，因为逗号可能在图号之间
+                # 查找可能的结束标记：File Type:、Total Size: 或 Async Task ID:
+                end_markers = ['File Type:', 'Total Size:', 'Async Task ID:']
+                end_positions = []
+                
+                for marker in end_markers:
+                    pos = details.find(marker, drawing_nos_start)
+                    if pos != -1:
+                        end_positions.append(pos)
+                
+                if end_positions:
+                    # 使用最接近的结束标记
+                    end_pos = min(end_positions)
+                    drawing_nos_part = details[drawing_nos_start:end_pos]
+                else:
+                    # 如果没有找到结束标记，取整个剩余部分
+                    drawing_nos_part = details[drawing_nos_start:]
+                
+                # 提取图号部分并清理
+                drawing_nos_content = drawing_nos_part.split(':', 1)[1].strip()
+                # 先将逗号替换为空格，再将任意空白字符序列替换为单个逗号+空格，避免双重逗号
+                drawing_nos_content = drawing_nos_content.replace(',', ' ')
+                drawing_nos = re.sub(r'\s+', ', ', drawing_nos_content).strip()
+                # 移除结尾可能存在的逗号
+                if drawing_nos.endswith(','):
+                    drawing_nos = drawing_nos[:-1]
+                drawing_nos = drawing_nos.strip()
+                log_data['product_id'] = drawing_nos
+            
+            # 解析文件类型
+            if 'File Type:' in details:
+                file_type_part = [part for part in details.split(',') if 'File Type:' in part][0]
+                file_type = file_type_part.split(':')[1].strip().upper()
+                log_data['file_type'] = file_type
+            else:
+                log_data['file_type'] = '未知'
+            
             # 解析批量下载的文件大小
             if 'Total Size:' in log.details:
-                details = log.details
                 total_size_part = [part for part in details.split(',') if 'Total Size:' in part][0]
                 total_size = total_size_part.split(':')[1].strip()
             else:
@@ -2913,11 +2937,53 @@ def profile_en(request):
                 total_size = 'Unknown'
             log_data['file_size'] = total_size
         elif 'Drawing Nos:' in log.details:
-            log_data['product_id'] = 'Multiple Products'
-            log_data['file_type'] = 'Multiple Files'
+            # 解析批量下载的图号
+            details = log.details
+            
+            # 处理多行和逗号分隔的图号
+            if 'Drawing Nos:' in details:
+                # 找到Drawing Nos:开始的部分
+                drawing_nos_start = details.index('Drawing Nos:')
+                
+                # 查找结束位置 - 排除逗号，因为逗号可能在图号之间
+                # 查找可能的结束标记：File Type:、Total Size: 或 Async Task ID:
+                end_markers = ['File Type:', 'Total Size:', 'Async Task ID:']
+                end_positions = []
+                
+                for marker in end_markers:
+                    pos = details.find(marker, drawing_nos_start)
+                    if pos != -1:
+                        end_positions.append(pos)
+                
+                if end_positions:
+                    # 使用最接近的结束标记
+                    end_pos = min(end_positions)
+                    drawing_nos_part = details[drawing_nos_start:end_pos]
+                else:
+                    # 如果没有找到结束标记，取整个剩余部分
+                    drawing_nos_part = details[drawing_nos_start:]
+                
+                # 提取图号部分并清理
+                drawing_nos_content = drawing_nos_part.split(':', 1)[1].strip()
+                # 先将逗号替换为空格，再将任意空白字符序列替换为单个逗号+空格，避免双重逗号
+                drawing_nos_content = drawing_nos_content.replace(',', ' ')
+                drawing_nos = re.sub(r'\s+', ', ', drawing_nos_content).strip()
+                # 移除结尾可能存在的逗号
+                if drawing_nos.endswith(','):
+                    drawing_nos = drawing_nos[:-1]
+                drawing_nos = drawing_nos.strip()
+                log_data['product_id'] = drawing_nos
+            
+            # 解析文件类型
+            if 'File Type:' in details:
+                file_type_part = [part for part in details.split(',') if 'File Type:' in part][0]
+                file_type = file_type_part.split(':')[1].strip().upper()
+                log_data['file_type'] = file_type
+            else:
+                log_data['file_type'] = 'Unknown'
+            
             # 解析批量下载的文件大小
             if 'Total Size:' in log.details:
-                details = log.details
                 total_size_part = [part for part in details.split(',') if 'Total Size:' in part][0]
                 total_size = total_size_part.split(':')[1].strip()
             else:

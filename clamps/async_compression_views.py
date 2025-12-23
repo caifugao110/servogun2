@@ -204,7 +204,7 @@ def download_compressed_file(request):
                 products = Product.objects.filter(id__in=product_ids)
                 drawing_nos = [product.drawing_no_1 for product in products if product.drawing_no_1]
                 drawing_nos_str = ', '.join(drawing_nos)
-                details = f'Drawing No.: {drawing_nos_str}, File Type: {task.file_type}, Total Size: {file_size_mb:.2f} MB, Async Task ID: {task_id}'
+                details = f'Drawing Nos: {drawing_nos_str}, File Type: {task.file_type}, Total Size: {file_size_mb:.2f} MB, Async Task ID: {task_id}'
             
             Log.objects.create(
                 user=request.user,
@@ -216,7 +216,26 @@ def download_compressed_file(request):
             
             # 记录下载统计
             user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-            user_profile.record_download(file_size_mb)
+            
+            # 检查是否是新的一天，重置统计
+            today = timezone.localtime(timezone.now()).date()
+            if user_profile.last_download_date != today:
+                user_profile.daily_download_size_mb = 0
+                user_profile.daily_download_count = 0
+                user_profile.last_download_date = today
+            
+            # 对于'both'类型，每个产品下载2个文件，否则每个产品下载1个文件
+            if is_single_download:
+                # 单个下载
+                user_profile.daily_download_size_mb += file_size_mb
+                user_profile.daily_download_count += 1 if task.file_type != 'both' else 2
+            else:
+                # 批量下载
+                file_count = len(products) if task.file_type != 'both' else len(products) * 2
+                user_profile.daily_download_size_mb += file_size_mb
+                user_profile.daily_download_count += file_count
+            
+            user_profile.save()
             
             return response
             
