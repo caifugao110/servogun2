@@ -495,7 +495,7 @@ def product_detail(request, product_id):
     
     # 记录查看详情日志
     log_entry = Log(user=request.user, action_type='view', ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id}')
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Drawing No.: {product.drawing_no_1}')
     log_entry.save()
     return render(request, 'product_detail.html', {
         'product': product,
@@ -520,7 +520,7 @@ def product_detail_en(request, product_id):
     
     # 记录查看详情日志
     log_entry = Log(user=request.user, action_type='view', ip_address=request.META.get('REMOTE_ADDR'),
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Product ID: {product_id} (English)')
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Drawing No.: {product.drawing_no_1} (English)')
     log_entry.save()
     return render(request, 'product_detail_en.html', {
         'product': product,
@@ -727,7 +727,7 @@ def download_file(request, product_id, file_type):
                 # 记录下载日志
                 log_entry = Log(user=request.user, action_type='download', ip_address=request.META.get('REMOTE_ADDR'),
                                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                                details=f'Product ID: {product_id}, File Type: {file_type}, File Size: {file_size_mb:.2f} MB')
+                                details=f'Drawing No.: {product.drawing_no_1}, File Type: {file_type}, File Size: {file_size_mb:.2f} MB')
                 log_entry.save()
                 
                 # 记录下载统计
@@ -739,7 +739,7 @@ def download_file(request, product_id, file_type):
                 # 记录下载日志
                 log_entry = Log(user=request.user, action_type='download', ip_address=request.META.get('REMOTE_ADDR'),
                                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                                details=f'Product ID: {product_id}, File Type: {file_type}, File Size: {file_size_mb:.2f} MB')
+                                details=f'Drawing No.: {product.drawing_no_1}, File Type: {file_type}, File Size: {file_size_mb:.2f} MB')
                 log_entry.save()
                 
                 # 记录下载统计
@@ -867,9 +867,14 @@ def batch_download_view(request, file_type):
         
         response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
         
+        # 获取所有产品的图号
+        drawing_nos = [product.drawing_no_1 for product in products if product.drawing_no_1]
+        drawing_nos_str = ', '.join(drawing_nos)
+        
+        # 记录批量下载日志
         log_entry = Log(user=request.user, action_type='batch_download', ip_address=request.META.get('REMOTE_ADDR'),
                         user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                        details=f'File Type: {file_type}, Product IDs: {product_ids_str}, Total Size: {total_size_mb:.2f} MB')
+                        details=f'File Type: {file_type}, Drawing No.: {drawing_nos_str}, Total Size: {total_size_mb:.2f} MB')
         log_entry.save()
         
         # 记录批量下载统计
@@ -2496,10 +2501,10 @@ def parse_download_size(details):
 def parse_file_count(details):
     """从日志详情中解析下载文件数量"""
     try:
-        # 单个文件下载 - 检查Product ID: 或旧格式
-        if ('File Type:' in details and 'Product IDs:' not in details) or 'Product ID:' in details:
+        # 单个文件下载 - 检查Product ID: 或 Drawing No.: 或旧格式
+        if ('File Type:' in details and 'Product IDs:' not in details and 'Drawing Nos:' not in details) or 'Product ID:' in details or 'Drawing No.:' in details:
             return 1
-        # 批量下载
+        # 批量下载 - 检查Product IDs: 或 Drawing Nos:
         elif 'Product IDs:' in details:
             ids_match = re.search(r'Product IDs: ([\d,]+)', details)
             if ids_match:
@@ -2510,6 +2515,17 @@ def parse_file_count(details):
                 # 只下载一种文件类型
                 else:
                     return len(product_ids)
+        elif 'Drawing Nos:' in details:
+            # Drawing Nos: 格式下使用逗号分隔的图号，不是数字ID，所以直接计算数量
+            nos_match = re.search(r'Drawing Nos: ([^,]+)', details)
+            if nos_match:
+                drawing_nos = [no.strip() for no in nos_match.group(1).split(',') if no.strip()]
+                # 检查是否下载多种文件类型（both = pdf + step）
+                if 'File Type: both' in details:
+                    return len(drawing_nos) * 2
+                # 只下载一种文件类型
+                else:
+                    return len(drawing_nos)
     except Exception:
         # 静默处理异常，提高性能
         pass
@@ -2598,9 +2614,14 @@ def get_user_profile_data(request):
             # 解析下载文件数量
             if 'batch_download' in log.action_type:
                 # 批量下载
-                ids_match = re.search(r'Product IDs: ([\d,]+)', log.details)
-                if ids_match:
-                    daily_download_count += len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
+                if 'Product IDs:' in log.details:
+                    ids_match = re.search(r'Product IDs: ([\d,]+)', log.details)
+                    if ids_match:
+                        daily_download_count += len([id for id in ids_match.group(1).split(',') if id.strip().isdigit()])
+                elif 'Drawing Nos:' in log.details:
+                    nos_match = re.search(r'Drawing Nos: ([^,]+)', log.details)
+                    if nos_match:
+                        daily_download_count += len([no.strip() for no in nos_match.group(1).split(',') if no.strip()])
             else:
                 # 单个文件下载
                 daily_download_count += 1
@@ -2750,16 +2771,32 @@ def profile(request):
             else:
                 total_size = '未知'
             log_data['file_size'] = total_size
+        elif 'Drawing Nos:' in log.details:
+            log_data['product_id'] = '多个产品'
+            log_data['file_type'] = '多个文件'
+            # 解析批量下载的文件大小
+            if 'Total Size:' in log.details:
+                details = log.details
+                total_size_part = [part for part in details.split(',') if 'Total Size:' in part][0]
+                total_size = total_size_part.split(':')[1].strip()
+            else:
+                total_size = '未知'
+            log_data['file_size'] = total_size
         elif 'File Type:' in log.details:
             # 解析单个下载记录
             details = log.details
             
-            # 提取产品ID
+            # 提取产品ID或图号
             if 'Product ID:' in details:
                 product_id_part = details.split(',')[0]
                 product_id = product_id_part.split(':')[1].strip()
                 if product_id != '未知':
                     product_ids_to_query.append(product_id)
+            elif 'Drawing No.:' in details:
+                # 图号格式已直接包含在日志中，不需要查询
+                drawing_no_part = details.split(',')[0]
+                drawing_no = drawing_no_part.split(':')[1].strip()
+                product_id = drawing_no  # 直接使用图号作为product_id
             else:
                 product_id = '未知'
             log_data['product_id'] = product_id
@@ -2875,16 +2912,32 @@ def profile_en(request):
             else:
                 total_size = 'Unknown'
             log_data['file_size'] = total_size
+        elif 'Drawing Nos:' in log.details:
+            log_data['product_id'] = 'Multiple Products'
+            log_data['file_type'] = 'Multiple Files'
+            # 解析批量下载的文件大小
+            if 'Total Size:' in log.details:
+                details = log.details
+                total_size_part = [part for part in details.split(',') if 'Total Size:' in part][0]
+                total_size = total_size_part.split(':')[1].strip()
+            else:
+                total_size = 'Unknown'
+            log_data['file_size'] = total_size
         elif 'File Type:' in log.details:
             # 解析单个下载记录
             details = log.details
             
-            # 提取产品ID
+            # 提取产品ID或图号
             if 'Product ID:' in details:
                 product_id_part = details.split(',')[0]
                 product_id = product_id_part.split(':')[1].strip()
                 if product_id != 'Unknown':
                     product_ids_to_query.append(product_id)
+            elif 'Drawing No.:' in details:
+                # 图号格式已直接包含在日志中，不需要查询
+                drawing_no_part = details.split(',')[0]
+                drawing_no = drawing_no_part.split(':')[1].strip()
+                product_id = drawing_no  # 直接使用图号作为product_id
             else:
                 product_id = 'Unknown'
             log_data['product_id'] = product_id

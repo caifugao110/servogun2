@@ -196,10 +196,15 @@ def download_compressed_file(request):
             # 格式化日志详情，区分单个和批量下载
             if is_single_download:
                 # 单个下载格式
-                details = f'Product ID: {task.product_ids}, File Type: {task.file_type}, Total Size: {file_size_mb:.2f} MB, Async Task ID: {task_id}'
+                product = Product.objects.get(id=task.product_ids)
+                details = f'Drawing No.: {product.drawing_no_1}, File Type: {task.file_type}, Total Size: {file_size_mb:.2f} MB, Async Task ID: {task_id}'
             else:
                 # 批量下载格式
-                details = f'Product IDs: {task.product_ids}, File Type: {task.file_type}, Total Size: {file_size_mb:.2f} MB, Async Task ID: {task_id}'
+                product_ids = [int(pid) for pid in task.product_ids.split(',') if pid.strip().isdigit()]
+                products = Product.objects.filter(id__in=product_ids)
+                drawing_nos = [product.drawing_no_1 for product in products if product.drawing_no_1]
+                drawing_nos_str = ', '.join(drawing_nos)
+                details = f'Drawing No.: {drawing_nos_str}, File Type: {task.file_type}, Total Size: {file_size_mb:.2f} MB, Async Task ID: {task_id}'
             
             Log.objects.create(
                 user=request.user,
