@@ -1290,6 +1290,10 @@ def view_logs(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     
+    # 获取所有用户名列表用于筛选
+    usernames = Log.objects.values_list('user__username', flat=True).distinct().order_by('user__username')
+    usernames = [username for username in usernames if username is not None]
+    
     context = {
         "page_obj": page_obj,
         "total_count": total_count,
@@ -1297,6 +1301,7 @@ def view_logs(request):
         "search_count": search_count,
         "download_count": download_count,
         "view_count": view_count,
+        "usernames": usernames,
     }
     return render(request, "management/logs.html", context)
 
@@ -1793,7 +1798,20 @@ def create_style_link(request):
                 break
         
         # 获取表单数据
-        name = request.POST.get('name', '').strip()
+        customer_name = request.POST.get('customer_name', '').strip()
+        project_name = request.POST.get('project_name', '').strip()
+        style_number = request.POST.get('style_number', '').strip()
+        
+        # 将三个字段合并为一个name字符串
+        name_parts = []
+        if customer_name:
+            name_parts.append(customer_name)
+        if project_name:
+            name_parts.append(project_name)
+        if style_number:
+            name_parts.append(style_number)
+        name = '_'.join(name_parts)
+        
         expires_days = request.POST.get('expires_days', '0')
         max_clicks = request.POST.get('max_clicks', '0')
         
@@ -2219,7 +2237,20 @@ def edit_style_link(request, link_id):
     
     if request.method == 'POST':
         # 获取表单数据
-        name = request.POST.get('name', '').strip()
+        customer_name = request.POST.get('customer_name', '').strip()
+        project_name = request.POST.get('project_name', '').strip()
+        style_number = request.POST.get('style_number', '').strip()
+        
+        # 将三个字段合并为一个name字符串
+        name_parts = []
+        if customer_name:
+            name_parts.append(customer_name)
+        if project_name:
+            name_parts.append(project_name)
+        if style_number:
+            name_parts.append(style_number)
+        name = '_'.join(name_parts)
+        
         expires_days = request.POST.get('expires_days', '0')
         max_clicks = request.POST.get('max_clicks', '0')
         
@@ -2275,13 +2306,23 @@ def edit_style_link(request, link_id):
     
     # 计算有效期天数
     if style_link.expires_at:
-        expires_days = (style_link.expires_at - style_link.created_at).days
+        # 使用当前时间计算剩余天数，而不是创建时间
+        expires_days = max(0, (style_link.expires_at - timezone.now()).days)
     else:
         expires_days = 0
     
+    # 将name字段拆分为三个字段
+    name_parts = style_link.name.split('_') if style_link.name else []
+    customer_name = name_parts[0] if len(name_parts) > 0 else ''
+    project_name = name_parts[1] if len(name_parts) > 1 else ''
+    style_number = name_parts[2] if len(name_parts) > 2 else ''
+    
     context = {
         'style_link': style_link,
-        'expires_days': expires_days
+        'expires_days': expires_days,
+        'customer_name': customer_name,
+        'project_name': project_name,
+        'style_number': style_number
     }
     return render(request, 'management/edit_style_link.html', context)
 
@@ -2394,7 +2435,11 @@ def download_analytics_api(request):
     
     # 计算时间范围
     end_date = timezone.now()
-    start_date = end_date - timedelta(days=days)
+    # 如果是今天，从00:00:00开始统计，否则按天数计算
+    if days == 1:
+        start_date = timezone.make_aware(datetime.combine(end_date.date(), datetime.min.time()))
+    else:
+        start_date = end_date - timedelta(days=days)
     
     # 基础查询：下载相关的日志
     # 只查询有用户关联的日志（排除匿名用户）

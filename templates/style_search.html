@@ -44,6 +44,9 @@
                         <strong>创建者：</strong> {{ style_link.created_by.username }}
                     </div>
                     <div class="col-md-4">
+                        <strong>链接名称：</strong> {{ style_link.name|default:"" }}
+                    </div>
+                    <div class="col-md-4">
                         <strong>创建时间：</strong> {{ style_link.created_at|date:"Y-m-d H:i" }}
                     </div>
                     {% if style_link.expires_at %}
@@ -51,9 +54,11 @@
                         <strong>有效期至：</strong> {{ style_link.expires_at|date:"Y-m-d H:i" }}
                     </div>
                     {% endif %}
+                    {% if style_link.click_count is not None and style_link.max_clicks > 0 %}
                     <div class="col-md-4">
-                        <strong>点击次数：</strong> {{ style_link.click_count }}{% if style_link.max_clicks > 0 %}/{{ style_link.max_clicks }}{% endif %}
+                        <strong>点击次数：</strong> {{ style_link.click_count }}/{{ style_link.max_clicks }}
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -183,36 +188,31 @@
                             <!-- 所有高级字段（静态+动态）都放在这个row里面 -->
                             <div class="row g-3" id="advanced-fields-container">
                                 <!-- 图号1(o) -->
+                                {% if fixed_fields.drawing_no_1 %}
                                 <div class="col-md-4">
                                     <label for="drawing_no_1" class="form-label">
                                         <i class="bi bi-file-earmark-text me-2"></i>
                                         图号1(o)
                                     </label>
-                                    {% if fixed_fields.drawing_no_1 %}
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
                                                 value="{{ fixed_fields.drawing_no_1 }}" readonly>
                                         <span class="input-group-text text-danger">已定义禁止输入</span>
                                     </div>
-                                    {% else %}
-                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
-                                            placeholder="焊枪图号，默认为空">
-                                    {% endif %}
                                 </div>
+                                {% endif %}
                                 
                                 <!-- 描述 -->
+                                {% if fixed_fields.description %}
                                 <div class="col-md-4">
                                     <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>描述</label>
-                                    {% if fixed_fields.description %}
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="description" name="description" 
                                                 value="{{ fixed_fields.description }}" readonly>
                                         <span class="input-group-text text-danger">已定义禁止输入</span>
                                     </div>
-                                    {% else %}
-                                    <input type="text" class="form-control" id="description" name="description" placeholder="客户描述，默认为空">
-                                    {% endif %}
                                 </div>
+                                {% endif %}
                                 
                                 <!-- 行程 -->
                                 <div class="col-md-4">
@@ -232,7 +232,9 @@
                                 <div class="col-md-4">
                                     <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR厂家</label>
                                     <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+                                        {% if motor_manufacturers|length > 1 %}
                                         <option value="">请选择，默认为空</option>
+                                        {% endif %}
                                         {% for manufacturer in motor_manufacturers %}
                                         <option value="{{ manufacturer }}">{{ manufacturer }}</option>
                                         {% endfor %}
@@ -243,7 +245,9 @@
                                 <div class="col-md-4">
                                     <label for="gearbox_type" class="form-label"><i class="bi bi-cog me-2"></i>齿轮箱型式</label>
                                     <select class="form-select" id="gearbox_type" name="gearbox_type">
+                                        {% if gearbox_types|length > 1 %}
                                         <option value="">请选择，默认为空</option>
+                                        {% endif %}
                                         {% for gearbox_type in gearbox_types %}
                                         <option value="{{ gearbox_type }}">{{ gearbox_type }}</option>
                                         {% endfor %}
@@ -622,24 +626,53 @@
 
         function updateTransformerOptions(categoryName) {
             const transformerSelect = document.getElementById('transformer');
-            transformerSelect.innerHTML = '<option value="">请选择，默认为空</option>';
-            if (categoryName && categoryTransformerTypes[categoryName]) {
-                // 获取配置中允许的变压器类型
-                const allowedTransformers = [
-                    {% for transformer in transformers %}
-                        '{{ transformer }}'{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                ];
+            // 获取配置中允许的变压器类型
+            const allowedTransformers = [
+                {% for transformer in transformers %}
+                    '{{ transformer }}'{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            ];
+            
+            // 清空选择框
+            transformerSelect.innerHTML = '';
+            
+            // 如果没有选择产品分类，显示提示文字
+            if (!categoryName || categoryName === '请选择，必选项') {
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = '已定义，在选择产品分类后展示';
+                transformerSelect.appendChild(placeholderOption);
+                return;
+            }
+            
+            // 只有当允许的变压器类型数量大于0时，才考虑是否添加默认空选项
+            if (allowedTransformers.length > 0) {
+                // 当只有一个允许的变压器类型时，不显示默认空选项
+                // 当有多个允许的变压器类型时，显示默认空选项
+                if (allowedTransformers.length > 1) {
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = '请选择，默认为空';
+                    transformerSelect.appendChild(defaultOption);
+                }
                 
-                categoryTransformerTypes[categoryName].forEach(transformerType => {
-                    // 只显示配置中允许的变压器类型
-                    if (allowedTransformers.includes(transformerType)) {
-                        const option = document.createElement('option');
-                        option.value = transformerType;
-                        option.textContent = formatTransformerDisplayText(transformerType);
-                        transformerSelect.appendChild(option);
-                    }
-                });
+                if (categoryTransformerTypes[categoryName]) {
+                    categoryTransformerTypes[categoryName].forEach(transformerType => {
+                        // 只显示配置中允许的变压器类型
+                        if (allowedTransformers.includes(transformerType)) {
+                            const option = document.createElement('option');
+                            option.value = transformerType;
+                            option.textContent = formatTransformerDisplayText(transformerType);
+                            transformerSelect.appendChild(option);
+                        }
+                    });
+                }
+            } else {
+                // 当没有允许的变压器类型时，显示默认空选项
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '请选择，默认为空';
+                transformerSelect.appendChild(defaultOption);
             }
         }
 

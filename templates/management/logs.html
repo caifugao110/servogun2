@@ -59,8 +59,12 @@
                     
                     <div class="col-md-3">
                         <label for="username" class="form-label">用户名</label>
-                        <input type="text" class="form-control" id="username" name="username" 
-                               value="{{ request.GET.username }}" placeholder="输入用户名">
+                        <select class="form-select" id="username" name="username">
+                            <option value="">全部</option>
+                            {% for username in usernames %}
+                                <option value="{{ username }}" {% if request.GET.username == username %}selected{% endif %}>{{ username }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     
                     <div class="col-md-3">

@@ -44,6 +44,9 @@
                         <strong>Created by：</strong> {{ style_link.created_by.username }}
                     </div>
                     <div class="col-md-4">
+                        <strong>Link Name：</strong> {{ style_link.name|default:"" }}
+                    </div>
+                    <div class="col-md-4">
                         <strong>Created at：</strong> {{ style_link.created_at|date:"Y-m-d H:i" }}
                     </div>
                     {% if style_link.expires_at %}
@@ -51,9 +54,11 @@
                         <strong>Expires at：</strong> {{ style_link.expires_at|date:"Y-m-d H:i" }}
                     </div>
                     {% endif %}
+                    {% if style_link.click_count is not None and style_link.max_clicks > 0 %}
                     <div class="col-md-4">
-                        <strong>Click count：</strong> {{ style_link.click_count }}{% if style_link.max_clicks > 0 %}/{{ style_link.max_clicks }}{% endif %}
+                        <strong>Click count：</strong> {{ style_link.click_count }}/{{ style_link.max_clicks }}
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -183,36 +188,31 @@
                             <!-- All advanced fields (static + dynamic) are placed in this row -->
                             <div class="row g-3" id="advanced-fields-container">
                                 <!-- Drawing No. 1(o) -->
+                                {% if fixed_fields.drawing_no_1 %}
                                 <div class="col-md-4">
                                     <label for="drawing_no_1" class="form-label">
                                         <i class="bi bi-file-earmark-text me-2"></i>
                                         Drawing No. 1(o)
                                     </label>
-                                    {% if fixed_fields.drawing_no_1 %}
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
                                                 value="{{ fixed_fields.drawing_no_1 }}" readonly>
                                         <span class="input-group-text text-danger">Defined, input prohibited</span>
                                     </div>
-                                    {% else %}
-                                    <input type="text" class="form-control" id="drawing_no_1" name="drawing_no_1" 
-                                            placeholder="Weld gun drawing number, default is empty">
-                                    {% endif %}
                                 </div>
+                                {% endif %}
                                 
                                 <!-- Description -->
+                                {% if fixed_fields.description %}
                                 <div class="col-md-4">
                                     <label for="description" class="form-label"><i class="bi bi-card-text me-2"></i>Description</label>
-                                    {% if fixed_fields.description %}
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="description" name="description" 
                                                 value="{{ fixed_fields.description }}" readonly>
                                         <span class="input-group-text text-danger">Defined, input prohibited</span>
                                     </div>
-                                    {% else %}
-                                    <input type="text" class="form-control" id="description" name="description" placeholder="Customer description, default is empty">
-                                    {% endif %}
                                 </div>
+                                {% endif %}
                                 
                                 <!-- Stroke -->
                                 <div class="col-md-4">
@@ -232,7 +232,9 @@
                                 <div class="col-md-4">
                                     <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR Manufacturer</label>
                                     <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
+                                        {% if motor_manufacturers|length > 1 %}
                                         <option value="">Please select, default is empty</option>
+                                        {% endif %}
                                         {% for manufacturer in motor_manufacturers %}
                                         <option value="{{ manufacturer }}">{{ manufacturer }}</option>
                                         {% endfor %}
@@ -243,7 +245,9 @@
                                 <div class="col-md-4">
                                     <label for="gearbox_type" class="form-label"><i class="bi bi-cog me-2"></i>Gearbox Type</label>
                                     <select class="form-select" id="gearbox_type" name="gearbox_type">
+                                        {% if gearbox_types|length > 1 %}
                                         <option value="">Please select, default is empty</option>
+                                        {% endif %}
                                         {% for gearbox_type in gearbox_types %}
                                         <option value="{{ gearbox_type }}">{{ gearbox_type }}</option>
                                         {% endfor %}
@@ -653,24 +657,53 @@
 
         function updateTransformerOptions(categoryName) {
             const transformerSelect = document.getElementById('transformer');
-            transformerSelect.innerHTML = '<option value="">Please select, default is empty</option>';
-            if (categoryName && categoryTransformerTypes[categoryName]) {
-                // Get allowed transformer types from configuration
-                const allowedTransformers = [
-                    {% for transformer in transformers %}
-                        '{{ transformer }}'{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                ];
+            // Get allowed transformer types from configuration
+            const allowedTransformers = [
+                {% for transformer in transformers %}
+                    '{{ transformer }}'{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            ];
+            
+            // Clear the select box
+            transformerSelect.innerHTML = '';
+            
+            // If no product category is selected or it's the default option, display hint text
+            if (!categoryName || categoryName === '' || categoryName === 'Please select, required option') {
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = 'Defined, will be displayed after selecting product category';
+                transformerSelect.appendChild(placeholderOption);
+                return;
+            }
+            
+            // Only consider adding default empty option if there are allowed transformer types
+            if (allowedTransformers.length > 0) {
+                // When there's only one allowed transformer type, don't show default empty option
+                // When there are multiple allowed transformer types, show default empty option
+                if (allowedTransformers.length > 1) {
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Please select, default is empty';
+                    transformerSelect.appendChild(defaultOption);
+                }
                 
-                categoryTransformerTypes[categoryName].forEach(transformerType => {
-                    // Only display transformer types allowed in configuration
-                    if (allowedTransformers.includes(transformerType)) {
-                        const option = document.createElement('option');
-                        option.value = transformerType;
-                        option.textContent = formatTransformerDisplayText(transformerType);
-                        transformerSelect.appendChild(option);
-                    }
-                });
+                if (categoryTransformerTypes[categoryName]) {
+                    categoryTransformerTypes[categoryName].forEach(transformerType => {
+                        // Only display transformer types allowed in configuration
+                        if (allowedTransformers.includes(transformerType)) {
+                            const option = document.createElement('option');
+                            option.value = transformerType;
+                            option.textContent = formatTransformerDisplayText(transformerType);
+                            transformerSelect.appendChild(option);
+                        }
+                    });
+                }
+            } else {
+                // When there are no allowed transformer types, show default empty option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Please select, default is empty';
+                transformerSelect.appendChild(defaultOption);
             }
         }
 
@@ -871,6 +904,9 @@
             updateTransformerOptions(initialCategoryText);
             updateDynamicFields(initialCategoryText);
             updateProductImage();
+        } else {
+            // Initialize transformer options with empty category to show hint text
+            updateTransformerOptions('');
         }
     });
 </script>

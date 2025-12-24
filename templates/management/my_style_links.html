@@ -55,8 +55,7 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>链接备注</th>
-                                    <th>唯一标识</th>
+                                    <th>链接名称</th>
                                     <th>完整链接</th>
                                     <th>创建者</th>
                                     <th>有效期</th>
@@ -71,9 +70,6 @@
                                     <tr>
                                         <td>
                                             {{ link.name|default:"未命名" }}
-                                        </td>
-                                        <td>
-                                            <code>{{ link.unique_id }}</code>
                                         </td>
                                         <td>
                                             <a href="{{ link.get_full_url }}" target="_blank" class="text-primary">

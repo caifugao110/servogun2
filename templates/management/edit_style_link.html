@@ -173,13 +173,31 @@
                     
                     <div class="row g-3">
                         <!-- 基本信息 -->
-                        <div class="col-md-6">
-                            <label for="name" class="form-label">
+                        <div class="col-md-4">
+                            <label for="customer_name" class="form-label">
                                 <i class="bi bi-tag me-2"></i>
-                                链接备注
+                                客户名称 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ style_link.name }}" placeholder="请输入链接备注名称">
-                            <div class="form-text">用于标识该链接的用途，备注参考：至信选枪251202</div>
+                            <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ customer_name }}" placeholder="请输入客户名称" required>
+                            <div class="form-text">客户名称，必填项</div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="project_name" class="form-label">
+                                <i class="bi bi-tag me-2"></i>
+                                项目名称
+                            </label>
+                            <input type="text" class="form-control" id="project_name" name="project_name" value="{{ project_name }}" placeholder="请输入项目名称">
+                            <div class="form-text">项目名称，可选项</div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="style_number" class="form-label">
+                                <i class="bi bi-tag me-2"></i>
+                                仕样编号
+                            </label>
+                            <input type="number" class="form-control" id="style_number" name="style_number" value="{{ style_number }}" placeholder="请输入仕样编号" min="0">
+                            <div class="form-text">仕样编号，可选项，只能输入数字</div>
                         </div>
                         
                         <div class="col-md-3">
@@ -546,11 +564,11 @@
                                 <div class="row g-3">
                                     <div class="col-md-4">
                                         <label for="fixed_drawing_no_1" class="form-label">图号1(o)</label>
-                                        <input type="text" class="form-control" id="fixed_drawing_no_1" name="fixed_fields[drawing_no_1]" value="{{ style_link.search_config.fixed_fields.drawing_no_1|default:'' }}" placeholder="不定义则允许用户输入">
+                                        <input type="text" class="form-control" id="fixed_drawing_no_1" name="fixed_fields[drawing_no_1]" value="{{ style_link.search_config.fixed_fields.drawing_no_1|default:'' }}" placeholder="不定义则搜索页面不显示">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="fixed_description" class="form-label">描述</label>
-                                        <input type="text" class="form-control" id="fixed_description" name="fixed_fields[description]" value="{{ style_link.search_config.fixed_fields.description|default:'' }}" placeholder="不定义则允许用户输入">
+                                        <input type="text" class="form-control" id="fixed_description" name="fixed_fields[description]" value="{{ style_link.search_config.fixed_fields.description|default:'' }}" placeholder="不定义则搜索页面不显示">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="fixed_clamping_force" class="form-label">加压力</label>
@@ -742,6 +760,17 @@
         setupSelectAll('select_all_motor_manufacturers', 'motor_manufacturer_checkbox');
         setupSelectAll('select_all_gearbox_types', 'gearbox_type_checkbox');
         setupSelectAll('select_all_enabled_fields', 'enabled_field_checkbox');
+        
+        // 表单验证 - 客户名称为必填项
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            const customerName = document.getElementById('customer_name').value.trim();
+            if (!customerName) {
+                alert('客户名称为必填项，请填写');
+                event.preventDefault();
+                return false;
+            }
+        });
     });
 </script>
 {% endblock %}

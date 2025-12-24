@@ -240,7 +240,7 @@
                                     <table class="table table-hover">
                                         <thead>
                                             <tr>
-                                                <th scope="col">链接ID</th>
+                                                <th scope="col">链接名称</th>
                                                 <th scope="col">初次访问时间</th>
                                                 <th scope="col">上次访问时间</th>
                                                 <th scope="col">访问次数</th>
@@ -251,7 +251,7 @@
                                         <tbody>
                                             {% for visit in style_link_visits %} 
                                                 <tr>
-                                                    <td>{{ visit.unique_id }}</td>
+                                                    <td>{{ visit.style_link.name|default:visit.unique_id }}</td>
                                                     <td>{{ visit.first_visited_at|date:"Y-m-d H:i:s" }}</td>
                                                     <td>{{ visit.last_visited_at|date:"Y-m-d H:i:s" }}</td>
                                                     <td>{{ visit.visit_count }}</td>
