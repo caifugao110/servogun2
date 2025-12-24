@@ -232,7 +232,7 @@
                         <div class="col-md-12">
                             <label class="form-label">
                                 <i class="bi bi-folder2 me-2"></i>
-                                产品分类（可多选，未勾选的将不会显示）
+                                产品分类（可多选，未勾选的将不会在搜索页面中显示）
                                 <div class="form-check form-check-inline ms-3">
                                     <input class="form-check-input" type="checkbox" id="select_all_product_categories">
                                     <label class="form-check-label">全选/取消全选</label>
@@ -282,7 +282,7 @@
                         <div class="col-md-12">
                             <label class="form-label">
                                 <i class="bi bi-gear me-2"></i>
-                                变压器类型（可多选，未勾选的将不会显示）
+                                变压器类型（可多选，未勾选的将不会在搜索页面中显示）
                                 <div class="form-check form-check-inline ms-3">
                                     <input class="form-check-input" type="checkbox" id="select_all_transformers">
                                     <label class="form-check-label">全选/取消全选</label>
@@ -406,7 +406,7 @@
                         <div class="col-md-12">
                             <label class="form-label">
                                 <i class="bi bi-gear-wide-connected me-2"></i>
-                                MOTOR厂家类型（可多选，未勾选的将不会显示）
+                                MOTOR厂家类型（可多选，未勾选的将不会在搜索页面中显示）
                                 <div class="form-check form-check-inline ms-3">
                                     <input class="form-check-input" type="checkbox" id="select_all_motor_manufacturers">
                                     <label class="form-check-label">全选/取消全选</label>
@@ -488,7 +488,7 @@
                         <div class="col-md-12">
                             <label class="form-label">
                                 <i class="bi bi-cog me-2"></i>
-                                齿轮箱型式（可多选，未勾选的将不会显示）
+                                齿轮箱型式（可多选，未勾选的将不会在搜索页面中显示）
                                 <div class="form-check form-check-inline ms-3">
                                     <input class="form-check-input" type="checkbox" id="select_all_gearbox_types">
                                     <label class="form-check-label">全选/取消全选</label>
@@ -760,6 +760,43 @@
         setupSelectAll('select_all_motor_manufacturers', 'motor_manufacturer_checkbox');
         setupSelectAll('select_all_gearbox_types', 'gearbox_type_checkbox');
         setupSelectAll('select_all_enabled_fields', 'enabled_field_checkbox');
+        
+        // 齿轮箱型式 - 折回、低压、高压同步勾选逻辑
+        const gearboxCheckboxes = document.querySelectorAll('.gearbox_type_checkbox');
+        
+        // 第一组：折回、低压、高压
+        const synchronizedValues1 = ['折回', '低压', '高压'];
+        const synchronizedCheckboxes1 = Array.from(gearboxCheckboxes).filter(cb => 
+            synchronizedValues1.includes(cb.value)
+        );
+        
+        synchronizedCheckboxes1.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                synchronizedCheckboxes1.forEach(cb => {
+                    if (cb !== this) {
+                        cb.checked = isChecked;
+                    }
+                });
+            });
+        });
+        
+        // 第二组：中空、OBARA-中空
+        const synchronizedValues2 = ['中空', 'OBARA-中空'];
+        const synchronizedCheckboxes2 = Array.from(gearboxCheckboxes).filter(cb => 
+            synchronizedValues2.includes(cb.value)
+        );
+        
+        synchronizedCheckboxes2.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                synchronizedCheckboxes2.forEach(cb => {
+                    if (cb !== this) {
+                        cb.checked = isChecked;
+                    }
+                });
+            });
+        });
         
         // 表单验证 - 客户名称为必填项
         const form = document.querySelector('form');

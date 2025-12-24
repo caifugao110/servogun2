@@ -143,8 +143,12 @@
                             <div class="col-md-6">
                                 <label for="transformer" class="form-label"><i class="bi bi-cpu me-2"></i>变压器</label>
                                 <select class="form-select" id="transformer" name="transformer">
+                                    {% if not transformers %}
+                                    <option value="">未定义，默认为空</option>
+                                    {% else %}
                                     <option value="">请选择，默认为空</option>
                                     <!-- 变压器选项将通过JavaScript动态生成 -->
+                                    {% endif %}
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -232,7 +236,9 @@
                                 <div class="col-md-4">
                                     <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR厂家</label>
                                     <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
-                                        {% if motor_manufacturers|length > 1 %}
+                                        {% if motor_manufacturers|length == 0 %}
+                                        <option value="">未定义，默认为空</option>
+                                        {% elif motor_manufacturers|length > 1 %}
                                         <option value="">请选择，默认为空</option>
                                         {% endif %}
                                         {% for manufacturer in motor_manufacturers %}
@@ -245,7 +251,9 @@
                                 <div class="col-md-4">
                                     <label for="gearbox_type" class="form-label"><i class="bi bi-cog me-2"></i>齿轮箱型式</label>
                                     <select class="form-select" id="gearbox_type" name="gearbox_type">
-                                        {% if gearbox_types|length > 1 %}
+                                        {% if gearbox_types|length == 0 %}
+                                        <option value="">未定义，默认为空</option>
+                                        {% elif gearbox_types|length > 1 %}
                                         <option value="">请选择，默认为空</option>
                                         {% endif %}
                                         {% for gearbox_type in gearbox_types %}
@@ -636,11 +644,11 @@
             // 清空选择框
             transformerSelect.innerHTML = '';
             
-            // 如果没有选择产品分类，显示提示文字
+            // 如果没有选择产品分类
             if (!categoryName || categoryName === '请选择，必选项') {
                 const placeholderOption = document.createElement('option');
                 placeholderOption.value = '';
-                placeholderOption.textContent = '已定义，在选择产品分类后展示';
+                placeholderOption.textContent = {% if not transformers %}'未定义，默认为空'{% else %}'已定义，在选择产品分类后展示'{% endif %};
                 transformerSelect.appendChild(placeholderOption);
                 return;
             }
@@ -671,7 +679,7 @@
                 // 当没有允许的变压器类型时，显示默认空选项
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
-                defaultOption.textContent = '请选择，默认为空';
+                defaultOption.textContent = '未定义，默认为空';
                 transformerSelect.appendChild(defaultOption);
             }
         }

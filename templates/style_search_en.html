@@ -143,8 +143,12 @@
                             <div class="col-md-6">
                                 <label for="transformer" class="form-label"><i class="bi bi-cpu me-2"></i>Transformer</label>
                                 <select class="form-select" id="transformer" name="transformer">
+                                    {% if not transformers %}
+                                    <option value="">Undefined, default is empty</option>
+                                    {% else %}
                                     <option value="">Please select, default is empty</option>
                                     <!-- Transformer options will be generated dynamically via JavaScript -->
+                                    {% endif %}
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -232,7 +236,9 @@
                                 <div class="col-md-4">
                                     <label for="motor_manufacturer" class="form-label"><i class="bi bi-gear-wide-connected me-2"></i>MOTOR Manufacturer</label>
                                     <select class="form-select" id="motor_manufacturer" name="motor_manufacturer">
-                                        {% if motor_manufacturers|length > 1 %}
+                                        {% if motor_manufacturers|length == 0 %}
+                                        <option value="">Undefined, default is empty</option>
+                                        {% elif motor_manufacturers|length > 1 %}
                                         <option value="">Please select, default is empty</option>
                                         {% endif %}
                                         {% for manufacturer in motor_manufacturers %}
@@ -245,7 +251,9 @@
                                 <div class="col-md-4">
                                     <label for="gearbox_type" class="form-label"><i class="bi bi-cog me-2"></i>Gearbox Type</label>
                                     <select class="form-select" id="gearbox_type" name="gearbox_type">
-                                        {% if gearbox_types|length > 1 %}
+                                        {% if gearbox_types|length == 0 %}
+                                        <option value="">Undefined, default is empty</option>
+                                        {% elif gearbox_types|length > 1 %}
                                         <option value="">Please select, default is empty</option>
                                         {% endif %}
                                         {% for gearbox_type in gearbox_types %}
@@ -671,7 +679,7 @@
             if (!categoryName || categoryName === '' || categoryName === 'Please select, required option') {
                 const placeholderOption = document.createElement('option');
                 placeholderOption.value = '';
-                placeholderOption.textContent = 'Defined, will be displayed after selecting product category';
+                placeholderOption.textContent = {% if not transformers %}'Undefined, default is empty'{% else %}'Defined, will be displayed after selecting product category'{% endif %};
                 transformerSelect.appendChild(placeholderOption);
                 return;
             }
@@ -702,7 +710,7 @@
                 // When there are no allowed transformer types, show default empty option
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
-                defaultOption.textContent = 'Please select, default is empty';
+                defaultOption.textContent = 'Undefined, default is empty';
                 transformerSelect.appendChild(defaultOption);
             }
         }
