@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -22,9 +22,20 @@ urlpatterns = [
     path('', include('clamps.urls')),
 ]
 
+from django.views.static import serve
+
+# 自定义静态文件服务视图，添加缓存头
+def cached_static_serve(request, path, document_root=None):
+    response = serve(request, path, document_root=document_root)
+    # 设置缓存时间为一个星期
+    response['Cache-Control'] = 'max-age=604800, public'
+    return response
+
 # 开发环境提供静态文件服务
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += [
+        re_path(r'^static/(?P<path>.*)$', cached_static_serve, {'document_root': settings.STATIC_ROOT}),
+    ]
 
 
 

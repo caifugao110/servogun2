@@ -40,6 +40,8 @@ def protected_media(request, path):
     
     response = FileResponse(open(file_path, 'rb'))
     response['Content-Disposition'] = f'inline; filename="{uppercase_filename}"'
+    # 设置缓存时间为一个星期
+    response['Cache-Control'] = 'max-age=604800, public'
     return response
 
 
