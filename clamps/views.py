@@ -2435,9 +2435,11 @@ def download_analytics_api(request):
     
     # 计算时间范围
     end_date = timezone.now()
-    # 如果是今天，从00:00:00开始统计，否则按天数计算
+    # 转换为本地时间
+    end_date_local = timezone.localtime(end_date)
+    # 如果是今天，从本地时间00:00:00开始统计，否则按天数计算
     if days == 1:
-        start_date = timezone.make_aware(datetime.combine(end_date.date(), datetime.min.time()))
+        start_date = timezone.make_aware(datetime.combine(end_date_local.date(), datetime.min.time()))
     else:
         start_date = end_date - timedelta(days=days)
     
