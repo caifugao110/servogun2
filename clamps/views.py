@@ -535,6 +535,12 @@ def product_detail_en(request, product_id):
 @login_required
 def check_file_size(request, product_id, file_type):
     """检查文件大小是否满足下载条件"""
+    # 优先使用前端传递的language参数，其次通过HTTP_REFERER判断
+    is_english = request.GET.get('language') == 'en' or request.POST.get('language') == 'en'
+    if not is_english:
+        referer = request.META.get('HTTP_REFERER', '')
+        is_english = 'en/' in referer or '_en/' in referer or 'search_results_en' in referer or 'product_detail_en' in referer
+    
     try:
         product = get_object_or_404(Product, id=product_id)
         file_path = None
@@ -545,17 +551,11 @@ def check_file_size(request, product_id, file_type):
             file_path = product.step_file_path
         elif file_type == 'bmp':
             file_path = product.bmp_file_path
-
-        # 优先使用前端传递的language参数，其次通过HTTP_REFERER判断
-        is_english = request.GET.get('language') == 'en' or request.POST.get('language') == 'en'
-        if not is_english:
-            referer = request.META.get('HTTP_REFERER', '')
-            is_english = 'en/' in referer or '_en/' in referer or 'search_results_en' in referer or 'product_detail_en' in referer
         
         if not file_path:
             return JsonResponse({
                 'can_download': False,
-                'message': f'Product has no associated {file_type} file' if is_english else f'产品没有关联的 {file_type} 文件'
+                'message': f'Product {product.drawing_no_1} has no associated {file_type} file' if is_english else f'产品 {product.drawing_no_1} 没有关联的 {file_type} 文件'
             })
 
         # 处理路径前缀，确保是相对于 MEDIA_ROOT 的路径

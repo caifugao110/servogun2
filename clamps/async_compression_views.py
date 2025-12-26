@@ -277,10 +277,23 @@ def check_batch_file_size(request):
         
         product_ids = [int(pid) for pid in product_ids_str.split(',') if pid.strip().isdigit()]
 
+        # 优先使用前端传递的language参数，其次通过HTTP_REFERER判断
+        # 从不同位置获取language参数，包括JSON请求体
+        language_param = None
+        if request.content_type == 'application/json':
+            language_param = data.get('language')
+        if not language_param:
+            language_param = request.POST.get('language') or request.GET.get('language')
+        
+        is_english = language_param == 'en'
+        if not is_english:
+            referer = request.META.get('HTTP_REFERER', '')
+            is_english = 'en/' in referer or '_en/' in referer or 'search_results_en' in referer or 'product_detail_en' in referer
+        
         if not product_ids or not file_type:
             return JsonResponse({
                 'can_download': False,
-                'message': '未选择任何产品或文件类型。'
+                'message': 'No products or file type selected.' if is_english else '未选择任何产品或文件类型。'
             })
 
         products = Product.objects.filter(id__in=product_ids)
@@ -302,13 +315,21 @@ def check_batch_file_size(request):
                     if os.path.exists(full_pdf_path):
                         total_size_mb += os.path.getsize(full_pdf_path) / (1024 * 1024)
                     else:
-                        missing_files.append(os.path.basename(str(product.pdf_file_path)))
+                        # PDF文件不存在时，显示产品图号
+                        if is_english:
+                            missing_files.append(f"Product {product.drawing_no_1} PDF file does not exist")
+                        else:
+                            missing_files.append(f"产品 {product.drawing_no_1} PDF文件不存在")
                 if product.step_file_path:
                     full_step_path = os.path.join(settings.MEDIA_ROOT, str(product.step_file_path).replace('media/', ''))
                     if os.path.exists(full_step_path):
                         total_size_mb += os.path.getsize(full_step_path) / (1024 * 1024)
                     else:
-                        missing_files.append(os.path.basename(str(product.step_file_path)))
+                        # STEP文件不存在时，显示产品图号
+                        if is_english:
+                            missing_files.append(f"Product {product.drawing_no_1} STEP file does not exist")
+                        else:
+                            missing_files.append(f"产品 {product.drawing_no_1} STEP文件不存在")
                 continue # 跳过下面的通用文件处理逻辑
             
             if file_path:
@@ -324,22 +345,17 @@ def check_batch_file_size(request):
                     file_size_bytes = os.path.getsize(full_file_path)
                     total_size_mb += file_size_bytes / (1024 * 1024)
                 else:
-                    missing_files.append(os.path.basename(file_path))
+                    # 当file_path存在但文件不存在时，显示产品图号
+                    if is_english:
+                        missing_files.append(f"Product {product.drawing_no_1} {file_type.upper()} file does not exist")
+                    else:
+                        missing_files.append(f"产品 {product.drawing_no_1} {file_type.upper()}文件不存在")
             else:
-                missing_files.append(f"产品 {product.description} 没有关联的 {file_type} 文件")
-        
-        # 优先使用前端传递的language参数，其次通过HTTP_REFERER判断
-        # 从不同位置获取language参数，包括JSON请求体
-        language_param = None
-        if request.content_type == 'application/json':
-            language_param = data.get('language')
-        if not language_param:
-            language_param = request.POST.get('language') or request.GET.get('language')
-        
-        is_english = language_param == 'en'
-        if not is_english:
-            referer = request.META.get('HTTP_REFERER', '')
-            is_english = 'en/' in referer or '_en/' in referer or 'search_results_en' in referer or 'product_detail_en' in referer
+                # 根据语言选择不同的错误信息格式
+                if is_english:
+                    missing_files.append(f"Product {product.drawing_no_1} has no associated {file_type} file")
+                else:
+                    missing_files.append(f"产品 {product.drawing_no_1} 没有关联的 {file_type} 文件")
         # Check if there are any missing files
         if missing_files:
             if is_english:
