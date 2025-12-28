@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小原焊枪选型数据库项目系统介绍</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        /* 容器样式 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 20px 20px 290px;
+            transition: padding-left 0.3s ease;
+            position: relative;
+        }
+
+        .container.sidebar-hidden {
+            padding-left: 20px;
+        }
+
+        /* 主内容区域 */
+        main {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 标题区域 */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* 导航栏 */
+        nav {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            left: 20px;
+            top: 200px;
+            z-index: 50;
+            width: 250px;
+            height: calc(100vh - 220px);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        nav.hidden {
+            transform: translateX(-100%);
+        }
+
+        nav h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #667eea;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        nav ul li a {
+            display: block;
+            padding: 10px 15px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        nav ul li a:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        /* 主要内容 */
+        main {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 切换按钮 */
+        .toggle-nav {
+            position: fixed;
+            top: 210px;
+            left: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 101;
+            display: block;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .toggle-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .container {
+                padding-left: 290px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            nav {
+                width: calc(100% - 40px);
+                height: auto;
+                max-height: 80vh;
+                top: 100px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            main {
+                padding: 20px;
+            }
+        }
+
+        /* 标题样式 */
+        h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 20px;
+            color: #667eea;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            margin: 25px 0 15px;
+            color: #764ba2;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            margin: 20px 0 10px;
+            color: #555;
+        }
+
+        /* 段落样式 */
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 代码块样式 */
+        pre {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* 强调样式 */
+        strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* 版权信息 */
+        nav .copyright {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* 页脚样式 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            nav ul {
+                grid-template-columns: 1fr;
+            }
+
+            main {
+                padding: 20px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        main section {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* 图标样式 */
+        .emoji {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔧 小原焊枪选型数据库项目系统介绍</h1>
+    </header>
+
+    <!-- 固定定位的导航栏 -->
+    <nav id="sidebar" class="hidden">
+        <h2>📑 目录</h2>
+        <ul>
+            <li><a href="#intro">1. 引言</a></li>
+            <li><a href="#overview">2. 系统概述</a></li>
+            <li><a href="#directory">3. 项目目录结构</a></li>
+            <li><a href="#modules">4. 功能模块详解</a></li>
+            <li><a href="#english">5. 英文界面支持</a></li>
+            <li><a href="#user-config">6. 用户配置与下载管理</a></li>
+            <li><a href="#style-links">7. 仕样链接管理</a></li>
+            <li><a href="#analytics">8. 下载数据分析</a></li>
+            <li><a href="#ai-search">9. AI智能搜索</a></li>
+            <li><a href="#roles">10. 角色使用说明</a></li>
+            <li><a href="#deployment">11. 服务器部署使用说明</a></li>
+            <li><a href="#contribution">12. 贡献与开发</a></li>
+            <li><a href="#license">13. 许可证</a></li>
+            <li><a href="#contact">14. 联系方式</a></li>
+        </ul>
+        <footer class="copyright">
+            <p>版权所有 © </p>
+            <p><strong>作者</strong>: 技术开发二部</p>
+            <p><strong>更新日期</strong>: 2025年12月26日</p>
+        </footer>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <div class="container sidebar-hidden">
+        <button class="toggle-nav" id="toggleNav">☰ 目录</button>
+        
+        <main>
+            <section id="intro">
+                <h2>📝 1. 引言</h2>
+                <p>本系统是一个基于Django框架开发的焊枪产品管理系统，旨在提供高效的产品信息管理、搜索、文件下载以及用户和数据管理功能。</p>
+            </section>
+
+            <section id="overview">
+                <h2>🖥️ 2. 系统概述</h2>
+                <p>本系统采用Python的Django Web框架构建，后端使用SQLite数据库（可配置为其他数据库如PostgreSQL、MySQL等）存储数据。系统主要模块包括用户认证与授权、产品信息管理、搜索功能、文件管理（STEP、ZIP等文件下载与同步）、数据导入导出以及系统日志记录。静态文件（CSS、JavaScript、图片）和媒体文件（焊枪数据）通过Django的静态文件服务和媒体文件服务进行管理。</p>
+
+                <h3>🛠️ 2.1 技术栈</h3>
+                <ul>
+                    <li><strong>后端框架</strong>: Django + Channels (ASGI支持) 🐍</li>
+                    <li><strong>数据库</strong>: SQLite (默认) 💾</li>
+                    <li><strong>前端</strong>: HTML, CSS, JavaScript (基于Django模板) 🎨</li>
+                    <li><strong>部署环境</strong>: Python 3.11+ ⚡</li>
+                </ul>
+
+                <h3>✨ 2.2 核心功能模块</h3>
+                <ul>
+                    <li><strong>用户管理</strong>: 用户注册、登录、登出、权限控制（普通用户、一般管理员、超级管理员）。管理员可管理用户状态、重置密码、删除用户。 👥</li>
+                    <li><strong>产品管理</strong>: 产品的分类、详细信息（喉深、喉宽、变压器、加压力等）的录入、查询、展示。 📦</li>
+                    <li><strong>搜索功能</strong>: 支持多条件组合搜索产品，包括分类、客户、图号、子分类类型以及数值范围搜索（行程、加压力、重量、喉深、喉宽）。 🔍</li>
+                    <li><strong>文件管理</strong>: 支持PDF、STEP等产品相关文件的下载和批量下载。系统提供文件与产品信息的同步功能。 📄</li>
+                    <li><strong>异步压缩</strong>: 支持异步压缩PDF、STEP等产品文件，提升大文件处理效率和用户体验。 📦⚡</li>
+                    <li><strong>数据管理</strong>: 支持通过CSV文件批量导入产品数据，以及导出产品、用户、日志数据为CSV格式。 📊</li>
+                    <li><strong>系统日志</strong>: 详细记录用户登录、登出、搜索、文件下载、数据导入导出、用户管理等操作，方便审计和问题追踪。 📋</li>
+                    <li><strong>用户配置管理</strong>: 为每个用户提供独立的配置，包括客户名称、密码有效期、文件下载限制以及下载统计等。 ⚙️</li>
+                    <li><strong>仕样链接管理</strong>: 管理员可以创建和管理特定的搜索链接，包含预设的搜索配置，支持设置链接有效期、最大点击次数等。 🔗</li>
+                    <li><strong>下载数据分析</strong>: 提供API接口分析下载数据，支持按时间范围和用户筛选，包含趋势数据、用户统计和总计数据。 📈</li>
+                    <li><strong>AI智能搜索</strong>: 集成了AI智能搜索功能，支持通过API调用Coze服务。 🤖</li>
+                    <li><strong>用户反馈功能</strong>: 允许用户向管理员提交使用过程中的问题和建议，支持反馈分类、状态管理和用户通知，帮助持续改进系统。 💬</li>
+                </ul>
+
+                <h3>🏗️ 2.3 系统架构</h3>
+                <p>系统遵循Django的MVT（Model-View-Template）架构模式，并集成了Channels实现ASGI支持：</p>
+                <ul>
+                    <li><strong>Model (模型)</strong>: 定义数据结构和业务逻辑，如 <code>Product</code> (产品), <code>Category</code> (分类), <code>Log</code> (日志), <code>UserProfile</code> (用户配置), <code>StyleLink</code> (仕样链接), <code>UserFeedback</code> (用户反馈), <code>CompressionTask</code> (压缩任务) 等。与数据库进行交互。 🗄️</li>
+                    <li><strong>View (视图)</strong>: 处理用户请求，从模型获取数据，并将数据传递给模板进行渲染。例如 <code>search_results</code> 视图处理搜索请求并返回搜索结果页面。 👁️</li>
+                    <li><strong>Template (模板)</strong>: 定义用户界面的结构和布局，使用Django模板语言展示动态数据。例如 <code>search.html</code> 用于产品搜索页面，<code>product_detail.html</code> 用于产品详情页面。 🎨</li>
+                    <li><strong>ASGI配置</strong>: 支持异步通信，通过 <code>asgi.py</code> 和 Channels 实现WebSocket等异步功能。 ⚡</li>
+                    <li><strong>WebSocket支持</strong>: 通过 <code>consumers.py</code> 和 <code>routing.py</code> 实现WebSocket通信，支持实时功能。 🔌</li>
+                </ul>
+                <p>此外，系统还包含：</p>
+                <ul>
+                    <li><strong>URL配置</strong>: 定义URL路由，将URL映射到相应的视图函数。 🗺️</li>
+                    <li><strong>中间件</strong>: 例如 <code>LoggingMiddleware</code> 用于记录用户请求日志。 🛡️</li>
+                    <li><strong>静态文件</strong>: 存放CSS、JS、图片等前端资源。 📁</li>
+                    <li><strong>媒体文件</strong>: 存放产品相关文件（STEP、PDF等）。 📂</li>
+                </ul>
+            </section>
+
+            <section id="directory">
+                <h2>📁 3. 项目目录结构</h2>
+                <p>本项目的目录结构清晰，遵循Django项目的标准布局，便于开发、维护和部署。以下是主要目录和文件的说明：</p>
+                <pre><code>welding_clamp_db/
+├── clamps/                     # Django 应用目录，包含核心业务逻辑
+│   ├── migrations/             # 数据库迁移文件
+│   ├── management/             # 自定义管理命令
+│   │   ├── commands/           # 管理命令实现
+│   │   │   ├── __init__.py
+│   │   │   └── init_data.py    # 初始化数据命令
+│   │   └── __init__.py
+│   ├── templatetags/           # 自定义模板标签
+│   │   ├── __init__.py
+│   │   └── translation_filters.py # 翻译过滤器
+│   ├── __init__.py
+│   ├── admin.py                # Django Admin 配置
+│   ├── apps.py                 # 应用配置
+│   ├── async_compression_views.py # 异步压缩功能视图
+│   ├── backup.py               # 自动备份功能
+│   ├── coze_service.py         # Coze AI服务集成
+│   ├── consumers.py            # WebSocket 消费者
+│   ├── media_views.py          # 媒体文件视图
+│   ├── middleware.py           # 自定义中间件，如 LoggingMiddleware
+│   ├── models.py               # 数据库模型定义
+│   ├── pdf_utils.py            # PDF 处理工具
+│   ├── routing.py              # WebSocket 路由
+│   ├── settings.py             # 应用特定设置
+│   ├── tasks.py                # 异步任务定义
+│   ├── tests.py                # 单元测试文件
+│   ├── urls.py                 # 应用的 URL 配置
+│   └── views.py                # 视图函数，处理业务逻辑
+├── initial_setup/              # 初始化设置目录
+│   ├── cfg/                    # 配置文件
+│   ├── code_review/            # 代码审查工具
+│   ├── csv/                    # CSV数据文件
+│   ├── data/                   # 数据文件
+│   ├── doc/                    # 文档
+│   ├── howtogetpdf/            # PDF文件处理工具
+│   ├── howtogetstep/           # STEP文件处理工具
+│   └── initial_step.md         # 初始化步骤说明
+├── welding_clamp_db/           # Django 项目配置目录
+│   ├── __init__.py
+│   ├── asgi.py                 # ASGI 配置文件
+│   ├── settings.py             # 项目设置文件
+│   ├── urls.py                 # 项目主 URL 配置
+│   └── wsgi.py                 # WSGI 配置文件
+├── templates/                  # HTML 模板文件目录
+│   ├── management/             # 管理页面模板
+│   │   ├── analytics.html      # 数据分析页面
+│   │   ├── create_style_link.html  # 创建仕样链接页面
+│   │   ├── dashboard.html      # 管理仪表盘
+│   │   ├── edit_style_link.html     # 编辑仕样链接页面
+│   │   ├── export.html         # 数据导出页面
+│   │   ├── import_csv.html     # CSV导入页面
+│   │   ├── logs.html           # 系统日志页面
+│   │   ├── my_style_links.html      # 我的仕样链接页面
+│   │   ├── unmatched_files.html # 未匹配文件页面
+│   │   ├── user_feedback.html  # 用户反馈页面
+│   │   └── users.html          # 用户管理页面
+│   ├── base.html
+│   ├── base_en.html            # 英文版基础模板
+│   ├── home.html
+│   ├── home_en.html            # 英文版首页模板
+│   ├── login.html
+│   ├── login_en.html           # 英文版登录模板
+│   ├── product_detail.html
+│   ├── product_detail_en.html  # 英文版产品详情模板
+│   ├── profile.html
+│   ├── profile_en.html         # 英文版个人资料模板
+│   ├── search.html
+│   ├── search_en.html          # 英文版搜索模板
+│   ├── search_results.html
+│   ├── search_results_en.html  # 英文版搜索结果模板
+│   ├── style_search.html       # 仕样搜索页面
+│   ├── style_search_en.html    # 英文版仕样搜索页面
+│   ├── user_feedback.html      # 用户反馈页面
+│   └── user_feedback_en.html   # 英文版用户反馈页面
+├── static/                     # 静态文件目录（CSS, JS, 图片, PDF等）
+│   ├── css/
+│   ├── fonts/
+│   ├── icon/                   # 图标目录
+│   ├── images/
+│   ├── js/
+│   │   └── cmaps/              # PDF映射文件
+│   ├── pdf/
+│   └── webfonts/
+├── media/                      # 存放产品相关文件目录（STEP, PDF等）
+├── logs/                       # 系统日志文件目录
+├── db.sqlite3                  # 默认 SQLite 数据库文件
+├── .gitignore                  # Git忽略文件
+├── LICENSE                     # 许可证文件
+├── manage.py                   # Django 项目管理脚本
+└── requirements.txt            # 项目依赖库列表</code></pre>
+            </section>
+
+            <section id="modules">
+                <h2>📋 4. 功能模块详解</h2>
+
+                <h3>👥 4.1 用户管理</h3>
+                <p>系统提供完善的用户管理功能，包括用户认证、授权以及管理员对用户的管理操作。</p>
+
+                <h4>🔐 4.1.1 用户登录与登出</h4>
+                <ul>
+                    <li><strong>登录</strong>: 用户通过访问系统的登录页面（<code>/login/</code>）输入用户名和密码进行认证。成功登录后，系统会记录登录日志，并重定向到产品搜索页面（<code>/search/</code>）。如果认证失败，将提示“无效的用户名或密码”。</li>
+                    <li><strong>登出</strong>: 已登录用户可以通过点击登出按钮安全退出系统。系统会记录登出日志，并重定向到首页（<code>/</code>）。</li>
+                </ul>
+
+                <h4>👑 4.1.2 管理员用户管理</h4>
+                <p>管理员用户（<code>is_superuser</code> 为 <code>True</code> 的用户）可以访问管理仪表盘（<code>/management/dashboard/</code>）和用户管理页面（<code>/management/users/</code>），进行以下操作：</p>
+                <ul>
+                    <li><strong>查看用户列表</strong>: 在用户管理页面，管理员可以查看所有注册用户的列表，包括用户名、邮箱、是否活跃、是否为超级用户、注册日期和最后登录时间。</li>
+                    <li><strong>切换用户活跃状态</strong>: 管理员可以点击“启用/禁用”按钮来切换用户的活跃状态。被禁用的用户将无法登录系统。此操作会记录日志。</li>
+                    <li><strong>重置用户密码</strong>: 管理员可以为任何用户重置密码。系统将生成一个随机密码并显示给管理员。请务必将新密码安全地告知用户。此操作会记录日志。</li>
+                    <li><strong>删除用户</strong>: 管理员可以删除任何用户。此操作不可逆，请谨慎操作。此操作会记录日志。</li>
+                </ul>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li>以管理员身份登录系统。</li>
+                    <li>导航到“管理仪表盘” -> “用户管理”或直接访问 <code>/management/users/</code>。</li>
+                    <li>在用户列表中，找到目标用户。</li>
+                    <li>点击对应的“启用/禁用”、“重置密码”或“删除”按钮执行操作。</li>
+                </ol>
+
+                <h3>🔍 4.2 产品搜索</h3>
+                <p>系统提供强大的产品搜索功能，用户可以通过多种条件组合来精确查找所需的产品信息。</p>
+
+                <h4>📄 4.2.1 搜索页面</h4>
+                <ul>
+                    <li><strong>访问</strong>: 登录后，用户将自动重定向到搜索页面（<code>/search/</code>），或者通过导航菜单进入。</li>
+                    <li><strong>搜索条件</strong>: 搜索页面提供以下搜索字段：
+                        <ul>
+                            <li><strong>分类</strong>: 下拉选择产品所属的分类。</li>
+                            <li><strong>描述</strong>: 文本输入，支持模糊匹配产品描述。</li>
+                            <li><strong>图号1(o)</strong>: 文本输入，支持模糊匹配产品图号。</li>
+                            <li><strong>产品子分类类型</strong>: 文本输入，支持模糊匹配子分类类型。</li>
+                            <li><strong>数值范围</strong>: 对于“行程”、“加压力”、“重量”、“喉深”、“喉宽”等数值型字段，支持以下两种查询方式：
+                                <ul>
+                                    <li><strong>精确匹配</strong>: 输入单个数值，例如 <code>100</code>，将查找该字段值为100的产品。</li>
+                                    <li><strong>范围匹配</strong>: 输入两个数值并用波浪号 <code>~</code> 连接，例如 <code>50~150</code>，将查找该字段值在50到150之间的产品（包含边界值）。如果只输入 <code>50~</code>，则查找大于等于50的产品；如果只输入 <code>~150</code>，则查找小于等于150的产品。</li>
+                                </ul>
+                            </li>
+                            <li><strong>其他字段</strong>: 包括“变压器”、“电极臂端部”、“MOTOR厂家”、“有无平衡”、“变压器放置方向”、“法兰P.C.D”、“托架方向”、“水路”、“齿轮箱型式”等，支持文本模糊匹配或特定值选择。</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>📊 4.2.2 搜索结果</h4>
+                <ul>
+                    <li><strong>分页显示</strong>: 搜索结果将以每页20条记录的形式分页显示，方便用户浏览大量数据。</li>
+                    <li><strong>结果统计</strong>: 页面会显示符合条件的总记录数。</li>
+                    <li><strong>日志记录</strong>: 每次搜索操作都会被记录到系统日志中，包括搜索的用户、IP地址、用户代理和具体的搜索条件。</li>
+                </ul>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li>登录系统，进入搜索页面。</li>
+                    <li>根据需要填写一个或多个搜索条件。</li>
+                    <li>点击“搜索”按钮。</li>
+                    <li>在搜索结果页面查看匹配的产品列表。可以通过页面底部的分页控件浏览更多结果。</li>
+                </ol>
+
+                <h3>📦 4.3 产品详情与文件下载</h3>
+                <p>用户可以查看产品的详细信息，并下载相关的STEP、PDF文件。</p>
+
+                <h4>📋 4.3.1 产品详情</h4>
+                <ul>
+                    <li><strong>访问</strong>: 在搜索结果页面，点击任一产品的链接，即可进入该产品的详情页面。</li>
+                    <li><strong>信息展示</strong>: 详情页面会展示产品的全部属性信息，包括图号、描述、分类、各种技术参数等。</li>
+                    <li><strong>日志记录</strong>: 每次查看产品详情的操作都会被记录到系统日志中。</li>
+                </ul>
+
+                <h4>📥 4.3.2 文件下载</h4>
+                <ul>
+                    <li><strong>单文件下载</strong>: 在产品详情页面，如果产品关联了STEP或PDF文件，用户可以点击相应的下载链接进行下载。系统会检查文件是否存在，如果文件不存在或损坏，会给出提示信息。每次下载操作都会记录日志。</li>
+                    <li><strong>批量下载</strong>: 在搜索结果页面，用户可以选择多个产品，然后选择批量下载STEP文件。系统会将所有选定产品的对应文件打包成一个ZIP文件供用户下载。如果选中的产品没有对应的文件，系统会提示。批量下载操作也会记录日志。</li>
+                    <li><strong>下载检查逻辑优化</strong>: 优化了文件下载前的检查逻辑，包括文件存在性、文件大小限制、用户下载配额等，提供更精确的下载控制和错误提示。</li>
+                    <li><strong>多语言支持</strong>: 文件下载相关的提示信息和界面元素均支持中英文切换，提升了国际化用户体验。</li>
+                </ul>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li><strong>查看产品详情</strong>: 在搜索结果页面，点击产品描述或图号进入详情页。</li>
+                    <li><strong>下载单个文件</strong>: 在产品详情页，点击STEP或PDF文件旁的下载图标。</li>
+                    <li><strong>批量下载</strong>: 
+                        <ol>
+                            <li>在搜索结果页面，勾选需要下载文件的产品。</li>
+                            <li>选择“批量下载STEP”按钮。</li>
+                            <li>系统将生成并下载一个包含所有选中文件（如果存在）的ZIP压缩包。</li>
+                        </ol>
+                    </li>
+                </ol>
+
+                <h3>⚡ 4.4 异步压缩</h3>
+                <p>系统支持异步压缩功能，允许用户在后台处理大文件压缩任务，提升用户体验和系统效率。</p>
+
+                <h4>🚀 4.4.1 核心功能</h4>
+                <ul>
+                    <li><strong>异步处理</strong>: 压缩任务在后台异步执行，不阻塞用户界面，用户可以继续使用系统其他功能。</li>
+                    <li><strong>多种文件类型支持</strong>: 支持压缩PDF、STEP、BMP等多种文件类型，可选择单个文件类型或同时压缩多种文件类型。</li>
+                    <li><strong>进度跟踪</strong>: 提供压缩进度实时更新（0-100%），用户可以查看任务状态和进度。</li>
+                    <li><strong>任务状态管理</strong>: 支持多种任务状态：待压缩（pending）、压缩中（processing）、压缩完成（completed）、压缩失败（failed）。</li>
+                    <li><strong>错误处理</strong>: 详细记录压缩过程中的错误信息，便于排查问题。</li>
+                    <li><strong>任务管理</strong>: 支持查看历史压缩任务，包括任务状态、创建时间、完成时间等。</li>
+                </ul>
+
+                <h4>4.4.2 操作步骤</h4>
+                <ol>
+                    <li>在搜索结果页面，选择需要压缩文件的产品。</li>
+                    <li>选择“异步压缩”按钮。</li>
+                    <li>在弹出的对话框中，选择需要压缩的文件类型（PDF、STEP、BMP或全部）。</li>
+                    <li>点击“开始压缩”按钮，系统将创建压缩任务并在后台执行。</li>
+                    <li>用户可以在压缩任务列表中查看任务进度和状态。</li>
+                    <li>压缩完成后，用户可以下载生成的压缩文件。</li>
+                    <li>系统会自动记录压缩任务的执行情况，包括成功和失败的任务。</li>
+                </ol>
+
+                <h3>📊 4.5 数据导入与导出</h3>
+                <p>系统支持CSV格式的产品数据导入和产品、用户、日志数据的导出功能。</p>
+
+                <h4>📤 4.5.1 CSV数据导入（管理员功能）</h4>
+                <p>管理员可以通过上传CSV文件批量导入或更新产品数据。系统会根据CSV文件中的“图号1(o)”字段来判断是新增产品还是更新现有产品。</p>
+                <ul>
+                    <li><strong>文件编码</strong>: 系统会自动检测CSV文件的编码，支持多种编码格式。</li>
+                    <li><strong>字段映射</strong>: CSV文件中的列头需要与系统预定义的字段映射关系对应。例如，“描述”映射到 <code>description</code> 字段，“行程”映射到 <code>stroke</code> 字段等。对于数值型字段，系统会尝试进行类型转换。</li>
+                    <li><strong>错误处理</strong>: 导入过程中如果遇到数据格式错误或缺少关键字段（如“图号1(o)”），系统会记录错误并跳过该行，同时在导入完成后提供错误报告。</li>
+                    <li><strong>分类关联</strong>: 导入时，系统会尝试根据CSV文件名（例如 <code>X2C-C.csv</code>）来关联产品所属的分类。如果对应的分类不存在，导入将失败并提示管理员先创建分类。</li>
+                </ul>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li>以管理员身份登录系统。</li>
+                    <li>导航到“管理仪表盘” -> “导入CSV”或直接访问 <code>/management/import_csv/</code>。</li>
+                    <li>点击“选择文件”按钮，选择要导入的CSV文件。</li>
+                    <li>点击“上传并导入”按钮。系统将处理文件并显示导入结果（新增数量、更新数量和错误信息）。</li>
+                </ol>
+
+                <h4>📥 4.5.2 数据导出（管理员功能）</h4>
+                <p>管理员可以将产品、用户或日志数据导出为CSV文件，方便进行离线分析或备份。</p>
+                <ul>
+                    <li><strong>导出类型</strong>: 支持导出以下类型的数据：
+                        <ul>
+                            <li><strong>产品数据</strong>: 包含所有产品的详细信息。</li>
+                            <li><strong>用户数据</strong>: 包含所有注册用户的基本信息。</li>
+                            <li><strong>日志数据</strong>: 包含所有系统操作日志。</li>
+                        </ul>
+                    </li>
+                    <li><strong>文件名</strong>: 导出的CSV文件将根据数据类型和当前时间自动命名，例如 <code>products_export_20250622103000.csv</code>。</li>
+                </ul>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li>以管理员身份登录系统。</li>
+                    <li>导航到“管理仪表盘” -> “导出数据”或直接访问 <code>/management/export/</code>。</li>
+                    <li>在下拉菜单中选择要导出的数据类型（产品、用户或日志）。</li>
+                    <li>点击“导出”按钮。浏览器将开始下载生成的CSV文件。</li>
+                </ol>
+
+                <h3>📋 4.6 系统日志</h3>
+                <p>系统会详细记录用户的各项操作，包括登录、登出、搜索、文件下载、数据导入导出、用户管理等。日志信息对于系统审计、问题排查和行为分析至关重要。</p>
+                <ul>
+                    <li><strong>日志内容</strong>: 每条日志记录包含时间戳、操作用户、操作类型、IP地址、用户代理和详细的操作描述。</li>
+                    <li><strong>日志查看</strong>: 管理员可以通过管理界面查看和筛选日志。支持按操作类型、用户名、日期范围进行过滤。</li>
+                    <li><strong>日志统计</strong>: 日志页面还会提供各类操作的统计信息，如登录次数、搜索次数、下载次数等。</li>
+                </ul>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li>以管理员身份登录系统。</li>
+                    <li>导航到“管理仪表盘” -> “查看日志”或直接访问 <code>/management/logs/</code>。</li>
+                    <li>可以使用页面上方的筛选条件（操作类型、用户名、日期范围）来查找特定的日志记录。</li>
+                    <li>日志列表支持分页浏览。</li>
+                </ol>
+
+                <h3>🔄 4.7 文件同步（管理员功能）</h3>
+                <p>系统提供一个文件同步功能，用于将 <code>media</code> 文件夹中已存在的STEP、PDF和BMP文件与数据库中的产品记录进行关联。这对于批量上传文件后，快速更新数据库中的文件路径非常有用。</p>
+                <ul>
+                    <li><strong>同步逻辑</strong>: 系统会遍历 <code>media</code> 文件夹下的所有STEP、PDF和BMP文件，尝试根据文件名（假定文件名为产品的图号）来匹配数据库中的产品。如果找到匹配的产品，则更新该产品的相应文件路径字段。</li>
+                    <li><strong>错误报告</strong>: 如果文件未能匹配到任何产品，或者在处理过程中发生错误，系统会记录并报告这些错误。</li>
+                    <li><strong>二次确认提示</strong>: 为防止误操作，系统在执行文件同步前会显示二次确认提示，要求管理员确认同步操作，避免意外覆盖或修改数据。</li>
+                </ul>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li>确保已将STEP、PDF和BMP等文件放置在系统的 <code>media</code> 目录下。</li>
+                    <li>以管理员身份登录系统。</li>
+                    <li>导航到“管理仪表盘” -> “同步文件”或直接访问 <code>/management/sync_files/</code>。</li>
+                    <li>点击“同步文件”按钮。</li>
+                    <li>在弹出的确认对话框中，仔细阅读提示信息，确认无误后点击“确认同步”按钮。</li>
+                    <li>系统将执行同步操作并显示更新的产品数量和任何错误信息。</li>
+                </ol>
+
+                <h3>💬 4.8 用户反馈功能</h3>
+                <p>系统提供用户反馈功能，允许用户向管理员提交使用过程中的问题和建议，以帮助持续改进系统。</p>
+                <ul>
+                    <li><strong>反馈分类</strong>: 支持多种反馈分类，包括数据错误、数据丢失、系统错误、功能优化和其他建议。</li>
+                    <li><strong>反馈状态管理</strong>: 反馈包含待确认、已确认待处理、已处理、无法确认和无效反馈等状态。</li>
+                    <li><strong>用户通知</strong>: 支持标记反馈是否已通知用户，便于管理员管理反馈处理流程。</li>
+                    <li><strong>反馈提交</strong>: 用户可以通过系统界面的反馈入口提交反馈信息，包括问题描述、建议和联系方式。</li>
+                    <li><strong>反馈管理</strong>: 管理员可以在系统后台查看和处理用户提交的反馈，包括回复、标记解决状态等。</li>
+                    <li><strong>反馈日志</strong>: 系统会记录所有反馈提交和处理的日志，便于追踪和分析用户反馈趋势。</li>
+                </ul>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li>用户登录系统后，点击页面上的反馈按钮或链接。</li>
+                    <li>在反馈表单中填写反馈类型、详细描述和联系方式。</li>
+                    <li>点击“提交反馈”按钮。</li>
+                    <li>管理员登录系统后台，查看用户反馈列表。</li>
+                    <li>对反馈进行处理、回复或标记解决状态。</li>
+                    <li>处理完成后，标记反馈为“已通知用户”。</li>
+                </ol>
+            </section>
+
+            <section id="english">
+                <h2>🌍 5. 英文界面支持</h2>
+                <p>本系统提供完整的英文界面支持，用户可以方便地在中文和英文界面之间切换。系统通过独立的英文模板文件（以 <code>_en.html</code> 结尾）和相应的URL配置来实现多语言功能。</p>
+
+                <h3>🔄 5.1 切换语言</h3>
+                <ul>
+                    <li><strong>导航栏切换</strong>: 在系统的导航栏中，通常会有一个语言切换按钮（例如显示“中文”或“English”）。点击该按钮即可在两种语言界面之间切换。</li>
+                    <li><strong>URL切换</strong>: 用户也可以通过直接修改URL路径来切换语言。例如，如果中文界面的产品搜索页面是 <code>/search/</code>，那么对应的英文界面可能是 <code>/en/search/</code> 或 <code>/search_en/</code>（具体取决于URL配置）。</li>
+                </ul>
+
+                <h3>📚 5.2 英文界面内容</h3>
+                <p>英文界面涵盖了系统的所有主要功能模块，包括：</p>
+                <ul>
+                    <li><strong>登录页面</strong>: <code>login_en.html</code></li>
+                    <li><strong>首页</strong>: <code>home_en.html</code></li>
+                    <li><strong>产品搜索页面</strong>: <code>search_en.html</code></li>
+                    <li><strong>产品详情页面</strong>: <code>product_detail_en.html</code></li>
+                    <li><strong>搜索结果页面</strong>: <code>search_results_en.html</code></li>
+                    <li><strong>仕样搜索页面</strong>: <code>style_search_en.html</code></li>
+                    <li><strong>个人资料页面</strong>: <code>profile_en.html</code></li>
+                    <li><strong>用户反馈页面</strong>: <code>user_feedback_en.html</code></li>
+                    <li><strong>基础模板</strong>: <code>base_en.html</code> (包含导航栏、页脚等公共元素)</li>
+                </ul>
+                <p>所有文本内容、按钮标签、提示信息等都已翻译成英文，确保英文用户能够无障碍地使用系统。</p>
+            </section>
+
+            <section id="user-config">
+                <h2>⚙️ 6. 用户配置与下载管理</h2>
+                <p>本项目引入了 <code>UserProfile</code> 模型，旨在为系统管理员提供更精细化的用户管理能力，特别是针对密码策略和文件下载权限的控制。</p>
+
+                <h3>👤 6.1 用户配置管理 (UserProfile)</h3>
+                <p>现在，每个用户都有一个关联的 <code>UserProfile</code>，允许管理员进行以下配置：</p>
+                <ul>
+                    <li><strong>客户名称</strong>: 可以为每个用户账户关联一个客户名称，方便内部管理和识别。</li>
+                    <li><strong>密码有效期</strong>: 管理员可以为每个用户设置独立的密码有效期，可选择1-15天或永久有效。这增强了系统的安全性，可以强制用户定期更换密码。</li>
+                    <li><strong>文件下载限制</strong>: 为了控制服务器带宽和资源使用，管理员可以为每个用户设置详细的下载限制，包括：
+                        <ul>
+                            <li><strong>单次最大下载大小 (MB)</strong>: 限制用户单次下载操作（包括单个文件下载和批量下载）的文件总大小。</li>
+                            <li><strong>每日最大下载大小 (GB)</strong>: 限制用户在一天内可以下载的总文件大小。</li>
+                            <li><strong>每日最大下载文件数</strong>: 限制用户在一天内可以下载的文件总数量。</li>
+                            <li><strong>单次批量下载最大大小 (MB)</strong>: 专门为批量下载设置的大小限制。</li>
+                        </ul>
+                    </li>
+                    <li><strong>下载统计</strong>: 系统会记录用户的每日下载量（大小和数量），并在每日零点自动重置。</li>
+                    <li><strong>创建者</strong>: 记录用户配置的创建者，增强系统的审计能力。</li>
+                </ul>
+
+                <h3>🔒 6.2 密码过期与强制修改</h3>
+                <ul>
+                    <li><strong>密码过期检查</strong>: 当用户登录时，系统会自动检查其密码是否根据 <code>UserProfile</code> 中设置的有效期过期。</li>
+                    <li><strong>强制修改提示</strong>: 如果密码已过期，系统会提示用户密码已过期，并引导其联系管理员重置密码。这确保了密码策略的有效执行。</li>
+                </ul>
+
+                <h3>📊 6.3 下载行为监控与限制</h3>
+                <ul>
+                    <li><strong>实时下载监控</strong>: 系统会实时跟踪每个用户的每日下载量（大小和数量）。</li>
+                    <li><strong>下载限制执行</strong>: 在用户尝试下载文件（单个或批量）之前，系统会检查其行为是否会超出 <code>UserProfile</code> 中设定的限制。如果超出限制，下载请求将被拒绝，并向用户显示相应的提示信息（例如，“文件大小超过单次下载限制”或“今日下载量已达上限”）。</li>
+                    <li><strong>每日统计重置</strong>: 用户的下载统计数据会在每天零点自动重置。</li>
+                </ul>
+
+                <h3>👑 6.4 管理员操作界面</h3>
+                <p>这些新增的用户配置项已集成到Django Admin后台管理界面中。管理员可以在用户管理页面，通过编辑用户的 <code>UserProfile</code> 来进行上述所有配置。</p>
+                <p><strong>操作步骤</strong>：</p>
+                <ol>
+                    <li>以管理员身份登录 Django Admin (<code>/admin/</code>)。</li>
+                    <li>导航到 “Clamps” -> “用户配置”。</li>
+                    <li>选择要配置的用户，进入其 <code>UserProfile</code> 编辑页面。</li>
+                    <li>修改“客户名称”、“密码有效期”、“文件下载限制”等字段。</li>
+                    <li>保存更改。</li>
+                </ol>
+            </section>
+
+            <section id="style-links">
+                <h2>🔗 7. 仕样链接管理</h2>
+                <p>系统引入了 <code>StyleLink</code> 模型，允许管理员创建和管理特定的搜索链接，包含预设的搜索配置，方便用户快速访问特定产品范围。</p>
+
+                <h3>✨ 7.1 核心功能</h3>
+                <ul>
+                    <li><strong>创建仕样链接</strong>: 管理员可以设置产品分类、变压器类型、MOTOR厂家、齿轮箱型式等搜索配置，还可以固定特定字段的值和启用特定搜索字段。</li>
+                    <li><strong>链接管理</strong>: 支持查看、编辑、删除仕样链接，设置链接有效期、最大点击次数和激活状态。</li>
+                    <li><strong>权限控制</strong>: 普通管理员只能管理自己创建的链接，超级管理员可以管理所有链接。</li>
+                    <li><strong>链接访问</strong>: 用户通过唯一标识符访问仕样链接，系统会自动应用预设的搜索配置。</li>
+                    <li><strong>访问记录</strong>: 自动记录用户对仕样链接的访问情况，包括访问次数、首次访问时间、最近访问时间等。</li>
+                    <li><strong>用户访问统计</strong>: 系统会记录每个用户对仕样链接的访问历史，包括访问次数、首次访问和最近访问时间。</li>
+                    <li><strong>表单全选功能</strong>: 样式链接表单添加了全选功能，方便管理员快速选择所有字段配置。</li>
+                    <li><strong>搜索配置优化</strong>: 重构了仕样链接搜索配置逻辑，优化了变压器关联逻辑和空仕样搜索路径处理。</li>
+                    <li><strong>UI优化</strong>: 优化了仕样链接的用户界面，提升了用户体验和操作效率。</li>
+                </ul>
+
+                <h3>7.2 操作步骤</h3>
+                <ol>
+                    <li><strong>创建仕样链接</strong>:
+                        <ul>
+                            <li>登录系统，进入管理仪表盘。</li>
+                            <li>点击“创建仕样链接”按钮。</li>
+                            <li>设置链接名称、有效期、最大点击次数等基本信息。</li>
+                            <li>配置搜索选项，包括产品分类、变压器类型、MOTOR厂家、齿轮箱型式等。</li>
+                            <li>设置固定字段和启用特定搜索字段。</li>
+                            <li>点击“保存”按钮创建链接。</li>
+                        </ul>
+                    </li>
+                    <li><strong>管理仕样链接</strong>:
+                        <ul>
+                            <li>登录系统，进入管理仪表盘。</li>
+                            <li>点击“我的仕样链接”按钮。</li>
+                            <li>可以查看链接列表，包括链接名称、创建时间、点击次数、有效期等信息。</li>
+                            <li>可以编辑、删除或查看链接详情。</li>
+                        </ul>
+                    </li>
+                    <li><strong>访问仕样链接</strong>:
+                        <ul>
+                            <li>通过链接URL访问，例如 <code>/style_search/{unique_id}/</code>（中文版）或 <code>/style_search_en/{unique_id}/</code>（英文版）。</li>
+                            <li>系统会自动应用预设的搜索配置，用户可以直接进行搜索。</li>
+                            <li>英文版仕样搜索页面提供了完整的英文界面支持，包括搜索条件、搜索结果和文件下载功能。</li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section id="analytics">
+                <h2>📈 8. 下载数据分析</h2>
+                <p>系统提供了下载数据分析功能，帮助管理员了解用户的下载行为和趋势。</p>
+
+                <h3>✨ 8.1 核心功能</h3>
+                <ul>
+                    <li><strong>API接口</strong>: 提供 <code>download_analytics_api</code> 接口，支持按时间范围和用户筛选数据。</li>
+                    <li><strong>数据统计</strong>: 包括下载次数、文件数量、下载大小、活跃用户数等。</li>
+                    <li><strong>趋势分析</strong>: 提供按日统计的下载趋势数据。</li>
+                    <li><strong>用户统计</strong>: 按用户分组统计下载数据，包括下载次数、文件数量、下载大小和最后下载时间。</li>
+                </ul>
+
+                <h3>📊 8.2 数据指标</h3>
+                <ul>
+                    <li><strong>总下载次数</strong>: 统计时间段内的总下载次数。</li>
+                    <li><strong>总下载文件数</strong>: 统计时间段内的总下载文件数量。</li>
+                    <li><strong>总下载大小</strong>: 统计时间段内的总下载大小（MB）。</li>
+                    <li><strong>活跃用户数</strong>: 统计时间段内有下载行为的用户数量。</li>
+                    <li><strong>每日趋势</strong>: 按日统计的下载次数和下载大小。</li>
+                </ul>
+            </section>
+
+            <section id="ai-search">
+                <h2>🤖 9. AI智能搜索</h2>
+                <p>系统集成了AI智能搜索功能，通过调用Coze API提供更智能的搜索体验。</p>
+
+                <h3>✨ 9.1 核心功能</h3>
+                <ul>
+                    <li><strong>API接口</strong>: 提供 <code>ai_search_api</code> 接口，支持POST请求调用。</li>
+                    <li><strong>Coze集成</strong>: 通过 <code>coze_service.py</code> 模块与Coze API进行交互。</li>
+                    <li><strong>智能搜索</strong>: 支持自然语言查询，返回相关产品信息。</li>
+                </ul>
+
+                <h3>9.2 调用方式</h3>
+                <ul>
+                    <li><strong>请求方式</strong>: POST</li>
+                    <li><strong>请求URL</strong>: <code>/ai_search_api/</code></li>
+                    <li><strong>请求参数</strong>: JSON格式，包含 <code>query</code> 字段，用于指定搜索查询。</li>
+                    <li><strong>响应格式</strong>: JSON格式，包含搜索结果和状态信息。</li>
+                </ul>
+            </section>
+
+            <section id="roles">
+                <h2>👥 10. 角色使用说明</h2>
+                <p>本系统根据用户权限划分为三种主要角色：超级管理员、一般管理员和一般用户。每种角色拥有不同的操作权限和职责，以确保系统的安全性和高效运行。</p>
+
+                <h3>👑 10.1 超级管理员</h3>
+                <p>超级管理员拥有系统的最高权限，负责系统的整体维护、数据管理和安全监控。其主要职责侧重于项目数据的维护以及对系统日志和下载行为的深入分析。</p>
+                <p><strong>主要职责与操作：</strong></p>
+                <ul>
+                    <li><strong>系统初始化与部署</strong>：负责环境准备、依赖安装、数据库迁移、超级用户创建和开发服务器的启动。</li>
+                    <li><strong>数据导入与导出</strong>：
+                        <ul>
+                            <li><strong>CSV数据导入</strong>：通过 <code>/management/import_csv/</code> 页面批量导入产品数据，包括处理文件编码、字段映射和错误报告。这是维护产品数据准确性和完整性的关键环节。</li>
+                            <li><strong>数据导出</strong>：通过 <code>/management/export/</code> 页面导出产品、用户和日志数据，用于离线分析、备份或与其他系统集成。</li>
+                        </ul>
+                    </li>
+                    <li><strong>文件同步</strong>：通过 <code>/management/sync_files/</code> 功能将 <code>media</code> 文件夹中的STEP、PDF和BMP文件与数据库中的产品记录进行关联，确保文件与产品信息的同步。</li>
+                    <li><strong>系统日志分析</strong>：通过 <code>/management/logs/</code> 页面查看和筛选所有系统操作日志，包括用户登录、登出、搜索、文件下载、数据导入导出、用户管理等。通过分析日志，可以监控系统运行状况、发现异常行为、进行安全审计和问题追踪。</li>
+                    <li><strong>用户配置管理</strong>：通过Django Admin (<code>/admin/</code>) 访问用户的 <code>UserProfile</code>，为每个用户设置密码有效期、文件下载限制（单次最大下载大小、每日最大下载大小、每日最大下载文件数、单次批量下载最大大小）和客户名称。这是精细化管理用户权限和资源使用的核心。</li>
+                    <li><strong>用户管理（高级）</strong>：在Django Admin中，可以对所有用户进行增删改查，包括修改用户权限、重置密码等。</li>
+                </ul>
+                <p><strong>操作路径示例：</strong></p>
+                <ul>
+                    <li><strong>数据导入</strong>：登录系统 -> 导航到“管理仪表盘” -> “导入CSV” (<code>/management/import_csv/</code>)</li>
+                    <li><strong>数据导出</strong>：登录系统 -> 导航到“管理仪表盘” -> “导出数据” (<code>/management/export/</code>)</li>
+                    <li><strong>文件同步</strong>：登录系统 -> 导航到“管理仪表盘” -> “同步文件” (<code>/management/sync_files/</code>)</li>
+                    <li><strong>日志查看</strong>：登录系统 -> 导航到“管理仪表盘” -> “查看日志” (<code>/management/logs/</code>)</li>
+                    <li><strong>用户配置</strong>：登录Django Admin (<code>/admin/</code>) -> “Clamps” -> “用户配置”</li>
+                </ul>
+
+                <h3>🛡️ 10.2 一般管理员</h3>
+                <p>一般管理员负责日常的用户管理和维护，确保用户能够正常访问系统并合理使用资源。其主要职责侧重于新增用户、管理用户状态、重置密码以及配置用户的下载权限和密码策略。</p>
+                <p><strong>主要职责与操作：</strong></p>
+                <ul>
+                    <li><strong>用户管理</strong>：
+                        <ul>
+                            <li><strong>新增用户</strong>：通过Django Admin (<code>/admin/</code>) 或系统提供的用户注册流程（如果开放）创建新用户账户。</li>
+                            <li><strong>查看用户列表</strong>：通过 <code>/management/users/</code> 页面查看所有注册用户的基本信息。</li>
+                            <li><strong>切换用户活跃状态</strong>：启用或禁用用户账户，控制其登录权限。</li>
+                            <li><strong>重置用户密码</strong>：为用户生成新的随机密码，并安全告知用户。</li>
+                            <li><strong>删除用户</strong>：删除不再需要的用户账户（需谨慎操作）。</li>
+                        </ul>
+                    </li>
+                    <li><strong>用户配置管理</strong>：通过Django Admin (<code>/admin/</code>) 访问用户的 <code>UserProfile</code>，对用户的客户名称、密码有效期和文件下载限制进行配置。这使得管理员能够根据不同用户的需求和权限，灵活调整其使用策略。</li>
+                    <li><strong>密码过期处理</strong>：处理因密码过期而无法登录的用户，协助其重置密码。</li>
+                </ul>
+                <p><strong>操作路径示例：</strong></p>
+                <ul>
+                    <li><strong>用户管理</strong>：登录系统 -> 导航到“管理仪表盘” -> “用户管理” (<code>/management/users/</code>)</li>
+                    <li><strong>用户配置</strong>：登录Django Admin (<code>/admin/</code>) -> “Clamps” -> “用户配置”</li>
+                </ul>
+
+                <h3>👤 10.3 一般用户</h3>
+                <p>一般用户是系统的主要使用者，主要利用系统的搜索功能查找产品信息，并下载所需的相关文件。一般用户不具备管理权限，只能操作与自身账户相关的功能。</p>
+                <p><strong>主要职责与操作：</strong></p>
+                <ul>
+                    <li><strong>用户登录与登出</strong>：通过 <code>/login/</code> 页面登录系统，并通过导航栏的登出功能安全退出。</li>
+                    <li><strong>产品搜索</strong>：
+                        <ul>
+                            <li><strong>访问搜索页面</strong>：登录后自动重定向到 <code>/search/</code> 页面，或通过导航菜单进入。</li>
+                            <li><strong>多条件组合搜索</strong>：利用分类、描述、图号、子分类类型以及数值范围（行程、加压力、重量、喉深、喉宽）等多种条件组合，精确查找所需产品。</li>
+                            <li><strong>查看搜索结果</strong>：浏览分页显示的产品列表，并查看符合条件的记录总数。</li>
+                        </ul>
+                    </li>
+                    <li><strong>产品详情与文件下载</strong>：
+                        <ul>
+                            <li><strong>查看产品详情</strong>：点击搜索结果中的产品链接，进入详情页面，查看产品的全部属性信息。</li>
+                            <li><strong>单文件下载</strong>：在产品详情页面下载STEP、PDF等相关文件。</li>
+                            <li><strong>批量下载</strong>：在搜索结果页面选择多个产品，批量下载对应的STEP文件。</li>
+                        </ul>
+                    </li>
+                    <li><strong>密码过期处理</strong>：如果密码过期，系统会提示并要求联系管理员重置。</li>
+                </ul>
+                <p><strong>操作路径示例：</strong></p>
+                <ul>
+                    <li><strong>登录</strong>：访问系统首页 -> 点击“登录” (<code>/login/</code>)</li>
+                    <li><strong>产品搜索</strong>：登录系统 -> 自动进入或导航到“搜索” (<code>/search/</code>)</li>
+                    <li><strong>查看产品详情</strong>：在搜索结果页面点击产品链接</li>
+                    <li><strong>文件下载</strong>：在产品详情页面点击下载图标，或在搜索结果页面选择产品后点击批量下载按钮</li>
+                </ul>
+            </section>
+
+            <section id="deployment">
+                <h2>🚀 11. 服务器部署使用说明</h2>
+                <p>本节详细介绍服务器部署如何进行系统的初始化设置、数据管理和日常维护。</p>
+
+                <h3>🛠️ 11.1 环境准备与项目部署</h3>
+                <ol>
+                    <li><strong>安装Python</strong>: 确保您的系统安装了 Python 3.11 或更高版本。</li>
+                    <li><strong>安装依赖</strong>: 进入项目根目录，安装 <code>requirements.txt</code> 中列出的所有依赖库：
+                        <pre><code>pip install -r requirements.txt</code></pre>
+                    </li>
+                    <li><strong>数据库迁移</strong>: 运行数据库迁移命令，创建或更新数据库表结构。对于从旧版本升级，此步骤至关重要：
+                        <pre><code>python manage.py migrate</code></pre>
+                    </li>
+                    <li><strong>创建超级用户</strong>: 如果是全新部署，创建一个管理员账户：
+                        <pre><code>python manage.py createsuperuser</code></pre>
+                        按照提示输入用户名、邮箱和密码。</li>
+                    <li><strong>运行开发服务器</strong>: 启动Django开发服务器：
+                        <pre><code>python manage.py runserver</code></pre>
+                        系统默认运行在 <code>http://127.0.0.1:6931/</code>。</li>
+                </ol>
+
+                <h3>🔄 11.2 数据初始化与迁移</h3>
+                <ul>
+                    <li><strong>初始化分类数据</strong>: 对于全新部署，可以运行以下命令初始化产品分类：
+                        <pre><code>python manage.py init_data</code></pre>
+                    </li>
+                    <li><strong>为现有用户创建UserProfile</strong>: 从旧版本升级后，需要为所有已存在的用户创建关联的 <code>UserProfile</code> 记录。可以编写一个简单的数据迁移脚本或在Django shell中手动完成此操作，以确保所有用户都能应用新的管理策略。</li>
+                </ul>
+
+                <h3>🖥️ 11.3 后台管理（Django Admin）</h3>
+                <p>Django 提供了一个强大的后台管理界面，管理员可以通过它直接管理数据库中的数据，包括用户、产品、分类、日志以及 <strong>用户配置 (UserProfile)</strong>。</p>
+                <p><strong>访问方式</strong>：</p>
+                <ul>
+                    <li>在浏览器中访问 <code>/admin/</code> 路径（例如 <code>http://127.0.0.1:6931/admin/</code>）。</li>
+                    <li>使用 <code>createsuperuser</code> 命令创建的管理员账户登录。</li>
+                </ul>
+                <p><strong>主要管理功能</strong>：</p>
+                <ul>
+                    <li><strong>用户管理</strong>: 查看、添加、编辑、删除用户。</li>
+                    <li><strong>用户配置管理</strong>: 查看、添加、编辑、删除用户的 <code>UserProfile</code>，以配置密码策略和下载限制。</li>
+                    <li><strong>产品管理</strong>: 查看、添加、编辑、删除产品信息。</li>
+                    <li><strong>分类管理</strong>: 查看、添加、编辑、删除产品分类。</li>
+                    <li><strong>日志管理</strong>: 查看系统操作日志。</li>
+                    <li><strong>仕样链接管理</strong>: 查看、添加、编辑、删除仕样链接。</li>
+                </ul>
+
+                <h3>🧹 11.4 日常维护与管理</h3>
+                <p>除了上面提到的日常维护工作，管理员还需要关注：</p>
+                <ul>
+                    <li><strong>用户配置审核</strong>: 定期审核和调整用户的 <code>UserProfile</code> 设置，确保密码策略和下载限制符合当前的安全和业务需求。</li>
+                    <li><strong>密码重置请求</strong>: 关注并及时处理因密码过期而产生的用户密码重置请求。</li>
+                    <li><strong>下载异常监控</strong>: 通过系统日志监控用户的下载行为，特别是频繁触发下载限制的用户，以发现潜在的异常活动。</li>
+                    <li><strong>仕样链接管理</strong>: 定期检查和清理过期或不再使用的仕样链接。</li>
+                </ul>
+
+                <h3>💾 11.5 自动备份系统</h3>
+                <p>系统新增了自动备份功能，确保数据的安全性和可靠性，防止数据丢失。</p>
+                <ul>
+                    <li><strong>自动备份</strong>: 系统会定期自动备份数据库和关键配置文件，默认备份周期为每日一次。</li>
+                    <li><strong>备份存储</strong>: 备份文件将存储在指定的备份目录中，支持配置备份保留天数。</li>
+                    <li><strong>备份类型</strong>: 支持全量备份和增量备份两种模式，可根据需求配置。</li>
+                    <li><strong>备份恢复</strong>: 管理员可以使用备份文件进行数据恢复，确保系统在出现故障时能够快速恢复。</li>
+                    <li><strong>备份日志</strong>: 系统会记录所有备份操作的日志，包括备份时间、备份类型、备份大小、备份状态等。</li>
+                </ul>
+                <p><strong>配置与使用</strong>：</p>
+                <ol>
+                    <li>备份配置文件位于项目根目录下，可通过修改配置文件调整备份周期、备份目录、保留天数等参数。</li>
+                    <li>管理员可以通过系统后台查看备份日志和备份文件列表。</li>
+                    <li>如需恢复数据，管理员可以选择合适的备份文件，执行恢复操作。</li>
+                    <li>建议定期验证备份文件的完整性和可恢复性，确保备份系统正常工作。</li>
+                </ol>
+            </section>
+
+            <section id="contribution">
+                <h2>🤝 12. 贡献与开发</h2>
+                <p>如果您希望为本项目贡献代码或进行二次开发，请遵循以下步骤：</p>
+                <ol>
+                    <li><strong>Fork 项目</strong>: 在 GitHub 上 Fork 本项目仓库。</li>
+                    <li><strong>克隆仓库</strong>: 将 Fork 后的仓库克隆到本地：
+                        <pre><code>git clone https://gitee.com/caifugao110/servogun2.git</code></pre>
+                    </li>
+                    <li><strong>创建虚拟环境</strong>: 推荐使用虚拟环境管理项目依赖：
+                        <pre><code>python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# venv\Scripts\activate   # Windows</code></pre>
+                    </li>
+                    <li><strong>安装依赖</strong>: 
+                        <pre><code>pip install -r requirements.txt</code></pre>
+                    </li>
+                    <li><strong>进行开发</strong>: 在新的分支上进行功能开发或 bug 修复。</li>
+                    <li><strong>提交代码</strong>: 提交您的更改并推送到远程仓库。</li>
+                    <li><strong>创建 Pull Request</strong>: 向本项目提交 Pull Request，等待审核。</li>
+                </ol>
+            </section>
+
+            <section id="license">
+                <h2>📄 13. 许可证</h2>
+                <p>本项目采用 <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> 许可证。详情请参阅项目根目录下的 <code>LICENSE</code> 文件。</p>
+            </section>
+
+            <section id="contact">
+                <h2>📞 14. 联系方式</h2>
+                <p>如果您有任何问题或建议，请通过 gaoj@obara.com.cn 与我们联系。</p>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 导航切换功能
+        const toggleNavBtn = document.getElementById('toggleNav');
+        const sidebar = document.getElementById('sidebar');
+        const container = document.querySelector('.container');
+        
+        toggleNavBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            container.classList.toggle('sidebar-hidden');
+        });
+    </script>
+</body>
+</html>
