@@ -1079,6 +1079,26 @@ def manage_users(request):
                 user.save()
                 messages.success(request, f'用户 {user.username} 已停用。')
             return redirect('clamps:manage_users')
+            
+        elif action == 'update_default_quota':
+            # 获取默认配额设置
+            default_password_validity_days = int(request.POST.get('default_password_validity_days', 5))
+            default_max_single_download_mb = int(request.POST.get('default_max_single_download_mb', 100))
+            default_max_batch_download_mb = int(request.POST.get('default_max_batch_download_mb', 200))
+            default_max_daily_download_gb = int(request.POST.get('default_max_daily_download_gb', 10))
+            default_max_daily_download_count = int(request.POST.get('default_max_daily_download_count', 100))
+            
+            # 更新所有用户的配额设置为新的默认值
+            UserProfile.objects.update(
+                password_validity_days=default_password_validity_days,
+                max_single_download_mb=default_max_single_download_mb,
+                max_batch_download_mb=default_max_batch_download_mb,
+                max_daily_download_gb=default_max_daily_download_gb,
+                max_daily_download_count=default_max_daily_download_count
+            )
+            
+            messages.success(request, '默认下载配额已更新，所有用户的配额设置已同步更新。')
+            return redirect('clamps:manage_users')
 
     # GET 请求处理 - 根据权限过滤用户
     if request.user.is_superuser:
@@ -1255,6 +1275,140 @@ def export_users(request):
             created_by_username
         ])
     return response
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def batch_add_template(request):
+    """提供批量添加用户的CSV模板下载"""
+    # 记录日志
+    Log.objects.create(
+        user=request.user, 
+        action_type='download_template', 
+        details='下载批量添加用户模板',
+        ip_address=request.META.get('REMOTE_ADDR'), 
+        user_agent=request.META.get('HTTP_USER_AGENT', '')
+    )
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="batch_add_template.csv"'
+    
+    writer = csv.writer(response)
+    # 写入表头
+    writer.writerow(["用户名", "客户名称", "密码", "密码备注", "是否激活", "是否员工", "是否超级用户", "密码有效期（天）", "单次最大下载大小（MB）", "每日最大下载大小（GB）", "每日最大下载文件数", "单次批量下载最大大小（MB）"])
+    # 写入示例数据
+    writer.writerow(["example_user", "示例客户", "example123", "example123", "TRUE", "FALSE", "FALSE", "5", "100", "10", "100", "200"])
+    
+    return response
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def batch_add_users(request):
+    """批量添加用户"""
+    if request.method == 'POST':
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            messages.error(request, '请选择CSV文件。')
+            return redirect('clamps:manage_users')
+        
+        # 检查文件类型
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, '请上传CSV格式的文件。')
+            return redirect('clamps:manage_users')
+        
+        try:
+            # 读取文件内容
+            content = csv_file.read()
+            # 检测编码
+            result = chardet.detect(content)
+            encoding = result['encoding']
+            
+            # 解析CSV
+            csv_data = content.decode(encoding).splitlines()
+            reader = csv.DictReader(csv_data)
+            
+            # 验证表头
+            required_fields = ["用户名", "客户名称", "密码", "密码备注", "是否激活", "是否员工", "是否超级用户", "密码有效期（天）", "单次最大下载大小（MB）", "每日最大下载大小（GB）", "每日最大下载文件数", "单次批量下载最大大小（MB）"]
+            if not all(field in reader.fieldnames for field in required_fields):
+                messages.error(request, f'CSV文件缺少必要的列。必须包含：{"、".join(required_fields)}')
+                return redirect('clamps:manage_users')
+            
+            # 处理数据
+            added_count = 0
+            skipped_count = 0
+            errors = []
+            
+            for row in reader:
+                username = row["用户名"].strip()
+                customer_name = row["客户名称"].strip()
+                password = row["密码"].strip()
+                password_remark = row["密码备注"].strip()
+                is_active = row["是否激活"].strip().upper() == "TRUE"
+                is_staff = row["是否员工"].strip().upper() == "TRUE"
+                is_superuser = row["是否超级用户"].strip().upper() == "TRUE"
+                
+                # 解析数值字段
+                try:
+                    password_validity_days = int(row["密码有效期（天）"].strip())
+                    max_single_download_mb = int(row["单次最大下载大小（MB）"].strip())
+                    max_daily_download_gb = int(row["每日最大下载大小（GB）"].strip())
+                    max_daily_download_count = int(row["每日最大下载文件数"].strip())
+                    max_batch_download_mb = int(row["单次批量下载最大大小（MB）"].strip())
+                except ValueError as e:
+                    errors.append(f'用户 {username} 的数值字段格式错误：{e}')
+                    continue
+                
+                # 检查用户是否已存在
+                if User.objects.filter(username=username).exists():
+                    skipped_count += 1
+                    continue
+                
+                try:
+                    # 创建用户
+                    with transaction.atomic():
+                        user = User.objects.create_user(username=username, password=password)
+                        user.is_active = is_active
+                        user.is_staff = is_staff
+                        user.is_superuser = is_superuser
+                        user.first_name = password_remark  # 将密码备注存储到first_name字段
+                        user.save()
+                        
+                        # 更新UserProfile
+                        profile = UserProfile.objects.get(user=user)
+                        profile.customer_name = customer_name
+                        profile.password_validity_days = password_validity_days
+                        profile.password_last_changed = timezone.now()
+                        profile.max_single_download_mb = max_single_download_mb
+                        profile.max_daily_download_gb = max_daily_download_gb
+                        profile.max_daily_download_count = max_daily_download_count
+                        profile.max_batch_download_mb = max_batch_download_mb
+                        profile.created_by = request.user
+                        profile.save()
+                        
+                        # 记录日志
+                        log_entry = Log(user=request.user, action_type='add_user', ip_address=request.META.get('REMOTE_ADDR'),
+                                        user_agent=request.META.get('HTTP_USER_AGENT', ''), 
+                                        details=f'Batch added user {username} with customer name {customer_name}')
+                        log_entry.save()
+                        
+                        added_count += 1
+                except Exception as e:
+                    errors.append(f'创建用户 {username} 失败：{e}')
+            
+            # 生成结果消息
+            result_msg = f'批量导入完成：成功添加 {added_count} 个用户，跳过 {skipped_count} 个已存在用户'
+            if errors:
+                result_msg += f'，{len(errors)} 个错误'
+                messages.warning(request, result_msg)
+                for error in errors:
+                    messages.error(request, error)
+            else:
+                messages.success(request, result_msg)
+                
+        except Exception as e:
+            messages.error(request, f'处理CSV文件失败：{e}')
+        
+        return redirect('clamps:manage_users')
+    return redirect('clamps:manage_users')
 
 @login_required
 @user_passes_test(is_staff_or_superuser)

@@ -1,0 +1,9 @@
+用户名,客户名称,密码,密码备注,是否激活,是否员工,是否超级用户,密码有效期（天）,单次最大下载大小（MB）,每日最大下载大小（GB）,每日最大下载文件数,单次批量下载最大大小（MB）
+yingye02,营业测试02,yingye02,yingye02,TRUE,TRUE,FALSE,0,100,10,100,200
+yingye03,营业测试03,yingye03,yingye03,TRUE,TRUE,FALSE,0,100,10,100,200
+yingye04,营业测试04,yingye04,yingye04,TRUE,TRUE,FALSE,0,100,10,100,200
+yingye05,营业测试05,yingye05,yingye05,TRUE,TRUE,FALSE,0,100,10,100,200
+yingye06,营业测试06,yingye06,yingye06,TRUE,TRUE,FALSE,0,100,10,100,200
+yingye07,营业测试07,yingye07,yingye07,TRUE,TRUE,FALSE,0,100,10,100,200
+yingye08,营业测试08,yingye08,yingye08,TRUE,TRUE,FALSE,0,100,10,100,200
+yingye09,营业测试09,yingye09,yingye09,TRUE,TRUE,FALSE,0,100,10,100,200

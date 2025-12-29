@@ -29,18 +29,31 @@
                 <i class="bi bi-people me-2"></i>
                 用户管理
             </h1>
-            <div>
+            <div class="d-flex align-items-center">
                 {% if user.is_superuser %}
-                    <button type="button" class="btn btn-info me-2" onclick="exportUsers()">
+                    <button type="button" class="btn btn-info me-2 d-inline-flex align-items-center" onclick="exportUsers()" style="height: 38px; padding: 0.375rem 0.75rem;">
                         <i class="bi bi-download me-2"></i>
                         导出用户信息
                     </button>
+                    <button type="button" class="btn btn-success me-2 d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addUserModal" style="height: 38px; padding: 0.375rem 0.75rem;">
+                        <i class="bi bi-person-plus me-2"></i>
+                        新增用户
+                    </button>
+                    <button type="button" class="btn btn-primary me-2 d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#batchAddUserModal" style="height: 38px; padding: 0.375rem 0.75rem;">
+                        <i class="bi bi-filetype-csv me-2"></i>
+                        批量新增用户
+                    </button>
+                    <button type="button" class="btn btn-secondary me-2 d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#defaultQuotaModal" style="height: 38px; padding: 0.375rem 0.75rem;">
+                        <i class="bi bi-sliders me-2"></i>
+                        默认下载配额
+                    </button>
+                {% else %}
+                    <button type="button" class="btn btn-success me-2 d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addUserModal" style="height: 38px; padding: 0.375rem 0.75rem;">
+                        <i class="bi bi-person-plus me-2"></i>
+                        新增用户
+                    </button>
                 {% endif %}
-                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                    <i class="bi bi-person-plus me-2"></i>
-                    新增用户
-                </button>
-                <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-outline-secondary">
+                <a href="{% url 'clamps:management_dashboard' %}" class="btn btn-outline-secondary d-inline-flex align-items-center" style="height: 38px; padding: 0.375rem 0.75rem;">
                     <i class="bi bi-arrow-left me-2"></i>
                     返回仪表板
                 </a>
@@ -382,7 +395,7 @@
                         <input type="password" class="form-control" id="password" name="password" required oninput="checkPasswordMatch()">
                         <div class="form-text">设置安全的密码，最好为在用户名后面加上ochn</div>
                     </div>
-					<div class="mb-3">
+				<div class="mb-3">
                         <label for="password_remark" class="form-label">密码备注 <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="password_remark" name="password_remark" required oninput="checkPasswordMatch()">
                         <div id="passwordMatchFeedback" class="form-text">再次输入密码，必须和上面的密码一致</div>
@@ -404,6 +417,136 @@
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-check me-1"></i>
                         创建用户
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 批量新增用户模态框 -->
+<div class="modal fade" id="batchAddUserModal" tabindex="-1" aria-labelledby="batchAddUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="batchAddUserModalLabel">
+                    <i class="bi bi-filetype-csv me-2"></i>
+                    批量新增用户
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'clamps:batch_add_users' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="csv_file" class="form-label">上传CSV文件 <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                        <div class="form-text mt-2">
+                            <strong>CSV文件格式要求：</strong><br>
+                            表头必须包含：用户名,客户名称,密码,密码备注,是否激活,是否员工,是否超级用户,密码有效期（天）,单次最大下载大小（MB）,每日最大下载大小（GB）,每日最大下载文件数,单次批量下载最大大小（MB）<br>
+                            示例文件：<a href="{% url 'clamps:batch_add_template' %}" class="text-primary">下载模板</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload me-1"></i>
+                        导入用户
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 默认下载配额设置模态框 -->
+<div class="modal fade" id="defaultQuotaModal" tabindex="-1" aria-labelledby="defaultQuotaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="defaultQuotaModalLabel">
+                    <i class="bi bi-sliders me-2"></i>
+                    默认下载配额设置
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_default_quota">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>默认设置说明：</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>密码有效期：5天</li>
+                            <li>单次下载限制：100MB</li>
+                            <li>批量下载限制：200MB</li>
+                            <li>每日下载限制：10GB / 100个文件</li>
+                        </ul>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6 class="mb-3">
+                                <i class="bi bi-key me-2"></i>
+                                密码有效期设置
+                            </h6>
+                            <div class="mb-3">
+                                <label for="defaultPasswordValidity" class="form-label">密码有效期（天）</label>
+                                <select class="form-select" id="defaultPasswordValidity" name="default_password_validity_days">
+                                    {% for value, label in password_validity_choices %}
+                                        <option value="{{ value }}" {% if value == 5 %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">
+                                    <small class="text-info">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        可设置1-15天或永久有效，默认5天
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-3">
+                                <i class="bi bi-download me-2"></i>
+                                文件下载限制
+                            </h6>
+                            <div class="mb-3">
+                                <label for="defaultMaxSingleDownload" class="form-label">单次最大下载大小（MB）</label>
+                                <input type="number" class="form-control" id="defaultMaxSingleDownload" 
+                                       name="default_max_single_download_mb" value="100" min="1" max="1000">
+                            </div>
+                            <div class="mb-3">
+                                <label for="defaultMaxBatchDownload" class="form-label">单次批量下载最大大小（MB）</label>
+                                <input type="number" class="form-control" id="defaultMaxBatchDownload" 
+                                       name="default_max_batch_download_mb" value="200" min="1" max="5000">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="defaultMaxDailyDownloadGB" class="form-label">每日最大下载大小（GB）</label>
+                                        <input type="number" class="form-control" id="defaultMaxDailyDownloadGB" 
+                                               name="default_max_daily_download_gb" value="10" min="1" max="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="defaultMaxDailyDownloadCount" class="form-label">每日最大下载文件数</label>
+                                        <input type="number" class="form-control" id="defaultMaxDailyDownloadCount" 
+                                               name="default_max_daily_download_count" value="100" min="1" max="1000">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check me-1"></i>
+                        保存默认设置
                     </button>
                 </div>
             </form>
@@ -475,10 +618,16 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <h6 class="mb-3">
-                                    <i class="bi bi-download me-2"></i>
-                                    文件下载限制(大小为压缩前文件原始大小)
-                                </h6>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-download me-2"></i>
+                                        文件下载限制
+                                    </h6>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="restoreDefaultQuota({{ user.id }})">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                        恢复默认下载配额
+                                    </button>
+                                </div>
                                 <div class="mb-3">
                                     <label for="maxSingleDownload{{ user.id }}" class="form-label">单次最大下载大小（MB）</label>
                                     <input type="number" class="form-control" id="maxSingleDownload{{ user.id }}" 
@@ -508,7 +657,7 @@
                             <div class="col-12">
                                 <h6 class="mb-3">
                                     <i class="bi bi-bar-chart me-2"></i>
-                                    今日下载统计(今日无下载则显示上次下载数据)
+                                    今日下载统计
                                 </h6>
                                 <div class="row">
                                     <div class="col-md-4">
@@ -731,6 +880,15 @@
 		}
 		
 		return true;
-	}
+}
+
+// 恢复默认下载配额
+function restoreDefaultQuota(userId) {
+	// 默认值：单次100MB，批量200MB，每日10GB，每日100个文件
+	document.getElementById('maxSingleDownload' + userId).value = 100;
+	document.getElementById('maxBatchDownload' + userId).value = 200;
+	document.getElementById('maxDailyDownloadGB' + userId).value = 10;
+	document.getElementById('maxDailyDownloadCount' + userId).value = 100;
+}
 </script>
 {% endblock %}
