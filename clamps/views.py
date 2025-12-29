@@ -347,7 +347,12 @@ def search_results_base(request, template_name):
             # 如果转换失败，说明是分类名称，使用category__name过滤
             q_objects &= Q(category__name=category_id)
     if description:
-        q_objects &= Q(description__icontains=description)
+        description_keywords = [keyword.strip() for keyword in description.split() if keyword.strip()]
+        if description_keywords:
+            description_q = Q()
+            for keyword in description_keywords:
+                description_q |= Q(description__icontains=keyword)
+            q_objects &= description_q
     if drawing_no_1:
         drawing_numbers = [num.strip() for num in drawing_no_1.split(',') if num.strip()]
         if drawing_numbers:
@@ -1185,14 +1190,13 @@ def add_user(request):
             user.first_name = password_remark  # 将密码备注存储到first_name字段
             user.save()
             
-            # 创建用户配置，设置默认密码有效期为5天，并保存客户名称
-            UserProfile.objects.create(
-                user=user, 
-                password_validity_days=5, 
-                password_last_changed=timezone.now(),
-                customer_name=customer_name,
-                created_by=request.user
-            )
+            # 更新现有的UserProfile（由信号自动创建），设置默认密码有效期为5天，并保存客户名称
+            profile = UserProfile.objects.get(user=user)
+            profile.password_validity_days = 5
+            profile.password_last_changed = timezone.now()
+            profile.customer_name = customer_name
+            profile.created_by = request.user
+            profile.save()
             
             log_entry = Log(user=request.user, action_type='add_user', ip_address=request.META.get('REMOTE_ADDR'),
                             user_agent=request.META.get('HTTP_USER_AGENT', ''), details=f'Added new user {username} with customer name {customer_name}')
@@ -2644,8 +2648,8 @@ def get_user_profile_data(request):
         if isinstance(password_expiry_date, str):
             expiry_text = password_expiry_date
         else:
-            # 转换为本地时间并格式化
-            expiry_text = password_expiry_date.strftime('%Y-%m-%d %H:%M:%S')
+            # 转换为本地时间（北京时间）并格式化
+            expiry_text = timezone.localtime(password_expiry_date).strftime('%Y-%m-%d %H:%M:%S')
         
         # 确保使用最新的下载统计数据
         # 检查是否需要重置每日统计
