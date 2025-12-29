@@ -29,7 +29,7 @@
                     <i class="bi bi-gear me-2"></i>
                     {{ product.drawing_no_1|default:"未知产品" }}
                 </h1>
-                <p class="lead text-muted"><!-- {{ product.description|default:"暂无描述" }}-->暂无描述</p>
+                <p class="lead text-muted">{{ product.description|default:"暂无描述" }}<!-- 暂无描述--></p>
             </div>
             <div>
                 <a href="javascript:history.back()" class="btn btn-outline-secondary">
@@ -230,8 +230,8 @@
                             
                             <div class="col-12 mb-3">
                                 <strong>描述：</strong>
-								<!-- {{ product.description|default:"--" }} -->
-                                暂无描述
+								{{ product.description|default:"--" }}
+                                <!-- 暂无描述 -->
                             </div>
                             
                             <!-- 技术参数 -->

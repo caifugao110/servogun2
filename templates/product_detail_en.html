@@ -31,7 +31,7 @@
                     {{ product.drawing_no_1|default:"Unknown Product" }}
                 </h1>
                 </h1>
-                <p class="lead text-muted">No description available</p>
+                <p class="lead text-muted">{{ product.description|default:"No description available" }}<!-- No description available--></p>
             </div>
             <div>
                 <a href="javascript:history.back()" class="btn btn-outline-secondary">
@@ -233,7 +233,8 @@
                             
                             <div class="col-12 mb-3">
                                 <strong>Description:</strong>
-                                No description available
+                                {{ product.description|default:"--" }}
+                                <!-- No description available -->
                             </div>
                             
                             <!-- Technical Parameters -->
