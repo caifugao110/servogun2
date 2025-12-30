@@ -90,7 +90,7 @@
 								<strong>Security Policy Notice</strong>
 								<span style="color: red;">
                                 <p class="mb-2">
-                                    1. The initially distributed account password is valid for 5 days by default, with a single download limit of 100MB, a single batch download size of 200MB, and a maximum daily download of 10GB / 100 files.
+                                    1. The initially distributed account password is valid for {{ default_settings.default_password_validity_days }} days by default, with a single download limit of {{ default_settings.default_max_single_download_mb }}MB, a single batch download size of {{ default_settings.default_max_batch_download_mb }}MB, and a maximum daily download of {{ default_settings.default_max_daily_download_gb }}GB / {{ default_settings.default_max_daily_download_count }} files.
 								</p>
 								<p class="mb-2">
 									2. If your account is restricted from login/download, please contact your sales manager for account renewal and download quota update.

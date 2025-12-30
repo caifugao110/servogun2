@@ -405,10 +405,10 @@
                         <strong>默认设置：</strong>
                         <ul class="mb-0 mt-2">
                             <li>用户类型：普通用户</li>
-                            <li>密码有效期：5天</li>
-                            <li>单次下载限制：100MB</li>
-                            <li>批量下载限制：200MB</li>
-                            <li>每日下载限制：10GB / 100个文件</li>
+                            <li>密码有效期：{{ default_settings.default_password_validity_days }}天</li>
+                            <li>单次下载限制：{{ default_settings.default_max_single_download_mb }}MB</li>
+                            <li>批量下载限制：{{ default_settings.default_max_batch_download_mb }}MB</li>
+                            <li>每日下载限制：{{ default_settings.default_max_daily_download_gb }}GB / {{ default_settings.default_max_daily_download_count }}个文件</li>
                         </ul>
                     </div>
                 </div>
@@ -475,16 +475,6 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_default_quota">
                 <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>默认设置说明：</strong>
-                        <ul class="mb-0 mt-2">
-                            <li>密码有效期：5天</li>
-                            <li>单次下载限制：100MB</li>
-                            <li>批量下载限制：200MB</li>
-                            <li>每日下载限制：10GB / 100个文件</li>
-                        </ul>
-                    </div>
                     <div class="row mt-4">
                         <div class="col-md-6">
                             <h6 class="mb-3">
@@ -495,7 +485,7 @@
                                 <label for="defaultPasswordValidity" class="form-label">密码有效期（天）</label>
                                 <select class="form-select" id="defaultPasswordValidity" name="default_password_validity_days">
                                     {% for value, label in password_validity_choices %}
-                                        <option value="{{ value }}" {% if value == 5 %}selected{% endif %}>
+                                        <option value="{{ value }}" {% if value == default_settings.default_password_validity_days %}selected{% endif %}>
                                             {{ label }}
                                         </option>
                                     {% endfor %}
@@ -516,26 +506,26 @@
                             <div class="mb-3">
                                 <label for="defaultMaxSingleDownload" class="form-label">单次最大下载大小（MB）</label>
                                 <input type="number" class="form-control" id="defaultMaxSingleDownload" 
-                                       name="default_max_single_download_mb" value="100" min="1" max="1000">
+                                       name="default_max_single_download_mb" value="{{ default_settings.default_max_single_download_mb }}" min="1" max="1000">
                             </div>
                             <div class="mb-3">
                                 <label for="defaultMaxBatchDownload" class="form-label">单次批量下载最大大小（MB）</label>
                                 <input type="number" class="form-control" id="defaultMaxBatchDownload" 
-                                       name="default_max_batch_download_mb" value="200" min="1" max="5000">
+                                       name="default_max_batch_download_mb" value="{{ default_settings.default_max_batch_download_mb }}" min="1" max="5000">
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="defaultMaxDailyDownloadGB" class="form-label">每日最大下载大小（GB）</label>
                                         <input type="number" class="form-control" id="defaultMaxDailyDownloadGB" 
-                                               name="default_max_daily_download_gb" value="10" min="1" max="100">
+                                               name="default_max_daily_download_gb" value="{{ default_settings.default_max_daily_download_gb }}" min="1" max="100">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="defaultMaxDailyDownloadCount" class="form-label">每日最大下载文件数</label>
                                         <input type="number" class="form-control" id="defaultMaxDailyDownloadCount" 
-                                               name="default_max_daily_download_count" value="100" min="1" max="1000">
+                                               name="default_max_daily_download_count" value="{{ default_settings.default_max_daily_download_count }}" min="1" max="1000">
                                     </div>
                                 </div>
                             </div>
@@ -884,11 +874,11 @@
 
 // 恢复默认下载配额
 function restoreDefaultQuota(userId) {
-	// 默认值：单次100MB，批量200MB，每日10GB，每日100个文件
-	document.getElementById('maxSingleDownload' + userId).value = 100;
-	document.getElementById('maxBatchDownload' + userId).value = 200;
-	document.getElementById('maxDailyDownloadGB' + userId).value = 10;
-	document.getElementById('maxDailyDownloadCount' + userId).value = 100;
+	// 使用动态默认值：单次{{ default_settings.default_max_single_download_mb }}MB，批量{{ default_settings.default_max_batch_download_mb }}MB，每日{{ default_settings.default_max_daily_download_gb }}GB，每日{{ default_settings.default_max_daily_download_count }}个文件
+	document.getElementById('maxSingleDownload' + userId).value = {{ default_settings.default_max_single_download_mb }};
+	document.getElementById('maxBatchDownload' + userId).value = {{ default_settings.default_max_batch_download_mb }};
+	document.getElementById('maxDailyDownloadGB' + userId).value = {{ default_settings.default_max_daily_download_gb }};
+	document.getElementById('maxDailyDownloadCount' + userId).value = {{ default_settings.default_max_daily_download_count }};
 }
 </script>
 {% endblock %}
