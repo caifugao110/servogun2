@@ -23,7 +23,33 @@ os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
 # 安全设置
 SECRET_KEY = 'django-insecure-your-secret-key-here-change-in-production'
-DEBUG = True
+
+# 自动检测DEBUG模式：特定IP为False，其他为True
+import socket
+
+def get_host_ip():
+    """获取本机IP地址"""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+    return ip
+
+# 定义需要禁用DEBUG的IP列表
+DEBUG_DISABLE_IPS = [
+    '192.168.160.21',
+    '192.168.160.25',
+    '192.168.160.61',
+    '192.168.160.62',
+    '192.168.160.63',
+    '192.168.160.67',
+]
+
+# 自动设置DEBUG值
+DEBUG = get_host_ip() not in DEBUG_DISABLE_IPS
+
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ['http://gun.obara.com.cn']
 
