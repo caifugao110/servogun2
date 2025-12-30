@@ -568,7 +568,7 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label for="fixed_description" class="form-label">描述</label>
-                                        <input type="text" class="form-control" id="fixed_description" name="fixed_fields[description]" placeholder="不定义则搜索页面不显示">
+                                        <input type="text" class="form-control" id="fixed_description" name="fixed_fields[description]" placeholder="不定义则搜索页面不显示 多个客户使用空格分离">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="fixed_clamping_force" class="form-label">固压力</label>
@@ -794,6 +794,22 @@
                     if (cb !== this) {
                         cb.checked = isChecked;
                     }
+                });
+            });
+        });
+        
+        // 电极臂前部参数同步勾选逻辑
+        const enabledFieldCheckboxes = document.querySelectorAll('.enabled_field_checkbox');
+        const armFrontParams = ['static_arm_front_length', 'static_arm_front_height', 'moving_arm_front_length', 'moving_arm_front_height'];
+        const armFrontCheckboxes = Array.from(enabledFieldCheckboxes).filter(cb => 
+            armFrontParams.includes(cb.value)
+        );
+        
+        armFrontCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                armFrontCheckboxes.forEach(cb => {
+                    cb.checked = isChecked;
                 });
             });
         });
