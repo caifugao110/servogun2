@@ -2,11 +2,11 @@
 
 ## 📝 1. 引言
 
-本系统是一个基于Django框架开发的焊枪产品管理系统，旨在提供高效的产品信息管理、搜索、文件下载以及用户和数据管理功能。
+本系统是一个基于Django框架开发的焊枪产品管理系统，旨在提供高效的产品信息管理、搜索、文件下载以及用户和数据管理功能。系统支持中英文双语界面，集成了AI智能搜索、异步压缩、仕样链接管理等高级功能，为用户提供全面的焊枪选型解决方案。
 
 ## 🖥️ 2. 系统概述
 
-本系统采用Python的Django Web框架构建，后端使用SQLite数据库（可配置为其他数据库如PostgreSQL、MySQL等）存储数据。系统主要模块包括用户认证与授权、产品信息管理、搜索功能、文件管理（STEP、ZIP等文件下载与同步）、数据导入导出以及系统日志记录。静态文件（CSS、JavaScript、图片）和媒体文件（焊枪数据）通过Django的静态文件服务和媒体文件服务进行管理。
+本系统采用Python的Django Web框架构建，后端使用SQLite数据库（可配置为其他数据库如PostgreSQL、MySQL等）存储数据。系统主要模块包括用户认证与授权、产品信息管理、搜索功能、文件管理（STEP、PDF等文件下载与同步）、数据导入导出以及系统日志记录。静态文件（CSS、JavaScript、图片）和媒体文件（焊枪数据）通过Django的静态文件服务和媒体文件服务进行管理。
 
 ### 🛠️ 2.1 技术栈
 
@@ -14,12 +14,13 @@
 *   **数据库**: SQLite (默认) 💾
 *   **前端**: HTML, CSS, JavaScript (基于Django模板) 🎨
 *   **部署环境**: Python 3.11+ ⚡
+*   **核心库**: PyPDF2 (PDF处理), chardet (编码检测), reportlab (PDF水印生成)
 
 ### ✨ 2.2 核心功能模块
 
 *   **用户管理**: 用户注册、登录、登出、权限控制（普通用户、一般管理员、超级管理员）。管理员可管理用户状态、重置密码、删除用户。 👥
-*   **产品管理**: 产品的分类、详细信息（喉深、喉宽、变压器、加压力等）的录入、查询、展示。 📦
-*   **搜索功能**: 支持多条件组合搜索产品，包括分类、客户、图号、子分类类型以及数值范围搜索（行程、加压力、重量、喉深、喉宽）。 🔍
+*   **产品管理**: 产品的分类、详细信息（喉深、喉宽、变压器、加压力等）的录入、查询、展示。支持多种产品类型和参数配置。 📦
+*   **搜索功能**: 支持多条件组合搜索产品，包括分类、图号、子分类类型以及数值范围搜索（行程、加压力、重量、喉深、喉宽）。 🔍
 *   **文件管理**: 支持PDF、STEP等产品相关文件的下载和批量下载。系统提供文件与产品信息的同步功能。 📄
 *   **异步压缩**: 支持异步压缩PDF、STEP等产品文件，提升大文件处理效率和用户体验。 📦⚡
 *   **数据管理**: 支持通过CSV文件批量导入产品数据，以及导出产品、用户、日志数据为CSV格式。 📊
@@ -27,8 +28,9 @@
 *   **用户配置管理**: 为每个用户提供独立的配置，包括客户名称、密码有效期、文件下载限制以及下载统计等。 ⚙️
 *   **仕样链接管理**: 管理员可以创建和管理特定的搜索链接，包含预设的搜索配置，支持设置链接有效期、最大点击次数等。 🔗
 *   **下载数据分析**: 提供API接口分析下载数据，支持按时间范围和用户筛选，包含趋势数据、用户统计和总计数据。 📈
-*   **AI智能搜索**: 集成了AI智能搜索功能，支持通过API调用Coze服务。 🤖
+*   **AI智能搜索**: 集成了AI智能搜索功能，支持通过API调用Coze服务，提供更智能的搜索体验。 🤖
 *   **用户反馈功能**: 允许用户向管理员提交使用过程中的问题和建议，支持反馈分类、状态管理和用户通知，帮助持续改进系统。 💬
+*   **产品文件水印**: 为下载的PDF文件自动添加水印，包含用户信息和时间戳，增强文件安全性。 🔒
 
 ### 🏗️ 2.3 系统架构
 
@@ -36,9 +38,9 @@
 
 *   **Model (模型)**: 定义数据结构和业务逻辑，如 `Product` (产品), `Category` (分类), `Log` (日志), `UserProfile` (用户配置), `StyleLink` (仕样链接), `UserFeedback` (用户反馈), `CompressionTask` (压缩任务) 等。与数据库进行交互。 🗄️
 *   **View (视图)**: 处理用户请求，从模型获取数据，并将数据传递给模板进行渲染。例如 `search_results` 视图处理搜索请求并返回搜索结果页面。 👁️
-*   **Template (模板)**: 定义用户界面的结构和布局，使用Django模板语言展示动态数据。例如 `search.html` 用于产品搜索页面，`product_detail.html` 用于产品详情页面。 🎨
+*   **Template (模板)**: 定义用户界面的结构和布局，使用Django模板语言展示动态数据。例如 `search.html` 用于产品搜索页面，`product_detail.html` 用于产品详情页面。支持中英文双语模板。 🎨
 *   **ASGI配置**: 支持异步通信，通过 `asgi.py` 和 Channels 实现WebSocket等异步功能。 ⚡
-*   **WebSocket支持**: 通过 `consumers.py` 和 `routing.py` 实现WebSocket通信，支持实时功能。 🔌
+*   **WebSocket支持**: 通过 `consumers.py` 和 `routing.py` 实现WebSocket通信，支持实时功能如异步压缩进度更新。 🔌
 
 此外，系统还包含：
 
@@ -46,13 +48,14 @@
 *   **中间件**: 例如 `LoggingMiddleware` 用于记录用户请求日志。 🛡️
 *   **静态文件**: 存放CSS、JS、图片等前端资源。 📁
 *   **媒体文件**: 存放产品相关文件（STEP、PDF等）。 📂
+*   **PDF处理**: 通过 `pdf_utils.py` 实现PDF文件的水印添加和处理。 📄
 
 ## 📁 3. 项目目录结构
 
 本项目的目录结构清晰，遵循Django项目的标准布局，便于开发、维护和部署。以下是主要目录和文件的说明：
 
 ```
-welding_clamp_db/
+servogun2/
 ├── clamps/                     # Django 应用目录，包含核心业务逻辑
 │   ├── migrations/             # 数据库迁移文件
 │   ├── management/             # 自定义管理命令
@@ -89,12 +92,23 @@ welding_clamp_db/
 │   ├── howtogetpdf/            # PDF文件处理工具
 │   ├── howtogetstep/           # STEP文件处理工具
 │   └── initial_step.md         # 初始化步骤说明
-├── welding_clamp_db/           # Django 项目配置目录
-│   ├── __init__.py
-│   ├── asgi.py                 # ASGI 配置文件
-│   ├── settings.py             # 项目设置文件
-│   ├── urls.py                 # 项目主 URL 配置
-│   └── wsgi.py                 # WSGI 配置文件
+├── static/                     # 静态文件目录（CSS, JS, 图片, PDF等）
+│   ├── css/                    # CSS样式文件
+│   ├── fonts/                  # 字体文件
+│   ├── icon/                   # 图标目录
+│   ├── images/                 # 图片资源
+│   ├── js/                     # JavaScript文件
+│   │   ├── cmaps/              # PDF映射文件
+│   │   ├── bootstrap.bundle.min.js # Bootstrap框架
+│   │   ├── chart.js            # 图表库
+│   │   ├── compression_async.js # 异步压缩功能
+│   │   ├── pdf-lib.min.js      # PDF处理库
+│   │   ├── pdf-watermark.js    # PDF水印功能
+│   │   ├── pdf.js              # PDF查看器
+│   │   └── pdf.worker.js       # PDF查看器工作线程
+│   ├── pdf/                    # 系统PDF文档
+│   └── webfonts/               # Web字体文件
+│   └── webpage/                # 静态网页
 ├── templates/                  # HTML 模板文件目录
 │   ├── management/             # 管理页面模板
 │   │   ├── analytics.html      # 数据分析页面
@@ -108,36 +122,30 @@ welding_clamp_db/
 │   │   ├── unmatched_files.html # 未匹配文件页面
 │   │   ├── user_feedback.html  # 用户反馈页面
 │   │   └── users.html          # 用户管理页面
-│   ├── base.html
+│   ├── base.html               # 中文版基础模板
 │   ├── base_en.html            # 英文版基础模板
-│   ├── home.html
-│   ├── home_en.html            # 英文版首页模板
-│   ├── login.html
-│   ├── login_en.html           # 英文版登录模板
-│   ├── product_detail.html
-│   ├── product_detail_en.html  # 英文版产品详情模板
-│   ├── profile.html
-│   ├── profile_en.html         # 英文版个人资料模板
-│   ├── search.html
-│   ├── search_en.html          # 英文版搜索模板
-│   ├── search_results.html
-│   ├── search_results_en.html  # 英文版搜索结果模板
-│   ├── style_search.html       # 仕样搜索页面
+│   ├── home.html               # 中文版首页
+│   ├── home_en.html            # 英文版首页
+│   ├── login.html              # 中文版登录页面
+│   ├── login_en.html           # 英文版登录页面
+│   ├── product_detail.html     # 中文版产品详情页
+│   ├── product_detail_en.html  # 英文版产品详情页
+│   ├── profile.html            # 中文版个人资料页
+│   ├── profile_en.html         # 英文版个人资料页
+│   ├── search.html             # 中文版搜索页面
+│   ├── search_en.html          # 英文版搜索页面
+│   ├── search_results.html     # 中文版搜索结果页
+│   ├── search_results_en.html  # 英文版搜索结果页
+│   ├── style_search.html       # 中文版仕样搜索页面
 │   ├── style_search_en.html    # 英文版仕样搜索页面
-│   ├── user_feedback.html      # 用户反馈页面
+│   ├── user_feedback.html      # 中文版用户反馈页面
 │   └── user_feedback_en.html   # 英文版用户反馈页面
-├── static/                     # 静态文件目录（CSS, JS, 图片, PDF等）
-│   ├── css/
-│   ├── fonts/
-│   ├── icon/                   # 图标目录
-│   ├── images/
-│   ├── js/
-│   │   └── cmaps/              # PDF映射文件
-│   ├── pdf/
-│   └── webfonts/
-├── media/                      # 存放产品相关文件目录（STEP, PDF等）
-├── logs/                       # 系统日志文件目录
-├── db.sqlite3                  # 默认 SQLite 数据库文件
+├── welding_clamp_db/           # Django 项目配置目录
+│   ├── __init__.py
+│   ├── asgi.py                 # ASGI 配置文件
+│   ├── settings.py             # 项目设置文件
+│   ├── urls.py                 # 项目主 URL 配置
+│   └── wsgi.py                 # WSGI 配置文件
 ├── .gitignore                  # Git忽略文件
 ├── LICENSE                     # 许可证文件
 ├── manage.py                   # Django 项目管理脚本
@@ -601,6 +609,7 @@ Django 提供了一个强大的后台管理界面，管理员可以通过它直�
 *   **分类管理**: 查看、添加、编辑、删除产品分类。
 *   **日志管理**: 查看系统操作日志。
 *   **仕样链接管理**: 查看、添加、编辑、删除仕样链接。
+*   **用户反馈管理**: 查看、处理用户提交的反馈信息。
 
 ### 🧹 11.4 日常维护与管理
 
@@ -610,6 +619,7 @@ Django 提供了一个强大的后台管理界面，管理员可以通过它直�
 *   **密码重置请求**: 关注并及时处理因密码过期而产生的用户密码重置请求。
 *   **下载异常监控**: 通过系统日志监控用户的下载行为，特别是频繁触发下载限制的用户，以发现潜在的异常活动。
 *   **仕样链接管理**: 定期检查和清理过期或不再使用的仕样链接。
+*   **备份管理**: 定期检查自动备份系统的运行情况，确保备份文件的完整性和可恢复性。
 
 ### 💾 11.5 自动备份系统
 
@@ -662,4 +672,4 @@ Django 提供了一个强大的后台管理界面，管理员可以通过它直�
 ---
 
 **作者**: **技术开发二部**
-**更新日期**: 2025年12月26日
+**更新日期**: 2025年12月30日

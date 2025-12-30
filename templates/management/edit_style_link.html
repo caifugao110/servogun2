@@ -814,6 +814,54 @@
             });
         });
         
+        // 产品分类同步勾选逻辑
+        const productCategoryCheckboxes = document.querySelectorAll('.product_category_checkbox');
+        
+        // 第一组：X2C-C(推荐) 和 X2C-X(推荐)
+        const group1Values = ['X2C-C_recommended', 'X2C-X_recommended'];
+        const group1Checkboxes = Array.from(productCategoryCheckboxes).filter(cb => 
+            group1Values.includes(cb.value)
+        );
+        
+        group1Checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                group1Checkboxes.forEach(cb => {
+                    cb.checked = isChecked;
+                });
+            });
+        });
+        
+        // 第二组：X2C-V2-C 和 X2C-V2-X
+        const group2Values = ['X2C-V2-C', 'X2C-V2-X'];
+        const group2Checkboxes = Array.from(productCategoryCheckboxes).filter(cb => 
+            group2Values.includes(cb.value)
+        );
+        
+        group2Checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                group2Checkboxes.forEach(cb => {
+                    cb.checked = isChecked;
+                });
+            });
+        });
+        
+        // 第三组：X2C-V3-C 和 X2C-V3-X
+        const group3Values = ['X2C-V3-C', 'X2C-V3-X'];
+        const group3Checkboxes = Array.from(productCategoryCheckboxes).filter(cb => 
+            group3Values.includes(cb.value)
+        );
+        
+        group3Checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                group3Checkboxes.forEach(cb => {
+                    cb.checked = isChecked;
+                });
+            });
+        });
+        
         // 表单验证 - 客户名称为必填项
         const form = document.querySelector('form');
         form.addEventListener('submit', function(event) {
