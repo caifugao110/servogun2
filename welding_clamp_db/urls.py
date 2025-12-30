@@ -31,11 +31,10 @@ def cached_static_serve(request, path, document_root=None):
     response['Cache-Control'] = 'max-age=604800, public'
     return response
 
-# 开发环境提供静态文件服务
-if settings.DEBUG:
-    urlpatterns += [
-        re_path(r'^static/(?P<path>.*)$', cached_static_serve, {'document_root': settings.STATIC_ROOT}),
-    ]
+# 提供静态文件服务（包含缓存头）
+urlpatterns += [
+    re_path(r'^static/(?P<path>.*)$', cached_static_serve, {'document_root': settings.STATIC_ROOT}),
+]
 
 
 

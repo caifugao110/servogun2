@@ -20,8 +20,22 @@ cd servogun2
 
 根据 `.gitignore` 文件的配置，创建以下目录：
 
+#### Windows 系统
+
+在命令提示符（cmd.exe）中运行：
+```cmd
+if not exist media mkdir media & if not exist logs mkdir logs & if not exist backups mkdir backups
+```
+
+在 PowerShell 中运行：
+```powershell
+mkdir -Force media logs backups
+```
+
+#### Linux/macOS 系统
+
 ```bash
-mkdir -p media logs backups
+mkdir -p media logs backups  # 如果目录已存在则自动跳过
 ```
 
 ## 2. 安装依赖
@@ -56,7 +70,19 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
-## 4. 初始化分类数据（可选）
+## 4. 收集静态文件
+
+收集所有静态文件到staticfiles文件夹，用于生产环境部署：
+
+```bash
+python manage.py collectstatic --noinput
+```
+
+- `--noinput` 参数用于跳过确认提示，直接执行收集操作
+- 该命令会将项目中的所有静态资源复制到 `staticfiles` 文件夹
+- 生产环境会从该文件夹读取静态资源
+
+## 5. 初始化分类数据（可选）
 
 对于全新部署，可以运行以下命令初始化产品分类：
 
@@ -64,7 +90,7 @@ python manage.py migrate
 python manage.py init_data
 ```
 
-## 5. 创建超级用户
+## 6. 创建超级用户
 
 创建一个管理员账户，用于登录系统和管理后台。
 

@@ -4,6 +4,7 @@ venv/
 logs/
 backups/
 temp/
+staticfiles/
 
 # Ignore Python compiled files
 __pycache__/
