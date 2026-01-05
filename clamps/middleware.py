@@ -50,8 +50,16 @@ class LoggingMiddleware:
                         path=request.path,
                         method=request.method
                     )
+                
+                # 更新用户最后活动时间
+                if request.user.is_authenticated:
+                    from django.utils import timezone
+                    # 使用select_related减少数据库查询
+                    profile = request.user.profile
+                    profile.last_activity = timezone.now()
+                    profile.save(update_fields=['last_activity'])
         except Exception as e:
-            logger.error(f"记录访问日志失败: {e}")
+            logger.error(f"记录访问日志或更新最后活动时间失败: {e}")
         
         return self.get_response(request)
 
