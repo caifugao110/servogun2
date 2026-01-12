@@ -58,7 +58,7 @@
                                     <li>Perform comprehensive, in-depth, and precise matching searches in multiple knowledge bases:
                                         <ul class="mt-1 mb-1 ms-4">
                                             <li>Throat depth, throat width, and pressure parameters are precisely matched within the generated range</li>
-                                            <li>Transformer type (if mentioned) is fuzzily matched (contains keywords)</li>
+                                            <li>Transformer type (if mentioned) is precisely matched (contains keywords)</li>
                                             <li>Customer field is fuzzily matched (if customer is mentioned, contains keywords)</li>
                                             <li>Eccentricity distance (if mentioned) is precisely matched (within the generated range)</li>
                                         </ul>
@@ -72,7 +72,7 @@
                 <div class="row">
                     <div class="col-md-9">
                         <textarea class="form-control" id="ai_query" rows="1" style="resize: none;" 
-                                placeholder="e.g.: Throat depth around 300, throat width around 450, 85 transformer, pressure around 4500 C gun">Throat depth around 300, throat width around 450, 85 transformer, pressure around 4500 C gun</textarea>
+                                placeholder="e.g.: Throat depth around 300, throat width around 450, ITS85 transformer, pressure around 4500 C gun">Throat depth around 300, throat width around 450, ITS85 transformer, pressure around 4500 C gun</textarea>
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-primary w-100" id="ai_search_btn">
