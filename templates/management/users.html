@@ -63,10 +63,20 @@
         <!-- 用户列表 -->
         <div class="card fade-in-up">
             <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-list me-2"></i>
-                    用户列表
-                </h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-2"></i>
+                        用户列表
+                    </h5>
+                    <div class="search-container w-50">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="userSearch" placeholder="搜索用户名/客户名称/密码备注" oninput="filterUsers()">
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 {% if users_with_profiles %}
@@ -87,153 +97,663 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in users_with_profiles %}
-                                    {% with user=item.user profile=item.profile password_expired=item.password_expired %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ user.username }}</strong>
+                                {% if request.user.is_superuser %}
+                                    <!-- 普通用户组 -->
+                                    <tr class="group-header bg-primary text-white">
+                                        <td colspan="10" class="p-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    <button type="button" class="btn btn-sm btn-success text-white border-0 me-2 p-0 w-8 h-8 d-flex align-items-center justify-content-center" onclick="toggleGroup('normal')">
+                                                        <i class="bi bi-chevron-down"></i>
+                                                    </button>
+                                                    <h6 class="mb-0">
+                                                        <i class="bi bi-person me-2 text-success"></i>
+                                                        普通用户
+                                                    </h6>
+                                                </div>
+                                                <small class="badge bg-white text-success fw-bold px-2 py-0">
+                                                    ({{ normal_users_count }})
+                                                </small>
+                                            </div>
                                         </td>
-                                        <td>
-                                            {% if profile.customer_name %}
-                                                {{ profile.customer_name }}
-                                            {% else %}
-                                                --
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if user.first_name or user.last_name %}
-                                                {{ user.first_name }} {{ user.last_name }}
-                                            {% else %}
-                                                --
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if user.is_active %}
-                                                <span class="badge bg-success">
-                                                    <i class="bi bi-check-circle me-1"></i>
-                                                    活跃
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-danger">
-                                                    <i class="bi bi-x-circle me-1"></i>
-                                                    停用
-                                                </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if user.is_superuser %}
-                                                <span class="badge bg-danger">
-                                                    <i class="bi bi-shield-fill me-1"></i>
-                                                    超级管理员
-                                                </span>
-                                            {% elif user.is_staff %}
-                                                <span class="badge bg-warning">
-                                                    <i class="bi bi-person-badge me-1"></i>
-                                                    管理员
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-primary">
-                                                    <i class="bi bi-person me-1"></i>
-                                                    普通用户
-                                                </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if profile.password_validity_days == 0 %}
-                                                <span class="badge bg-info">
-                                                    <i class="bi bi-infinity me-1"></i>
-                                                    永久有效
-                                                </span>
-                                            {% elif password_expired %}
-                                                <span class="badge bg-danger">
-                                                    <i class="bi bi-exclamation-triangle me-1"></i>
-                                                    已过期
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-success">
-                                                    <i class="bi bi-clock me-1"></i>
-                                                    {{ profile.password_validity_days }}天有效
-                                                </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">
-                                                单次: {{ profile.max_single_download_mb }}MB<br>
-                                                批量: {{ profile.max_batch_download_mb }}MB<br>
-                                                每日: {{ profile.max_daily_download_gb }}GB / {{ profile.max_daily_download_count }}个
-                                            </small>
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">
-                                                {{ user.date_joined|date:"Y-m-d H:i" }}<br>
-												创建者: {{ item.created_by }}
-                                            </small>
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">
-												{% if profile.last_activity %}
-													{{ profile.last_activity|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
-												{% else %}
-													从未活动
-												{% endif %}
-                                            </small>
-                                            <br>
-											<small class="text-muted">
-												截止: 
-												{% if item.password_expiry_date == "永久有效" %}
-													{{ item.password_expiry_date }}
-												{% else %}
-													{{ item.password_expiry_date|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
-												{% endif %}
-											</small>
-                                        </td>
-										<!-- 操作列 -->
-										<td>
-											{% if not user.is_superuser and user != request.user %}
-											<div class="d-flex align-items-center" style="gap: 0.5rem;">
-												<!-- 停用/激活按钮 -->
-				<form method="post" class="mb-0">
-						{% csrf_token %}
-						{% if user.is_active %}
-							<input type="hidden" name="action" value="deactivate">
-							<input type="hidden" name="user_id" value="{{ user.id }}">
-							<button type="submit" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center"
-									data-bs-toggle="tooltip" title="停用用户">
-								<i class="bi bi-x-circle"></i>
-							</button>
-						{% else %}
-							<input type="hidden" name="action" value="activate">
-							<input type="hidden" name="user_id" value="{{ user.id }}">
-							<button type="submit" class="btn btn-outline-success btn-sm d-inline-flex align-items-center"
-									data-bs-toggle="tooltip" title="激活用户">
-								<i class="bi bi-check-circle"></i>
-							</button>
-						{% endif %}
-				</form>
-
-												<!-- 配置按钮 -->
-												<button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
-														data-bs-toggle="modal" data-bs-target="#configModal{{ user.id }}"
-														data-bs-toggle="tooltip" title="配置用户">
-													<i class="bi bi-gear"></i>
-												</button>
-
-												<!-- 重置密码按钮 -->
-												<button type="button" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center"
-														data-bs-toggle="modal" data-bs-target="#setPasswordModal{{ user.id }}"
-														data-bs-toggle="tooltip" title="重置密码">
-													<i class="bi bi-key"></i>
-												</button>
-											</div>
-											{% elif user.is_superuser %}
-												<span class="text-muted small">超级管理员</span>
-											{% elif user == request.user %}
-												<span class="text-muted small">当前用户</span>
-											{% endif %}
-										</td>
                                     </tr>
-                                    {% endwith %}
-                                {% endfor %}
+                                    {% for item in users_with_profiles %}
+                                        {% with user=item.user profile=item.profile password_expired=item.password_expired %}
+                                            {% if not user.is_superuser and not user.is_staff %}
+                                                <tr class="user-row normal-user {% if not user.is_active %}inactive-user{% endif %} {% if password_expired %}expired-password{% endif %}" data-group="normal" data-last-activity="{{ profile.last_activity|date:'Y-m-d H:i'|default:'' }}">
+                                                    <td>
+                                                        <strong>{{ user.username }}</strong>
+                                                    </td>
+                                                    <td>
+                                                        {% if profile.customer_name %}
+                                                            {{ profile.customer_name }}
+                                                        {% else %}
+                                                            --
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.first_name or user.last_name %}
+                                                            {{ user.first_name }} {{ user.last_name }}
+                                                        {% else %}
+                                                            --
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.is_active %}
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-check-circle me-1"></i>
+                                                                活跃
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-x-circle me-1"></i>
+                                                                停用
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.is_superuser %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-shield-fill me-1"></i>
+                                                                超级管理员
+                                                            </span>
+                                                        {% elif user.is_staff %}
+                                                            <span class="badge bg-warning">
+                                                                <i class="bi bi-person-badge me-1"></i>
+                                                                管理员
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-primary">
+                                                                <i class="bi bi-person me-1"></i>
+                                                                普通用户
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if profile.password_validity_days == 0 %}
+                                                            <span class="badge bg-info">
+                                                                <i class="bi bi-infinity me-1"></i>
+                                                                永久有效
+                                                            </span>
+                                                        {% elif password_expired %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                                已过期
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-clock me-1"></i>
+                                                                {{ profile.password_validity_days }}天有效
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                            单次: {{ profile.max_single_download_mb }}MB<br>
+                                                            批量: {{ profile.max_batch_download_mb }}MB<br>
+                                                            每日: {{ profile.max_daily_download_gb }}GB / {{ profile.max_daily_download_count }}个
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                            {{ user.date_joined|date:"Y-m-d H:i" }}<br>
+                                                创建者: {{ item.created_by }}
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                {% if profile.last_activity %}
+                                                    {{ profile.last_activity|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+                                                {% else %}
+                                                    从未活动
+                                                {% endif %}
+                                                        </small>
+                                                        <br>
+                                                    <small class="text-muted">
+                                                        截止: 
+                                                        {% if item.password_expiry_date == "永久有效" %}
+                                                            {{ item.password_expiry_date }}
+                                                        {% else %}
+                                                            {{ item.password_expiry_date|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+                                                        {% endif %}
+                                                    </small>
+                                                    </td>
+                                                <!-- 操作列 -->
+                                                <td>
+                                                    {% if not user.is_superuser and user != request.user %}
+                                                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                                        <!-- 停用/激活按钮 -->
+                <form method="post" class="mb-0">
+                        {% csrf_token %}
+                        {% if user.is_active %}
+                            <input type="hidden" name="action" value="deactivate">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="停用用户">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        {% else %}
+                            <input type="hidden" name="action" value="activate">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-outline-success btn-sm d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="激活用户">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                        {% endif %}
+                </form>
+
+                                                        <!-- 配置按钮 -->
+                                                        <button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
+                                                                data-bs-toggle="modal" data-bs-target="#configModal{{ user.id }}"
+                                                                data-bs-toggle="tooltip" title="配置用户">
+                                                            <i class="bi bi-gear"></i>
+                                                        </button>
+
+                                                        <!-- 重置密码按钮 -->
+                                                        <button type="button" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center"
+                                                                data-bs-toggle="modal" data-bs-target="#setPasswordModal{{ user.id }}"
+                                                                data-bs-toggle="tooltip" title="重置密码">
+                                                            <i class="bi bi-key"></i>
+                                                        </button>
+                                                    </div>
+                                                    {% elif user.is_superuser %}
+                                                        <span class="text-muted small">超级管理员</span>
+                                                    {% elif user == request.user %}
+                                                        <span class="text-muted small">当前用户</span>
+                                                    {% endif %}
+                                                </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endfor %}
+
+                                    <!-- 管理员组 -->
+                                    <tr class="group-header bg-warning text-dark">
+                                        <td colspan="10" class="p-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    <button type="button" class="btn btn-sm btn-warning text-dark border-0 me-2 p-0 w-8 h-8 d-flex align-items-center justify-content-center" onclick="toggleGroup('admin')">
+                                                        <i class="bi bi-chevron-right"></i>
+                                                    </button>
+                                                    <h6 class="mb-0">
+                                                        <i class="bi bi-person-badge me-2 text-warning"></i>
+                                                        管理员
+                                                    </h6>
+                                                </div>
+                                                <small class="badge bg-white text-warning fw-bold px-2 py-0">
+                                                    ({{ staff_users_count }})
+                                                </small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% for item in users_with_profiles %}
+                                        {% with user=item.user profile=item.profile password_expired=item.password_expired %}
+                                            {% if user.is_staff and not user.is_superuser %}
+                                                <tr class="user-row admin-user {% if not user.is_active %}inactive-user{% endif %} {% if password_expired %}expired-password{% endif %}" data-group="admin" style="display: none;" data-last-activity="{{ profile.last_activity|date:'Y-m-d H:i'|default:'' }}">
+                                                    <td>
+                                                        <strong>{{ user.username }}</strong>
+                                                    </td>
+                                                    <td>
+                                                        {% if profile.customer_name %}
+                                                            {{ profile.customer_name }}
+                                                        {% else %}
+                                                            --
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.first_name or user.last_name %}
+                                                            {{ user.first_name }} {{ user.last_name }}
+                                                        {% else %}
+                                                            --
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.is_active %}
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-check-circle me-1"></i>
+                                                                活跃
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-x-circle me-1"></i>
+                                                                停用
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.is_superuser %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-shield-fill me-1"></i>
+                                                                超级管理员
+                                                            </span>
+                                                        {% elif user.is_staff %}
+                                                            <span class="badge bg-warning">
+                                                                <i class="bi bi-person-badge me-1"></i>
+                                                                管理员
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-primary">
+                                                                <i class="bi bi-person me-1"></i>
+                                                                普通用户
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if profile.password_validity_days == 0 %}
+                                                            <span class="badge bg-info">
+                                                                <i class="bi bi-infinity me-1"></i>
+                                                                永久有效
+                                                            </span>
+                                                        {% elif password_expired %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                                已过期
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-clock me-1"></i>
+                                                                {{ profile.password_validity_days }}天有效
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                            单次: {{ profile.max_single_download_mb }}MB<br>
+                                                            批量: {{ profile.max_batch_download_mb }}MB<br>
+                                                            每日: {{ profile.max_daily_download_gb }}GB / {{ profile.max_daily_download_count }}个
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                            {{ user.date_joined|date:"Y-m-d H:i" }}<br>
+                                                创建者: {{ item.created_by }}
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                {% if profile.last_activity %}
+                                                    {{ profile.last_activity|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+                                                {% else %}
+                                                    从未活动
+                                                {% endif %}
+                                                        </small>
+                                                        <br>
+                                                    <small class="text-muted">
+                                                        截止: 
+                                                        {% if item.password_expiry_date == "永久有效" %}
+                                                            {{ item.password_expiry_date }}
+                                                        {% else %}
+                                                            {{ item.password_expiry_date|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+                                                        {% endif %}
+                                                    </small>
+                                                    </td>
+                                                <!-- 操作列 -->
+                                                <td>
+                                                    {% if not user.is_superuser and user != request.user %}
+                                                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                                        <!-- 停用/激活按钮 -->
+                <form method="post" class="mb-0">
+                        {% csrf_token %}
+                        {% if user.is_active %}
+                            <input type="hidden" name="action" value="deactivate">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="停用用户">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        {% else %}
+                            <input type="hidden" name="action" value="activate">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-outline-success btn-sm d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="激活用户">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                        {% endif %}
+                </form>
+
+                                                        <!-- 配置按钮 -->
+                                                        <button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
+                                                                data-bs-toggle="modal" data-bs-target="#configModal{{ user.id }}"
+                                                                data-bs-toggle="tooltip" title="配置用户">
+                                                            <i class="bi bi-gear"></i>
+                                                        </button>
+
+                                                        <!-- 重置密码按钮 -->
+                                                        <button type="button" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center"
+                                                                data-bs-toggle="modal" data-bs-target="#setPasswordModal{{ user.id }}"
+                                                                data-bs-toggle="tooltip" title="重置密码">
+                                                            <i class="bi bi-key"></i>
+                                                        </button>
+                                                    </div>
+                                                    {% elif user.is_superuser %}
+                                                        <span class="text-muted small">超级管理员</span>
+                                                    {% elif user == request.user %}
+                                                        <span class="text-muted small">当前用户</span>
+                                                    {% endif %}
+                                                </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endfor %}
+
+                                    <!-- 超级管理员组 -->
+                                    <tr class="group-header bg-danger text-white">
+                                        <td colspan="10" class="p-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    <button type="button" class="btn btn-sm btn-danger text-white border-0 me-2 p-0 w-8 h-8 d-flex align-items-center justify-content-center" onclick="toggleGroup('super')">
+                                                        <i class="bi bi-chevron-right"></i>
+                                                    </button>
+                                                    <h6 class="mb-0">
+                                                        <i class="bi bi-shield-fill me-2 text-danger"></i>
+                                                        超级管理员
+                                                    </h6>
+                                                </div>
+                                                <small class="badge bg-white text-danger fw-bold px-2 py-0">
+                                                    ({{ super_users_count }})
+                                                </small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% for item in users_with_profiles %}
+                                        {% with user=item.user profile=item.profile password_expired=item.password_expired %}
+                                            {% if user.is_superuser %}
+                                                <tr class="user-row super-user {% if not user.is_active %}inactive-user{% endif %} {% if password_expired %}expired-password{% endif %}" data-group="super" style="display: none;" data-last-activity="{{ profile.last_activity|date:'Y-m-d H:i'|default:'' }}">
+                                                    <td>
+                                                        <strong>{{ user.username }}</strong>
+                                                    </td>
+                                                    <td>
+                                                        {% if profile.customer_name %}
+                                                            {{ profile.customer_name }}
+                                                        {% else %}
+                                                            --
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.first_name or user.last_name %}
+                                                            {{ user.first_name }} {{ user.last_name }}
+                                                        {% else %}
+                                                            --
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.is_active %}
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-check-circle me-1"></i>
+                                                                活跃
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-x-circle me-1"></i>
+                                                                停用
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if user.is_superuser %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-shield-fill me-1"></i>
+                                                                超级管理员
+                                                            </span>
+                                                        {% elif user.is_staff %}
+                                                            <span class="badge bg-warning">
+                                                                <i class="bi bi-person-badge me-1"></i>
+                                                                管理员
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-primary">
+                                                                <i class="bi bi-person me-1"></i>
+                                                                普通用户
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if profile.password_validity_days == 0 %}
+                                                            <span class="badge bg-info">
+                                                                <i class="bi bi-infinity me-1"></i>
+                                                                永久有效
+                                                            </span>
+                                                        {% elif password_expired %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                                已过期
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-clock me-1"></i>
+                                                                {{ profile.password_validity_days }}天有效
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                            单次: {{ profile.max_single_download_mb }}MB<br>
+                                                            批量: {{ profile.max_batch_download_mb }}MB<br>
+                                                            每日: {{ profile.max_daily_download_gb }}GB / {{ profile.max_daily_download_count }}个
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                            {{ user.date_joined|date:"Y-m-d H:i" }}<br>
+                                                创建者: {{ item.created_by }}
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">
+                                                {% if profile.last_activity %}
+                                                    {{ profile.last_activity|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+                                                {% else %}
+                                                    从未活动
+                                                {% endif %}
+                                                        </small>
+                                                        <br>
+                                                    <small class="text-muted">
+                                                        截止: 
+                                                        {% if item.password_expiry_date == "永久有效" %}
+                                                            {{ item.password_expiry_date }}
+                                                        {% else %}
+                                                            {{ item.password_expiry_date|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+                                                        {% endif %}
+                                                    </small>
+                                                    </td>
+                                                <!-- 操作列 -->
+                                                <td>
+                                                    {% if not user.is_superuser and user != request.user %}
+                                                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                                        <!-- 停用/激活按钮 -->
+                <form method="post" class="mb-0">
+                        {% csrf_token %}
+                        {% if user.is_active %}
+                            <input type="hidden" name="action" value="deactivate">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="停用用户">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        {% else %}
+                            <input type="hidden" name="action" value="activate">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-outline-success btn-sm d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="激活用户">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                        {% endif %}
+                </form>
+
+                                                        <!-- 配置按钮 -->
+                                                        <button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
+                                                                data-bs-toggle="modal" data-bs-target="#configModal{{ user.id }}"
+                                                                data-bs-toggle="tooltip" title="配置用户">
+                                                            <i class="bi bi-gear"></i>
+                                                        </button>
+
+                                                        <!-- 重置密码按钮 -->
+                                                        <button type="button" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center"
+                                                                data-bs-toggle="modal" data-bs-target="#setPasswordModal{{ user.id }}"
+                                                                data-bs-toggle="tooltip" title="重置密码">
+                                                            <i class="bi bi-key"></i>
+                                                        </button>
+                                                    </div>
+                                                    {% elif user.is_superuser %}
+                                                        <span class="text-muted small">超级管理员</span>
+                                                    {% elif user == request.user %}
+                                                        <span class="text-muted small">当前用户</span>
+                                                    {% endif %}
+                                                </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% else %}
+                                    <!-- 非超级管理员页面，显示不分组的用户列表 -->
+                                    {% for item in users_with_profiles %}
+                                        {% with user=item.user profile=item.profile password_expired=item.password_expired %}
+                                            <tr class="user-row {% if not user.is_active %}inactive-user{% endif %} {% if password_expired %}expired-password{% endif %}" data-last-activity="{{ profile.last_activity|date:'Y-m-d H:i'|default:'' }}">
+                                                <td>
+                                                    <strong>{{ user.username }}</strong>
+                                                </td>
+                                                <td>
+                                                    {% if profile.customer_name %}
+                                                        {{ profile.customer_name }}
+                                                    {% else %}
+                                                        --
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if user.first_name or user.last_name %}
+                                                        {{ user.first_name }} {{ user.last_name }}
+                                                    {% else %}
+                                                        --
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if user.is_active %}
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-check-circle me-1"></i>
+                                                            活跃
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">
+                                                            <i class="bi bi-x-circle me-1"></i>
+                                                            停用
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if user.is_superuser %}
+                                                        <span class="badge bg-danger">
+                                                            <i class="bi bi-shield-fill me-1"></i>
+                                                            超级管理员
+                                                        </span>
+                                                    {% elif user.is_staff %}
+                                                        <span class="badge bg-warning">
+                                                            <i class="bi bi-person-badge me-1"></i>
+                                                            管理员
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-primary">
+                                                            <i class="bi bi-person me-1"></i>
+                                                            普通用户
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if profile.password_validity_days == 0 %}
+                                                        <span class="badge bg-info">
+                                                            <i class="bi bi-infinity me-1"></i>
+                                                            永久有效
+                                                        </span>
+                                                    {% elif password_expired %}
+                                                        <span class="badge bg-danger">
+                                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                                            已过期
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-clock me-1"></i>
+                                                            {{ profile.password_validity_days }}天有效
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">
+                                                        单次: {{ profile.max_single_download_mb }}MB<br>
+                                                        批量: {{ profile.max_batch_download_mb }}MB<br>
+                                                        每日: {{ profile.max_daily_download_gb }}GB / {{ profile.max_daily_download_count }}个
+                                                    </small>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">
+                                                        {{ user.date_joined|date:"Y-m-d H:i" }}<br>
+                                            创建者: {{ item.created_by }}
+                                                    </small>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">
+                                                {% if profile.last_activity %}
+                                                    {{ profile.last_activity|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+                                                {% else %}
+                                                    从未活动
+                                                {% endif %}
+                                                    </small>
+                                                    <br>
+                                                <small class="text-muted">
+                                                    截止: 
+                                                    {% if item.password_expiry_date == "永久有效" %}
+                                                        {{ item.password_expiry_date }}
+                                                    {% else %}
+                                                        {{ item.password_expiry_date|timezone:"Asia/Shanghai"|date:"Y-m-d H:i" }}
+                                                    {% endif %}
+                                                </small>
+                                                </td>
+                                            <!-- 操作列 -->
+                                            <td>
+                                                {% if not user.is_superuser and user != request.user %}
+                                                <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                                    <!-- 停用/激活按钮 -->
+                <form method="post" class="mb-0">
+                        {% csrf_token %}
+                        {% if user.is_active %}
+                            <input type="hidden" name="action" value="deactivate">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="停用用户">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        {% else %}
+                            <input type="hidden" name="action" value="activate">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" class="btn btn-outline-success btn-sm d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="激活用户">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                        {% endif %}
+                </form>
+
+                                                    <!-- 配置按钮 -->
+                                                    <button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center"
+                                                            data-bs-toggle="modal" data-bs-target="#configModal{{ user.id }}"
+                                                            data-bs-toggle="tooltip" title="配置用户">
+                                                        <i class="bi bi-gear"></i>
+                                                    </button>
+
+                                                    <!-- 重置密码按钮 -->
+                                                    <button type="button" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center"
+                                                            data-bs-toggle="modal" data-bs-target="#setPasswordModal{{ user.id }}"
+                                                            data-bs-toggle="tooltip" title="重置密码">
+                                                        <i class="bi bi-key"></i>
+                                                    </button>
+                                                </div>
+                                                {% elif user.is_superuser %}
+                                                    <span class="text-muted small">超级管理员</span>
+                                                {% elif user == request.user %}
+                                                    <span class="text-muted small">当前用户</span>
+                                                {% endif %}
+                                            </td>
+                                            </tr>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -748,13 +1268,113 @@
 {% endfor %}
 {% endblock %}
 
-{% block extra_js %}
+    {% block extra_css %}
+    <style>
+        /* 高风险用户高亮样式 */
+        .expired-password {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .inactive-7days {
+            background-color: rgba(255, 193, 7, 0.1) !important;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .inactive-user {
+            background-color: rgba(108, 117, 125, 0.1) !important;
+            opacity: 0.7;
+        }
+        
+        /* 增强视觉效果 */
+        .table-hover tbody tr:hover {
+            opacity: 1 !important;
+        }
+        
+        /* 分组标题样式 */
+        .group-header {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .group-header:hover {
+            opacity: 0.9;
+        }
+        
+        /* 搜索框样式 */
+        .search-container {
+            transition: all 0.3s ease;
+        }
+        
+        /* 统计卡片样式 */
+    .stats-card {
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* 搜索高亮样式 */
+    .highlight {
+        background-color: #ffeb3b;
+        color: #212529;
+        padding: 2px 4px;
+        border-radius: 2px;
+        font-weight: bold;
+    }
+    
+    /* 暗色模式适配 */
+    @media (prefers-color-scheme: dark) {
+        .badge {
+            background-color: #343a40 !important;
+        }
+        
+        .badge.text-success {
+            color: #28a745 !important;
+        }
+        
+        .badge.text-warning {
+            color: #ffc107 !important;
+        }
+        
+        .badge.text-danger {
+            color: #dc3545 !important;
+        }
+    }
+    </style>
+    {% endblock %}
+
+    {% block extra_js %}
 <script>
     // 初始化 Bootstrap Tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
       return new bootstrap.Tooltip(tooltipTriggerEl)
     })
+    
+    // 检测7天未登录的用户
+    function checkInactiveUsers() {
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        
+        const userRows = document.querySelectorAll('.user-row');
+        userRows.forEach(row => {
+            const lastActivityStr = row.dataset.lastActivity;
+            if (lastActivityStr) {
+                const lastActivity = new Date(lastActivityStr);
+                if (lastActivity < sevenDaysAgo) {
+                    row.classList.add('inactive-7days');
+                }
+            }
+        });
+    }
+    
+    // 页面加载时执行检测
+    document.addEventListener('DOMContentLoaded', function() {
+        checkInactiveUsers();
+    });
 
     // 确认操作提示
     document.querySelectorAll('form button[type="submit"]').forEach(button => {
@@ -879,6 +1499,124 @@ function restoreDefaultQuota(userId) {
 	document.getElementById('maxBatchDownload' + userId).value = {{ default_settings.default_max_batch_download_mb }};
 	document.getElementById('maxDailyDownloadGB' + userId).value = {{ default_settings.default_max_daily_download_gb }};
 	document.getElementById('maxDailyDownloadCount' + userId).value = {{ default_settings.default_max_daily_download_count }};
+}
+
+// 折叠/展开用户组
+function toggleGroup(groupType) {
+    const rows = document.querySelectorAll(`[data-group="${groupType}"]`);
+    const button = document.querySelector(`[onclick="toggleGroup('${groupType}')"]`);
+    const icon = button.querySelector('i');
+    
+    let isHidden = false;
+    // 检查第一行是否隐藏，以确定当前状态
+    if (rows.length > 0) {
+        isHidden = rows[0].style.display === 'none';
+    }
+    
+    // 切换行显示状态
+    rows.forEach(row => {
+        row.style.display = isHidden ? '' : 'none';
+    });
+    
+    // 切换图标
+    if (isHidden) {
+        icon.classList.remove('bi-chevron-right');
+        icon.classList.add('bi-chevron-down');
+    } else {
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-right');
+    }
+}
+
+// 过滤用户列表
+// 高亮显示匹配的文本
+function highlightText(text, searchTerm) {
+    if (!searchTerm) return text;
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+}
+
+// 移除所有高亮标记
+function removeHighlights() {
+    const highlights = document.querySelectorAll('.highlight');
+    highlights.forEach(highlight => {
+        const parent = highlight.parentNode;
+        parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
+        parent.normalize();
+    });
+}
+
+function filterUsers() {
+    const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+    const userRows = document.querySelectorAll('.user-row');
+    const groupHeaders = document.querySelectorAll('.group-header');
+    
+    // 先移除所有高亮标记
+    removeHighlights();
+    
+    // 先显示所有组头
+    groupHeaders.forEach(header => {
+        header.style.display = '';
+    });
+    
+    // 过滤用户行
+    userRows.forEach(row => {
+        const username = row.querySelector('td:nth-child(1) strong');
+        const customerName = row.querySelector('td:nth-child(2)');
+        const passwordRemark = row.querySelector('td:nth-child(3)');
+        
+        if (username && customerName && passwordRemark) {
+            const originalUsernameText = username.textContent;
+            const originalCustomerNameText = customerName.textContent;
+            const originalPasswordRemarkText = passwordRemark.textContent;
+            
+            const usernameText = originalUsernameText.toLowerCase();
+            const customerNameText = originalCustomerNameText.toLowerCase();
+            const passwordRemarkText = originalPasswordRemarkText.toLowerCase();
+            
+            const usernameMatch = usernameText.includes(searchTerm);
+            const customerNameMatch = customerNameText.includes(searchTerm);
+            const passwordRemarkMatch = passwordRemarkText.includes(searchTerm);
+            
+            if (usernameMatch || customerNameMatch || passwordRemarkMatch) {
+                row.style.display = '';
+                
+                // 添加高亮标记
+                if (searchTerm) {
+                    if (usernameMatch) {
+                        username.innerHTML = highlightText(originalUsernameText, searchTerm);
+                    }
+                    if (customerNameMatch) {
+                        customerName.innerHTML = highlightText(originalCustomerNameText, searchTerm);
+                    }
+                    if (passwordRemarkMatch) {
+                        passwordRemark.innerHTML = highlightText(originalPasswordRemarkText, searchTerm);
+                    }
+                }
+                
+                // 确保包含匹配用户的组是展开状态
+                const groupType = row.dataset.group;
+                const groupRows = document.querySelectorAll(`[data-group="${groupType}"]`);
+                let hasVisibleRow = false;
+                
+                groupRows.forEach(groupRow => {
+                    if (groupRow.style.display !== 'none') {
+                        hasVisibleRow = true;
+                    }
+                });
+                
+                if (hasVisibleRow) {
+                    const button = document.querySelector(`[onclick="toggleGroup('${groupType}')"]`);
+                    const icon = button.querySelector('i');
+                    icon.classList.remove('bi-chevron-right');
+                    icon.classList.add('bi-chevron-down');
+                    row.style.display = '';
+                }
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
 }
 </script>
 {% endblock %}

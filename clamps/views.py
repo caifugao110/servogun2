@@ -1229,6 +1229,9 @@ def manage_users(request):
     active_users_count = 0
     admin_users_count = 0
     password_expired_count = 0
+    normal_users_count = 0
+    staff_users_count = 0
+    super_users_count = 0
 
     for user in users:
         profile, created = UserProfile.objects.get_or_create(user=user)
@@ -1241,6 +1244,12 @@ def manage_users(request):
             admin_users_count += 1
         if password_expired:
             password_expired_count += 1
+        if not user.is_staff and not user.is_superuser:
+            normal_users_count += 1
+        elif user.is_staff and not user.is_superuser:
+            staff_users_count += 1
+        elif user.is_superuser:
+            super_users_count += 1
 
         users_with_profiles.append({
             "user": user,
@@ -1297,6 +1306,9 @@ def manage_users(request):
         "active_users_count": active_users_count,
         "admin_users_count": admin_users_count,
         "password_expired_count": password_expired_count,
+        "normal_users_count": normal_users_count,
+        "staff_users_count": staff_users_count,
+        "super_users_count": super_users_count,
         "default_settings": default_settings,
     }
     return render(request, "management/users.html", context)
@@ -1566,7 +1578,7 @@ def batch_add_users(request):
     return redirect('clamps:manage_users')
 
 @login_required
-@user_passes_test(is_staff_or_superuser)
+@user_passes_test(is_superuser)
 def view_logs(request):
     logs = Log.objects.all()
     action_type = request.GET.get("action_type")

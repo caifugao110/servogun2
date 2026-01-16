@@ -32,12 +32,10 @@ class ClampsConfig(AppConfig):
         # RUN_MAIN is None in the initial process, 'true' in the reload process
         run_main = os.environ.get('RUN_MAIN')
         
-        # 只在初始进程中打印DEBUG模式（避免重复）
-        if run_main is None:
-            print(f"DEBUG模式: {settings.DEBUG}")
-        
         # 只在主进程（reload进程）中启动调度器
         if run_main == 'true':
+            # 只在服务重载时显示DEBUG模式
+            print(f"DEBUG模式: {settings.DEBUG}")
             # 导入备份模块并启动调度器
             import threading
             from .backup import start_scheduler
