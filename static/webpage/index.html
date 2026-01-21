@@ -351,7 +351,7 @@
         <footer class="copyright">
             <p>版权所有 © </p>
             <p><strong>作者</strong>: 技术开发二部</p>
-            <p><strong>更新日期</strong>: 2025年12月26日</p>
+            <p><strong>更新日期</strong>: 2026年1月21日</p>
         </footer>
     </nav>
 
@@ -391,6 +391,7 @@
                     <li><strong>下载数据分析</strong>: 提供API接口分析下载数据，支持按时间范围和用户筛选，包含趋势数据、用户统计和总计数据。 📈</li>
                     <li><strong>AI智能搜索</strong>: 集成了AI智能搜索功能，支持通过API调用Coze服务。 🤖</li>
                     <li><strong>用户反馈功能</strong>: 允许用户向管理员提交使用过程中的问题和建议，支持反馈分类、状态管理和用户通知，帮助持续改进系统。 💬</li>
+                    <li><strong>产品文件水印</strong>: 为下载的PDF文件自动添加水印，包含用户信息和时间戳，增强文件安全性。 🔒</li>
                 </ul>
 
                 <h3>🏗️ 2.3 系统架构</h3>
@@ -408,6 +409,7 @@
                     <li><strong>中间件</strong>: 例如 <code>LoggingMiddleware</code> 用于记录用户请求日志。 🛡️</li>
                     <li><strong>静态文件</strong>: 存放CSS、JS、图片等前端资源。 📁</li>
                     <li><strong>媒体文件</strong>: 存放产品相关文件（STEP、PDF等）。 📂</li>
+                    <li><strong>PDF处理</strong>: 通过 <code>pdf_utils.py</code> 实现PDF文件的水印添加和处理。 📄</li>
                 </ul>
             </section>
 

@@ -14,6 +14,7 @@
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # 项目根目录
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,8 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 确保日志目录存在
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
 
+# 加载环境变量
+load_dotenv(BASE_DIR / '.env')
+
 # 安全设置
-SECRET_KEY = 'django-insecure-your-secret-key-here-change-in-production'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here-change-in-production')
 
 # 自动检测DEBUG模式：特定IP为False，其他为True
 import socket
@@ -50,8 +54,11 @@ DEBUG_DISABLE_IPS = [
 # 自动设置DEBUG值
 DEBUG = get_host_ip() not in DEBUG_DISABLE_IPS
 
-ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['http://gun.obara.com.cn']
+# 从环境变量获取ALLOWED_HOSTS
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+
+# 从环境变量获取CSRF_TRUSTED_ORIGINS
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://gun.obara.com.cn').split(',')
 
 # 应用配置
 INSTALLED_APPS = [
@@ -103,17 +110,38 @@ WSGI_APPLICATION = 'welding_clamp_db.wsgi.application'
 ASGI_APPLICATION = 'welding_clamp_db.asgi.application'
 
 # Channels配置
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+CHANNEL_LAYER_BACKEND = os.getenv('CHANNEL_LAYER_BACKEND', 'inmemory')
+
+if CHANNEL_LAYER_BACKEND == 'redis':
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
+                "capacity": int(os.getenv('REDIS_CAPACITY', 1000)),
+                "expiry": int(os.getenv('REDIS_EXPIRY', 3600)),
+            },
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 # 数据库配置
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'USER': os.getenv('DB_USER', ''),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', ''),
+        'PORT': os.getenv('DB_PORT', ''),
+        'OPTIONS': {
+            'charset': os.getenv('DB_CHARSET', 'utf8mb4'),
+        } if os.getenv('DB_ENGINE') in ['django.db.backends.mysql', 'django.db.backends.mysql'] else {},
     }
 }
 

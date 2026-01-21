@@ -36,7 +36,7 @@
 
 系统遵循Django的MVT（Model-View-Template）架构模式，并集成了Channels实现ASGI支持：
 
-*   **Model (模型)**: 定义数据结构和业务逻辑，如 `Product` (产品), `Category` (分类), `Log` (日志), `UserProfile` (用户配置), `StyleLink` (仕样链接), `UserFeedback` (用户反馈), `CompressionTask` (压缩任务) 等。与数据库进行交互。 🗄️
+*   **Model (模型)**: 定义数据结构和业务逻辑，如 `Product` (产品), `Category` (分类), `Log` (日志), `UserProfile` (用户配置), `StyleLink` (仕样链接), `UserFeedback` (用户反馈), `UserStyleLinkVisit` (用户仕样链接访问), `CompressionTask` (压缩任务) 等。与数据库进行交互。 🗄️
 *   **View (视图)**: 处理用户请求，从模型获取数据，并将数据传递给模板进行渲染。例如 `search_results` 视图处理搜索请求并返回搜索结果页面。 👁️
 *   **Template (模板)**: 定义用户界面的结构和布局，使用Django模板语言展示动态数据。例如 `search.html` 用于产品搜索页面，`product_detail.html` 用于产品详情页面。支持中英文双语模板。 🎨
 *   **ASGI配置**: 支持异步通信，通过 `asgi.py` 和 Channels 实现WebSocket等异步功能。 ⚡
@@ -79,6 +79,7 @@ servogun2/
 │   ├── pdf_utils.py            # PDF 处理工具
 │   ├── routing.py              # WebSocket 路由
 │   ├── settings.py             # 应用特定设置
+│   ├── signals.py              # Django 信号处理
 │   ├── tasks.py                # 异步任务定义
 │   ├── tests.py                # 单元测试文件
 │   ├── urls.py                 # 应用的 URL 配置
@@ -88,6 +89,7 @@ servogun2/
 │   ├── code_review/            # 代码审查工具
 │   ├── csv/                    # CSV数据文件
 │   ├── data/                   # 数据文件
+│   ├── deployment_scripts/     # 部署脚本
 │   ├── doc/                    # 文档
 │   ├── howtogetpdf/            # PDF文件处理工具
 │   ├── howtogetstep/           # STEP文件处理工具
@@ -672,4 +674,4 @@ Django 提供了一个强大的后台管理界面，管理员可以通过它直�
 ---
 
 **作者**: **技术开发二部**
-**更新日期**: 2025年12月30日
+**更新日期**: 2026年1月21日
