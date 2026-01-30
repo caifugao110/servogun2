@@ -201,34 +201,20 @@ def user_login(request):
         'default_max_daily_download_count': 100,
     }
     
-    # 从数据库中获取当前的默认值（使用超级管理员的设置，除了密码有效期）
-    super_admin_profile = UserProfile.objects.filter(
-        user__is_superuser=True
+    # 从数据库中获取当前的默认值（从固定的临时非管理员用户获取所有默认设置）
+    temp_default_profile = UserProfile.objects.filter(
+        Q(user__is_superuser=False) & Q(user__is_staff=False) & Q(user__username='temp_default')
     ).first()
     
-    if super_admin_profile:
+    if temp_default_profile:
+        # 如果有临时非管理员用户，则使用该用户的设置作为默认值
         default_settings.update({
-            'default_max_single_download_mb': super_admin_profile.max_single_download_mb,
-            'default_max_batch_download_mb': super_admin_profile.max_batch_download_mb,
-            'default_max_daily_download_gb': super_admin_profile.max_daily_download_gb,
-            'default_max_daily_download_count': super_admin_profile.max_daily_download_count,
+            'default_password_validity_days': temp_default_profile.password_validity_days,
+            'default_max_single_download_mb': temp_default_profile.max_single_download_mb,
+            'default_max_batch_download_mb': temp_default_profile.max_batch_download_mb,
+            'default_max_daily_download_gb': temp_default_profile.max_daily_download_gb,
+            'default_max_daily_download_count': temp_default_profile.max_daily_download_count,
         })
-    
-    # 检查是否有已保存的默认密码有效期（从一般用户获取，只要存在就使用该值作为默认值）
-    # 首先查找普通非管理员用户
-    first_non_admin_profile = UserProfile.objects.filter(
-        Q(user__is_superuser=False) & Q(user__is_staff=False) & ~Q(user__username='temp_default')
-    ).first()
-    
-    # 如果没有普通非管理员用户，查找固定的临时非管理员用户
-    if not first_non_admin_profile:
-        first_non_admin_profile = UserProfile.objects.filter(
-            Q(user__is_superuser=False) & Q(user__is_staff=False) & Q(user__username='temp_default')
-        ).first()
-    
-    if first_non_admin_profile:
-        # 如果有非管理员用户，则使用该用户的密码有效期作为默认值
-        default_settings['default_password_validity_days'] = first_non_admin_profile.password_validity_days
     return render(request, 'login.html', {'default_settings': default_settings})
 
 
@@ -287,34 +273,20 @@ def user_login_en(request):
         'default_max_daily_download_count': 100,
     }
     
-    # 从数据库中获取当前的默认值（使用超级管理员的设置，除了密码有效期）
-    super_admin_profile = UserProfile.objects.filter(
-        user__is_superuser=True
+    # 从数据库中获取当前的默认值（从固定的临时非管理员用户获取所有默认设置）
+    temp_default_profile = UserProfile.objects.filter(
+        Q(user__is_superuser=False) & Q(user__is_staff=False) & Q(user__username='temp_default')
     ).first()
     
-    if super_admin_profile:
+    if temp_default_profile:
+        # 如果有临时非管理员用户，则使用该用户的设置作为默认值
         default_settings.update({
-            'default_max_single_download_mb': super_admin_profile.max_single_download_mb,
-            'default_max_batch_download_mb': super_admin_profile.max_batch_download_mb,
-            'default_max_daily_download_gb': super_admin_profile.max_daily_download_gb,
-            'default_max_daily_download_count': super_admin_profile.max_daily_download_count,
+            'default_password_validity_days': temp_default_profile.password_validity_days,
+            'default_max_single_download_mb': temp_default_profile.max_single_download_mb,
+            'default_max_batch_download_mb': temp_default_profile.max_batch_download_mb,
+            'default_max_daily_download_gb': temp_default_profile.max_daily_download_gb,
+            'default_max_daily_download_count': temp_default_profile.max_daily_download_count,
         })
-    
-    # 检查是否有已保存的默认密码有效期（从一般用户获取，只要存在就使用该值作为默认值）
-    # 首先查找普通非管理员用户
-    first_non_admin_profile = UserProfile.objects.filter(
-        Q(user__is_superuser=False) & Q(user__is_staff=False) & ~Q(user__username='temp_default')
-    ).first()
-    
-    # 如果没有普通非管理员用户，查找固定的临时非管理员用户
-    if not first_non_admin_profile:
-        first_non_admin_profile = UserProfile.objects.filter(
-            Q(user__is_superuser=False) & Q(user__is_staff=False) & Q(user__username='temp_default')
-        ).first()
-    
-    if first_non_admin_profile:
-        # 如果有非管理员用户，则使用该用户的密码有效期作为默认值
-        default_settings['default_password_validity_days'] = first_non_admin_profile.password_validity_days
     return render(request, 'login_en.html', {'default_settings': default_settings})
 
 
@@ -1166,51 +1138,34 @@ def manage_users(request):
             default_max_daily_download_gb = int(request.POST.get('default_max_daily_download_gb', 10))
             default_max_daily_download_count = int(request.POST.get('default_max_daily_download_count', 100))
             
-            # 更新下载限制设置（影响超级管理员和一般用户，不影响一般管理员）
-            UserProfile.objects.filter(
-                Q(user__is_superuser=True) | Q(user__is_staff=False)
-            ).update(
-                max_single_download_mb=default_max_single_download_mb,
-                max_batch_download_mb=default_max_batch_download_mb,
-                max_daily_download_gb=default_max_daily_download_gb,
-                max_daily_download_count=default_max_daily_download_count
+            # 下载限制和密码有效期不影响所有已经存在的用户
+            # 只更新或创建临时用户来存储默认值
+            # 固定临时用户名为"temp_default"
+            temp_username = "temp_default"
+            # 检查用户是否已存在，不存在则创建
+            temp_user, created = User.objects.get_or_create(
+                username=temp_username,
+                defaults={
+                    'is_staff': False,
+                    'is_superuser': False
+                }
+            )
+            # 确保用户密码正确
+            temp_user.set_password('temp_default_password')
+            temp_user.save()
+            # 使用get_or_create确保只为用户创建一个UserProfile，并更新默认值
+            UserProfile.objects.update_or_create(
+                user=temp_user,
+                defaults={
+                    'password_validity_days': default_password_validity_days,
+                    'max_single_download_mb': default_max_single_download_mb,
+                    'max_batch_download_mb': default_max_batch_download_mb,
+                    'max_daily_download_gb': default_max_daily_download_gb,
+                    'max_daily_download_count': default_max_daily_download_count
+                }
             )
             
-            # 更新密码有效期设置（只影响一般用户，不影响超级管理员和一般管理员）
-            updated_count = UserProfile.objects.filter(
-                Q(user__is_superuser=False) & Q(user__is_staff=False)
-            ).update(
-                password_validity_days=default_password_validity_days
-            )
-            
-            # 如果没有非管理员用户，创建或更新一个临时用户来存储默认值
-            if updated_count == 0:
-                # 固定临时用户名为"temp_default"
-                temp_username = "temp_default"
-                # 检查用户是否已存在，不存在则创建
-                temp_user, created = User.objects.get_or_create(
-                    username=temp_username,
-                    defaults={
-                        'is_staff': False,
-                        'is_superuser': False
-                    }
-                )
-                # 确保用户密码正确
-                temp_user.set_password('temp_default_password')
-                temp_user.save()
-                # 使用get_or_create确保只为用户创建一个UserProfile，并更新默认值
-                UserProfile.objects.update_or_create(
-                    user=temp_user,
-                    defaults={
-                        'password_validity_days': default_password_validity_days,
-                        'max_single_download_mb': default_max_single_download_mb,
-                        'max_batch_download_mb': default_max_batch_download_mb,
-                        'max_daily_download_gb': default_max_daily_download_gb,
-                        'max_daily_download_count': default_max_daily_download_count
-                    }
-                )
-            
-            messages.success(request, '默认下载配额已更新，下载限制影响超级管理员和一般用户，密码有效期只影响一般用户。')
+            messages.success(request, '默认下载配额已更新，下载限制和密码有效期不影响所有已经存在的用户。')
             return redirect('clamps:manage_users')
 
     # GET 请求处理 - 根据权限过滤用户
@@ -1271,34 +1226,20 @@ def manage_users(request):
         'default_max_daily_download_count': 100,
     }
     
-    # 从数据库中获取当前的默认值（使用超级管理员的设置，除了密码有效期）
-    super_admin_profile = UserProfile.objects.filter(
-        user__is_superuser=True
+    # 从数据库中获取当前的默认值（从固定的临时非管理员用户获取所有默认设置）
+    temp_default_profile = UserProfile.objects.filter(
+        Q(user__is_superuser=False) & Q(user__is_staff=False) & Q(user__username='temp_default')
     ).first()
     
-    if super_admin_profile:
+    if temp_default_profile:
+        # 如果有临时非管理员用户，则使用该用户的设置作为默认值
         default_settings.update({
-            'default_max_single_download_mb': super_admin_profile.max_single_download_mb,
-            'default_max_batch_download_mb': super_admin_profile.max_batch_download_mb,
-            'default_max_daily_download_gb': super_admin_profile.max_daily_download_gb,
-            'default_max_daily_download_count': super_admin_profile.max_daily_download_count,
+            'default_password_validity_days': temp_default_profile.password_validity_days,
+            'default_max_single_download_mb': temp_default_profile.max_single_download_mb,
+            'default_max_batch_download_mb': temp_default_profile.max_batch_download_mb,
+            'default_max_daily_download_gb': temp_default_profile.max_daily_download_gb,
+            'default_max_daily_download_count': temp_default_profile.max_daily_download_count,
         })
-    
-    # 检查是否有已保存的默认密码有效期（从一般用户获取，只要存在就使用该值作为默认值）
-    # 首先查找普通非管理员用户
-    first_non_admin_profile = UserProfile.objects.filter(
-        Q(user__is_superuser=False) & Q(user__is_staff=False) & ~Q(user__username='temp_default')
-    ).first()
-    
-    # 如果没有普通非管理员用户，查找固定的临时非管理员用户
-    if not first_non_admin_profile:
-        first_non_admin_profile = UserProfile.objects.filter(
-            Q(user__is_superuser=False) & Q(user__is_staff=False) & Q(user__username='temp_default')
-        ).first()
-    
-    if first_non_admin_profile:
-        # 如果有非管理员用户，则使用该用户的密码有效期作为默认值
-        default_settings['default_password_validity_days'] = first_non_admin_profile.password_validity_days
     
     context = {
         "users_with_profiles": users_with_profiles,
@@ -1377,12 +1318,32 @@ def add_user(request):
             user.first_name = password_remark  # 将密码备注存储到first_name字段
             user.save()
             
-            # 更新现有的UserProfile（由信号自动创建），设置默认密码有效期为5天，并保存客户名称
+            # 更新现有的UserProfile（由信号自动创建），设置默认值
             profile = UserProfile.objects.get(user=user)
-            profile.password_validity_days = 5
             profile.password_last_changed = timezone.now()
             profile.customer_name = customer_name
             profile.created_by = request.user
+            
+            # 从固定的临时非管理员用户获取默认设置
+            temp_default_profile = UserProfile.objects.filter(
+                Q(user__is_superuser=False) & Q(user__is_staff=False) & Q(user__username='temp_default')
+            ).first()
+            
+            if temp_default_profile:
+                # 如果有临时非管理员用户，则使用该用户的设置作为默认值
+                profile.password_validity_days = temp_default_profile.password_validity_days
+                profile.max_single_download_mb = temp_default_profile.max_single_download_mb
+                profile.max_batch_download_mb = temp_default_profile.max_batch_download_mb
+                profile.max_daily_download_gb = temp_default_profile.max_daily_download_gb
+                profile.max_daily_download_count = temp_default_profile.max_daily_download_count
+            else:
+                # 如果没有临时非管理员用户，使用硬编码的默认值
+                profile.password_validity_days = 5
+                profile.max_single_download_mb = 100
+                profile.max_batch_download_mb = 200
+                profile.max_daily_download_gb = 10
+                profile.max_daily_download_count = 100
+            
             profile.save()
             
             log_entry = Log(user=request.user, action_type='add_user', ip_address=request.META.get('REMOTE_ADDR'),
