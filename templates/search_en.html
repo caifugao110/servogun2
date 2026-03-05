@@ -799,7 +799,12 @@
                     
                     document.getElementById('ai_search_result').style.display = 'block';
                 } else {
-                    alert('Search failed: ' + data.error);
+                    // Check if it's a Coze API related error
+                    if (data.error && (data.error.includes('Coze API') || data.error.includes('API key') || data.error.includes('token') || data.error.includes('expired') || data.error.includes('响应格式错误') || data.error.includes('缺少data字段') || data.error.includes('response format error') || data.error.includes('missing data field'))) {
+                        alert('AI search service is temporarily unavailable: Coze API credentials have expired or configuration error, please contact the administrator to update the API key');
+                    } else {
+                        alert('Search failed: ' + data.error);
+                    }
                 }
             })
             .catch(error => {

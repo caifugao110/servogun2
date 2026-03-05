@@ -644,7 +644,12 @@
                     
                     document.getElementById('ai_search_result').style.display = 'block';
                 } else {
-                    alert('搜索失败：' + data.error);
+                    // 检查是否是Coze API相关错误
+                    if (data.error && (data.error.includes('Coze API') || data.error.includes('API key') || data.error.includes('token') || data.error.includes('expired') || data.error.includes('响应格式错误') || data.error.includes('缺少data字段'))) {
+                        alert('AI搜索服务暂时不可用：Coze API凭证已过期或配置错误，请联系管理员更新API密钥');
+                    } else {
+                        alert('搜索失败：' + data.error);
+                    }
                 }
             })
             .catch(error => {
