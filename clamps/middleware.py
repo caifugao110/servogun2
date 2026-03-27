@@ -1,65 +1,67 @@
-# Copyright [2025] [OBARA (Nanjing) Electromechanical Co., Ltd]
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+from django.utils.deprecation import MiddlewareMixin
+import time
+import hashlib
+from django.conf import settings
+from django.http import HttpResponse
 
-import logging
-from django.http import HttpRequest
-
-from .models import Log
-
-logger = logging.getLogger('clamps')
-
-def get_client_ip(request: HttpRequest) -> str:
-    """获取客户端真实IP地址"""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        return x_forwarded_for.split(',')[0]
-    return request.META.get('REMOTE_ADDR', '')
-
-class LoggingMiddleware:
-    """日志记录中间件"""
-    
+class RateLimitMiddleware(MiddlewareMixin):
     def __init__(self, get_response):
-        self.get_response = get_response
+        super().__init__(get_response)
+        self.requests = {}
     
-    def __call__(self, request: HttpRequest):
-        # 记录访问日志
-        try:
-            # 排除登录相关路径，提高登录性能
-            if not request.path.startswith('/login'):
-                user = request.user if request.user.is_authenticated else None
-                ip_address = get_client_ip(request)
-                
-                # 只记录特定路径的访问
-                if any(request.path.startswith(prefix) for prefix in ['/search', '/product', '/management']):
-                    Log.objects.create(
-                        user=user,
-                        action_type='access',
-                        details=f"访问页面: {request.path}",
-                        ip_address=ip_address,
-                        path=request.path,
-                        method=request.method
-                    )
-                
-                # 更新用户最后活动时间
-                if request.user.is_authenticated:
-                    from django.utils import timezone
-                    # 使用select_related减少数据库查询
-                    profile = request.user.profile
-                    profile.last_activity = timezone.now()
-                    profile.save(update_fields=['last_activity'])
-        except Exception as e:
-            logger.error(f"记录访问日志或更新最后活动时间失败: {e}")
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
+    def process_request(self, request):
+        # 获取客户端IP
+        client_ip = self.get_client_ip(request)
+        # 生成请求标识
+        request_key = f"{client_ip}:{request.path}"
         
-        return self.get_response(request)
+        # 获取当前时间
+        current_time = time.time()
+        
+        # 清理过期的请求记录
+        self.requests = {k: v for k, v in self.requests.items() if current_time - v[0] < 60}
+        
+        # 检查速率限制
+        rate_limit_config = settings.RATE_LIMIT.get('default', {'requests': 60, 'window': 60})
+        
+        # 如果是搜索请求，使用搜索特定的速率限制
+        if 'search' in request.path:
+            rate_limit_config = settings.RATE_LIMIT.get('search', rate_limit_config)
+        
+        # 检查请求次数
+        if request_key in self.requests:
+            timestamp, count = self.requests[request_key]
+            if current_time - timestamp < rate_limit_config['window']:
+                if count >= rate_limit_config['requests']:
+                    return HttpResponse('Rate limit exceeded', status=429)
+                self.requests[request_key] = (timestamp, count + 1)
+            else:
+                self.requests[request_key] = (current_time, 1)
+        else:
+            self.requests[request_key] = (current_time, 1)
+        
+        return None
 
+class LoggingMiddleware(MiddlewareMixin):
+    def __init__(self, get_response):
+        super().__init__(get_response)
+    
+    def process_request(self, request):
+        # 记录请求开始时间
+        request.start_time = time.time()
+        return None
+    
+    def process_response(self, request, response):
+        # 计算请求处理时间
+        if hasattr(request, 'start_time'):
+            duration = time.time() - request.start_time
+            # 可以在这里添加日志记录
+        return response

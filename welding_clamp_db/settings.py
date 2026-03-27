@@ -58,7 +58,7 @@ DEBUG = get_host_ip() not in DEBUG_DISABLE_IPS
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # 从环境变量获取CSRF_TRUSTED_ORIGINS
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://gun.obara.com.cn').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://gun.obara.com.cn').split(',')
 
 # 应用配置
 INSTALLED_APPS = [
@@ -81,6 +81,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'clamps.middleware.RateLimitMiddleware',
     'clamps.middleware.LoggingMiddleware',
 ]
 
@@ -179,6 +180,28 @@ LOGOUT_REDIRECT_URL = '/'
 # 会话配置
 SESSION_COOKIE_AGE = 3600 * 24 * 7  # 7天
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# 会话Cookie安全设置
+SESSION_COOKIE_SECURE = True  # 确保Cookie只通过HTTPS传输
+SESSION_COOKIE_HTTPONLY = True  # 防止JavaScript访问Cookie
+SESSION_COOKIE_SAMESITE = 'Lax'  # 防止CSRF攻击
+
+# 请求体大小限制
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+
+# Rate Limiting配置
+MIDDLEWARE += ['django.middleware.gzip.GZipMiddleware']
+
+# 全局速率限制设置
+RATE_LIMIT = {
+    'default': {
+        'requests': 60,  # 每分钟最多60次请求
+        'window': 60,    # 时间窗口（秒）
+    },
+    'search': {
+        'requests': 10,  # 每分钟最多10次搜索
+        'window': 60,    # 时间窗口（秒）
+    }
+}
 
 # 缓存配置
 CACHES = {
@@ -187,6 +210,17 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+# 安全响应头配置
+SECURE_BROWSER_XSS_FILTER = True  # 启用XSS保护
+SECURE_CONTENT_TYPE_NOSNIFF = True  # 防止MIME类型嗅探
+X_FRAME_OPTIONS = 'DENY'  # 防止点击劫持
+
+# 安全中间件配置
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # 支持代理服务器的HTTPS
+
+# 安全响应头中间件
+MIDDLEWARE += ['welding_clamp_db.middleware.SecurityHeadersMiddleware']
 
 # 搜索频率限制
 SEARCH_RATE_LIMIT = {

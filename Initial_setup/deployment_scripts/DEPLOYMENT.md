@@ -61,7 +61,7 @@ DB_NAME=db.sqlite3
 ALLOWED_HOSTS=*
 
 # CSRF trusted origins
-CSRF_TRUSTED_ORIGINS=http://gun.obara.com.cn
+CSRF_TRUSTED_ORIGINS=https://gun.obara.com.cn
 
 # Channel layer settings (optional, use redis for production)
 # CHANNEL_LAYER_BACKEND=redis
