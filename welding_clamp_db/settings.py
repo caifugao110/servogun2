@@ -14,7 +14,15 @@
 
 from pathlib import Path
 import os
+import sys
 from dotenv import load_dotenv
+
+# 解决Windows控制台编码问题
+if sys.platform == 'win32':
+    import io
+    # 设置标准输出为UTF-8
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 # 项目根目录
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -226,12 +234,14 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'logs' / 'django.log',
             'formatter': 'verbose',
+            'encoding': 'utf-8',
         },
         'json_file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'logs' / 'django.json.log',
             'formatter': 'json',
+            'encoding': 'utf-8',
         },
         'console': {
             'level': 'INFO',
