@@ -28,37 +28,20 @@ load_dotenv(BASE_DIR / '.env')
 # 安全设置
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here-change-in-production')
 
-# 自动检测DEBUG模式：特定IP为False，其他为True
-import socket
-
-def get_host_ip():
-    """获取本机IP地址"""
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('8.8.8.8', 80))
-        ip = s.getsockname()[0]
-    finally:
-        s.close()
-    return ip
-
-# 定义需要禁用DEBUG的IP列表
-DEBUG_DISABLE_IPS = [
-    '192.168.160.21',
-    '192.168.160.25',
-    '192.168.160.61',
-    '192.168.160.62',
-    '192.168.160.63',
-    '192.168.160.67',
-]
-
-# 自动设置DEBUG值
-DEBUG = get_host_ip() not in DEBUG_DISABLE_IPS
+# DEBUG模式：从环境变量读取，默认为False（生产环境安全优先）
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 # 从环境变量获取ALLOWED_HOSTS
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # 从环境变量获取CSRF_TRUSTED_ORIGINS
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://gun.obara.com.cn').split(',')
+
+# HTTPS安全配置
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
+SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True').lower() in ('true', '1', 'yes')
+SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True').lower() in ('true', '1', 'yes')
 
 # 应用配置
 INSTALLED_APPS = [
@@ -111,25 +94,11 @@ WSGI_APPLICATION = 'welding_clamp_db.wsgi.application'
 ASGI_APPLICATION = 'welding_clamp_db.asgi.application'
 
 # Channels配置
-CHANNEL_LAYER_BACKEND = os.getenv('CHANNEL_LAYER_BACKEND', 'inmemory')
-
-if CHANNEL_LAYER_BACKEND == 'redis':
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
-                "capacity": int(os.getenv('REDIS_CAPACITY', 1000)),
-                "expiry": int(os.getenv('REDIS_EXPIRY', 3600)),
-            },
-        },
-    }
-else:
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels.layers.InMemoryChannelLayer',
-        },
-    }
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # 数据库配置
 DATABASES = {
@@ -292,6 +261,11 @@ LOGGING = {
         },
     },
 }
+
+# Coze AI 配置
+COZE_BOT_ID = os.getenv('COZE_BOT_ID', '')
+COZE_API_TOKEN = os.getenv('COZE_API_TOKEN', '')
+COZE_USER_ID = os.getenv('COZE_USER_ID', '')
 
 
 

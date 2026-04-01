@@ -2625,8 +2625,7 @@ def gitee_releases_latest(request, owner, repo):
     获取指定仓库的最新发行版信息
     """
     try:
-        # Gitee API配置
-        gitee_token = 'a09da64c1d9e9c7420a18dfd838890b0'
+        gitee_token = getattr(settings, 'GITEE_TOKEN', '')
         gitee_api_base = 'https://gitee.com/api/v5'
         
         # 构建Gitee API URL
@@ -2873,7 +2872,6 @@ def parse_file_count(details):
 
 
 
-@csrf_exempt
 def ai_search_api(request):
     """AI智能搜索API接口"""
     if request.method != 'POST':

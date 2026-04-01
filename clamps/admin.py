@@ -17,14 +17,20 @@
 from django.contrib import admin
 from clamps.models import Category, Product, Log
 
-@admin.register(Category)
+class RestrictedAdminSite(admin.AdminSite):
+    def has_permission(self, request):
+        return request.user.is_active and request.user.is_superuser
+
+admin_site = RestrictedAdminSite(name='restricted_admin')
+
+@admin.register(Category, site=admin_site)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent_category', 'created_at', 'updated_at')
     list_filter = ('parent_category', 'created_at')
     search_fields = ('name', 'description')
     ordering = ('name',)
 
-@admin.register(Product)
+@admin.register(Product, site=admin_site)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('drawing_no_1', 'description', 'category', 'sub_category_type', 'throat_depth', 'throat_width', 'transformer', 'created_at')
     list_filter = ('category', 'sub_category_type', 'transformer', 'has_balance', 'created_at')
@@ -60,7 +66,7 @@ class ProductAdmin(admin.ModelAdmin):
         }),
     )
 
-@admin.register(Log)
+@admin.register(Log, site=admin_site)
 class LogAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'user', 'action_type', 'ip_address', 'path', 'method')
     list_filter = ('action_type', 'timestamp', 'method')
@@ -69,8 +75,8 @@ class LogAdmin(admin.ModelAdmin):
     readonly_fields = ('timestamp',)
     
     def has_add_permission(self, request):
-        return False  # 不允许手动添加日志
+        return False
     
     def has_change_permission(self, request, obj=None):
-        return False  # 不允许修改日志
+        return False
 

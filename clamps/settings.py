@@ -28,6 +28,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,12 +40,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-your-secret-key-here-change-in-production'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -65,7 +68,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'clamps.middleware.LoggingMiddleware',  # 自定义日志中间件
+    'clamps.middleware.LoggingMiddleware',
+    'clamps.middleware.RateLimitMiddleware',
 ]
 
 ROOT_URLCONF = 'welding_clamp_db.urls'
@@ -156,8 +160,11 @@ LOGIN_REDIRECT_URL = '/search/'
 LOGOUT_REDIRECT_URL = '/'
 
 # 会话设置
-SESSION_COOKIE_AGE = 3600 * 24 * 7  # 7天
+SESSION_COOKIE_AGE = 3600 * 24 * 7
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 # 缓存设置（用于限制搜索频率和提高性能）
 CACHES = {
@@ -173,8 +180,20 @@ CACHES = {
 
 # 搜索频率限制设置
 SEARCH_RATE_LIMIT = {
-    'requests': 10,  # 每分钟最多10次搜索
-    'window': 60,    # 时间窗口（秒）
+    'requests': 10,
+    'window': 60,
+}
+
+# 速率限制设置
+RATE_LIMIT = {
+    'default': {
+        'requests': 60,
+        'window': 60,
+    },
+    'search': {
+        'requests': 10,
+        'window': 60,
+    },
 }
 
 # 日志配置

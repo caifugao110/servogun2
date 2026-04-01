@@ -1,3 +1,6 @@
+# VS Code
+.vscode/
+
 # Ignore Local folder
 media/
 venv/
@@ -5,6 +8,9 @@ logs/
 backups/
 temp/
 staticfiles/
+
+# Environment files
+.env
 
 # Ignore Python compiled files
 __pycache__/

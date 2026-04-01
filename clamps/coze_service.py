@@ -31,9 +31,9 @@ def get_config():
         "api_url": "https://api.coze.cn/v3/chat",
         "retrieve_url": "https://api.coze.cn/v3/chat/retrieve",
         "message_list_url": "https://api.coze.cn/v3/chat/message/list",
-        "bot_id": getattr(settings, 'COZE_BOT_ID', "7551581399242522659"),
-        "api_token": getattr(settings, 'COZE_API_TOKEN', "pat_5jYR40Zzh78onvB6l6ud5PKBBBWAWU9D27vHTa27CJCbLtaxg63Rp2VRJcVGjcNQ"),
-        "user_id": getattr(settings, 'COZE_USER_ID', "coze_api_test_user")
+        "bot_id": getattr(settings, 'COZE_BOT_ID', ""),
+        "api_token": getattr(settings, 'COZE_API_TOKEN', ""),
+        "user_id": getattr(settings, 'COZE_USER_ID', "")
     }
 
 
