@@ -52,6 +52,28 @@
                         </div>
                     </div>
                 </div>
+                <div class="row mb-2 align-items-center">
+                    <div class="col-auto">
+                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; font-size: 0.9rem;">
+                            <i class="bi bi-stars" style="-webkit-text-fill-color: #667eea;"></i> AI搜索引擎
+                        </span>
+                        <span class="text-muted mx-1">:</span>
+                    </div>
+                    <div class="col-auto">
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="radio" name="ai_engine" id="engine_yuanqi" value="yuanqi" checked>
+                            <label class="form-check-label" for="engine_yuanqi">
+                                <span style="background: linear-gradient(135deg, #00d2ff, #3a7bd5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">🔵</span> 腾讯元器
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="radio" name="ai_engine" id="engine_coze" value="coze">
+                            <label class="form-check-label" for="engine_coze">
+                                <span style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">🟣</span> Coze
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-md-9">
                         <textarea class="form-control" id="ai_query" rows="1" style="resize: none;" 
@@ -594,6 +616,8 @@
                 return;
             }
             
+            const engine = document.querySelector('input[name="ai_engine"]:checked').value;
+            
             // 显示加载状态
             document.getElementById('ai_search_loading').style.display = 'block';
             document.getElementById('ai_search_result').style.display = 'none';
@@ -601,6 +625,13 @@
             // 创建AbortController用于取消请求
             currentAiSearchAbortController = new AbortController();
             const signal = currentAiSearchAbortController.signal;
+            
+            // 设置超时（90秒）
+            const timeoutId = setTimeout(() => {
+                if (currentAiSearchAbortController) {
+                    currentAiSearchAbortController.abort();
+                }
+            }, 90000);
             
             // 发送AJAX请求
             fetch('/api/ai_search/', {
@@ -610,7 +641,8 @@
                     'X-CSRFToken': window.CSRF_TOKEN
                 },
                 body: JSON.stringify({
-                    query: query
+                    query: query,
+                    engine: engine
                 }),
                 signal: signal // 添加取消信号
             })
@@ -660,6 +692,7 @@
                 }
             })
             .finally(() => {
+                clearTimeout(timeoutId);
                 currentAiSearchAbortController = null;
             });
         });

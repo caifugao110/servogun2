@@ -277,5 +277,13 @@ COZE_BOT_ID = os.getenv('COZE_BOT_ID', '')
 COZE_API_TOKEN = os.getenv('COZE_API_TOKEN', '')
 COZE_USER_ID = os.getenv('COZE_USER_ID', '')
 
+# 腾讯元器 AI 配置
+YUANQI_ASSISTANT_ID = os.getenv('YUANQI_ASSISTANT_ID', '')
+YUANQI_API_KEY = os.getenv('YUANQI_API_KEY', '')
+YUANQI_USER_ID = os.getenv('YUANQI_USER_ID', 'obara_gun_selection_user')
+
+# 默认AI搜索引擎 (yuanqi 或 coze)
+DEFAULT_AI_ENGINE = os.getenv('DEFAULT_AI_ENGINE', 'yuanqi')
+
 
 

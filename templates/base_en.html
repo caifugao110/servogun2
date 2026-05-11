@@ -23,6 +23,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="OBARA Welding Gun Selection Database - Professional welding gun selection tool">
     <title>{% block title %}OBARA Welding Gun Selection Database{% endblock %}</title>
+    
+    <!-- CSRF Token for AJAX requests -->
+    <script>
+        window.CSRF_TOKEN = '{{ csrf_token }}';
+    </script>
 	{% load static %}
     <link rel="icon" type="image/x-icon" href="{% static 'icon/Obara_logo.bmp' %}"> 
 	

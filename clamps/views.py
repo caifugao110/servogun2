@@ -2882,11 +2882,12 @@ def ai_search_api(request):
     
     try:
         import json
-        from .coze_service import query_coze
+        from django.conf import settings as app_settings
         
         # 解析请求数据
         data = json.loads(request.body)
         query_text = data.get('query', '').strip()
+        engine = data.get('engine', '').strip().lower()
         
         if not query_text:
             return JsonResponse({
@@ -2894,9 +2895,18 @@ def ai_search_api(request):
                 'error': '查询内容不能为空'
             })
         
-        # 调用Coze API
-        result = query_coze(query_text)
+        # 确定使用的搜索引擎
+        if not engine:
+            engine = getattr(app_settings, 'DEFAULT_AI_ENGINE', 'yuanqi')
         
+        if engine == 'coze':
+            from .coze_service import query_coze
+            result = query_coze(query_text)
+        else:
+            from .yuanqi_service import query_yuanqi
+            result = query_yuanqi(query_text)
+        
+        result['engine'] = engine
         return JsonResponse(result)
         
     except json.JSONDecodeError:
